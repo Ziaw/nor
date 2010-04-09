@@ -43,6 +43,12 @@
       <HintPath>..\lib\BLToolkit.3.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Nemerle, Version=1.0.0.8725, Culture=neutral, PublicKeyToken=e080a9c724e2bfcd">
+      <Name>Nemerle</Name>
+      <AssemblyName>Nemerle.dll</AssemblyName>
+      <HintPath>..\..\..\..\Program Files\Nemerle\Nemerle.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
       <AssemblyName>
@@ -125,6 +131,13 @@
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Shared\" />
   </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj">
+      <Name>NRails.Bltoolkit.Macros</Name>
+      <Project>{3129f3e8-694f-461e-905f-bddc046f09ab}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
+  </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -140,7 +153,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>36629</DevelopmentServerPort>
+          <DevelopmentServerPort>37908</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

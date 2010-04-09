@@ -1,0 +1,40 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NRails.DbMetadata;
+
+namespace NRails.Bltoolkit.Macros
+{
+  /// <summary>
+  /// Description of ModelImpl.
+  /// </summary>
+  internal module ModelImpl
+  {
+      public Impl(t : TypeBuilder) : PExpr
+      {
+          def mp = MetadataProvider();
+          foreach (field in mp.GetTableFields(t.Name))
+          {
+              def fieldMemberName = "_" + field.Name;
+              t.Define(<[decl: 
+                  private $(fieldMemberName : dyn) : $(field.Type.Name : dyn); 
+              ]>);
+              t.Define(<[decl: 
+                  [BLToolkit.Mapping.MapField("$(field.Name)")] 
+                  public $(field.Name : dyn ) : $(field.Type.Name : dyn)
+                  {
+                      get { $(fieldMemberName : dyn); }
+                      set { $(fieldMemberName : dyn) = value; }
+                  }
+              ]>);
+          }
+          <[ [BLToolkit.DataAccess.TableName($(t.Name : dyn))] ]>
+      }
+  }
+}

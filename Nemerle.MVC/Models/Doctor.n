@@ -1,15 +1,16 @@
 ﻿using System;
 using BLToolkit.DataAccess;
 using BLToolkit.Mapping;
+using NRails.Bltoolkit.Macros;
 
 namespace Nemerle.MVC.Models
 {
-    [TableName("Doctor")]
+    [Model()]
 	public class Doctor
 	{
-	    [MapField("PersonID")]
+/*	    [MapField("PersonID")]
 	    public PersonID : int;
 	    [MapField("Taxonomy")]
-		public Taxonomy : string;
+		public Taxonomy : string; */
 	}
 }

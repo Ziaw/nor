@@ -9,4 +9,14 @@
     <p>
         To learn more about ASP.NET MVC visit <a href="http://asp.net/mvc" title="ASP.NET MVC Website">http://asp.net/mvc</a>.
     </p>
+    <UL>
+    <%
+        var taxonomies = ViewData["Taxonomies"] as IEnumerable<string>;
+        foreach (var tax in taxonomies)
+        { %>
+        
+        <li><%=tax%></li> 
+    <%  }%>
+    </ul>
+    
 </asp:Content>

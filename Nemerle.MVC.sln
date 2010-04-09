@@ -5,6 +5,8 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.MVC", "Nemerle.MVC\
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Bltoolkit.Macros", "NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj", "{3129F3E8-694F-461E-905F-BDDC046F09AB}"
 EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.DbMetadata", "NRails.DbMetadata\NRails.DbMetadata.nproj", "{D0E618E7-EC44-47AB-9279-3897D411BE64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

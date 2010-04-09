@@ -3,18 +3,18 @@
   <PropertyGroup>
     <NoStdLib>true</NoStdLib>
     <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
-    <Name>NRails.Bltoolkit.Macros</Name>
+    <Name>NRails.DbMetadata</Name>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3129f3e8-694f-461e-905f-bddc046f09ab}</ProjectGuid>
+    <ProjectGuid>{d0e618e7-ec44-47ab-9279-3897d411be64}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NRails.Bltoolkit.Macros</RootNamespace>
-    <AssemblyName>NRails.Bltoolkit.Macros</AssemblyName>
+    <RootNamespace>NRails.DbMetadata</RootNamespace>
+    <AssemblyName>NRails.DbMetadata</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,15 +33,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\NRails.Bltoolkit.Macros.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\NRails.DbMetadata.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BLToolkit.3, Version=3.2.0.0, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
-      <Name>BLToolkit.3</Name>
-      <AssemblyName>BLToolkit.3.dll</AssemblyName>
-      <HintPath>..\lib\BLToolkit.3.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -59,27 +53,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Nemerle)\Nemerle.dll</HintPath>
     </Reference>
-    <Reference Include="Nemerle.Compiler">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(Nemerle)\Nemerle.Compiler.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model.n" />
-    <Compile Include="ModelImpl.n">
+    <Compile Include="Field.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MetadataProvider.n" />
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NRails.DbMetadata\NRails.DbMetadata.nproj">
-      <Name>NRails.DbMetadata</Name>
-      <Project>{d0e618e7-ec44-47ab-9279-3897d411be64}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--
