@@ -1,0 +1,35 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using BLToolkit.Data;
+using BLToolkit.Data.Linq;
+
+namespace Nemerle.MVC.Models
+{
+  /// <summary>
+  /// Database accessor.
+  /// </summary>
+  class Db: DbManager
+  {
+        public this() { base("NRails"); }
+      
+        public Doctors : Table[Doctor]
+        {
+	        get { this.GetTable.[Doctor]();}
+        }
+
+        public Patients : Table[Patient]
+        {
+	        get { this.GetTable.[Patient]();}
+        }
+
+        public Persons : Table[Person]
+        {
+	        get { this.GetTable.[Person]();}
+        }
+  }
+}

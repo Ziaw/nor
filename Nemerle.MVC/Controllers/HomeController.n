@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Nemerle.MVC.Models;
 
 namespace Nemerle.MVC.Controllers {
 
     [HandleError]
     public class HomeController : Controller {
         public Index() : ActionResult {
-            ViewData["Message"] = "Place some code here!";
-
+            using (def db = Db())
+            {
+                def personCount = db.Persons.Count().ToString();
+                ViewData["Message"] = $"We have " + personCount + " persons."; // todo: разобраться как работает $
+            }
+            
             View()
         }
 

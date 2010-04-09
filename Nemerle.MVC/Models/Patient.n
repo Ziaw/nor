@@ -1,0 +1,15 @@
+﻿using System;
+using BLToolkit.Mapping;
+using BLToolkit.DataAccess;
+
+namespace Nemerle.MVC.Models
+{
+    [TableName("Patient")]
+	public class Patient
+	{
+	    [MapField("PersonID")]
+		public PersonID : int;
+	    [MapField("Diagnosis")]
+		public Diagnosis : string;
+	}
+}
