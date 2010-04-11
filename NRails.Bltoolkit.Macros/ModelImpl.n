@@ -18,12 +18,14 @@ namespace NRails.Bltoolkit.Macros
   {
       public Impl(t : TypeBuilder) : PExpr
       {
+/*
           def mp = MetadataProvider();
-          foreach (field in mp.GetTableFields(t.Name))
+          def fields = mp.GetTableFields(t.Name);
+          foreach (field in fields)
           {
               def fieldMemberName = "_" + field.Name;
               t.Define(<[decl: 
-                  private $(fieldMemberName : dyn) : $(field.Type.Name : dyn); 
+                  private mutable $(fieldMemberName : dyn) : $(field.Type.Name : dyn); 
               ]>);
               t.Define(<[decl: 
                   [BLToolkit.Mapping.MapField("$(field.Name)")] 
@@ -33,7 +35,7 @@ namespace NRails.Bltoolkit.Macros
                       set { $(fieldMemberName : dyn) = value; }
                   }
               ]>);
-          }
+          }*/
           <[ [BLToolkit.DataAccess.TableName($(t.Name : dyn))] ]>
       }
   }

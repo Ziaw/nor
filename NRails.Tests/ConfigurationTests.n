@@ -1,0 +1,44 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using NRails;
+
+namespace NRails.Tests
+{
+  public class ConfigurationTests: AssertionHelper
+  {
+      static mutable testConfigurationInstance : Configuration;
+      public static TestConfiguration : Configuration
+      {
+          get 
+          {
+              match (testConfigurationInstance)
+              {
+                  | x when x != null => x;
+                  | null => 
+                        {
+                            testConfigurationInstance = Configuration("../../nrails.cfg");
+                            testConfigurationInstance;
+                        }
+              }
+          }
+      }
+      
+      [Test]
+      public ConfigReadTest() : void
+      {
+          def cfg = Configuration("../../nrails.cfg");
+          Expect(cfg.Env, EqualTo("Test"));
+          Expect(cfg.ConnectionStringName, EqualTo("NRails.Test"));
+          Expect(cfg.ConnectionStrings, Is.Not.Null);
+          Expect(cfg.ConnectionStrings, Is.Not.Empty);
+          Expect(cfg.ConnectionString, Is.Not.Null);
+          Expect(cfg.ConnectionString.ConnectionString, Is.Not.Null);
+      }
+  }
+}

@@ -1,0 +1,17 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails
+{
+  [Record]
+  public class TableDef
+  {
+      public Name : string {get;set;}
+      public Columns : list[ColumnDef] {get;set;}
+  }
+}

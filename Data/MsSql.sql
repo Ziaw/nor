@@ -1,4 +1,5 @@
--- CREATE DATABASE NRailsDemo
+CREATE DATABASE NRailsDemo
+GO
 USE NRailsDemo
 GO
 

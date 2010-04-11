@@ -1,0 +1,29 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using NRails;
+
+namespace NRails.Tests
+{
+  /// <summary>
+  /// Description of EngineTests.
+  /// </summary>
+  class EngineTests: AssertionHelper
+  {
+      [Test]
+      public TableDefProviderTest() : void
+      {
+          def cfg = ConfigurationTests.TestConfiguration;
+          Expect(cfg, Is.Not.Null);
+          def engine = Engine(cfg);
+          Expect(engine.Cfg, Is.Not.Null);
+          def tables = engine.GetTables();
+          Console.WriteLine(tables);
+      }
+  }
+}

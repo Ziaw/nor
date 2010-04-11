@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NRails.DbMetadata")]
+[assembly: AssemblyTitle("NRails")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("updnn")]
-[assembly: AssemblyProduct("NRails.DbMetadata")]
-[assembly: AssemblyCopyright("Copyright © updnn 2010")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("NRails")]
+[assembly: AssemblyCopyright("Copyright ©  2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4397310b-088b-406b-baa7-4403320990e8")]
+[assembly: Guid("3a4595cf-eb04-4bf9-a59e-03fe2e08b6ef")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -1,0 +1,154 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+using System.Xml.XPath;
+using System.IO;
+using System.Configuration;
+
+namespace NRails
+{
+  public class Configuration
+  {
+      static defaultConnection = "NRails" : string;
+      [Accessor] rootPath : string;
+      public this()
+      {
+          this("nrails.cfg")
+      }
+
+      public this(fileName : string)
+      {
+          rootPath = FileInfo(fileName).Directory.FullName;
+          readConfig(fileName);
+          readConnectionStrings();
+      }
+      
+      readConnectionStrings() : void
+      {
+          def checkFile(f)
+          {
+              match (f)
+              {
+               | x :: tail => 
+                    def path = Path.Combine(rootPath, x);
+                    if (File.Exists(path))
+                        path;
+                      else
+                        checkFile(tail);
+           | [] => null
+              }
+          }
+          def c = ConfigurationManager.ConnectionStrings.Item(ConnectionStringName);
+          connectionStrings[ConnectionStringName] = c;
+          def acceptedFiles = ["Web.config", "App.config"];
+          def configFile = checkFile(acceptedFiles);
+          
+          when (String.IsNullOrEmpty(configFile))
+            throw FileNotFoundException($"$acceptedFiles in $rootPath");
+          
+          readConnectionStrings(configFile);
+      }
+      
+      readConnectionStrings(configFile : string) : void
+      {
+          def xdoc = XDocument.Load(configFile);
+          def strings = xdoc.XPathSelectElements("//connectionStrings/add")
+                .Select(e => (
+                        e.Attribute("name").Value, 
+                        e.Attribute("connectionString").Value, 
+                        e.Attribute("providerName").Value
+                    ));
+          foreach ((name, str, prov) in strings)
+          {
+              unless (connectionStrings.ContainsKey(name))
+              {
+                  def setting = ConnectionStringSettings();
+                  setting.ConnectionString = str;
+                  setting.ProviderName = prov;
+                  connectionStrings.Add(name, setting)
+              }
+          }
+      }
+      
+      readConfig(fileName : string) : void
+      {
+          // todo: JSON/Yaml reader
+          def lineEvaluator = fun (name, val)
+          {
+            match (name, val)
+            {
+              | ("env", val) => env = val;
+              | ("", _) => {};
+              | (x, _) => throw NotSupportedException($"'$x' configuration value is not suported");
+            }
+          }
+          def lineParser = fun (line : string)
+          {
+              if (line == null || line.Trim() == String.Empty)
+                ("", "")
+              else
+              {
+                def splitted = line.Split(':').Select(s => s.Trim()).ToArray();
+                (splitted[0], splitted[1])
+              }
+          }
+          using (def reader = StreamReader(fileName))
+          {
+              mutable line = reader.ReadLine();
+              while (line != null)
+              {
+                  lineEvaluator(lineParser(line));
+                  line = reader.ReadLine();
+              }
+          }
+      }
+      
+      [Accessor]
+      mutable env : string;
+      
+      connections = Dictionary.[string, string]() : Dictionary[string, string];
+
+      [Accessor]
+      connectionStrings : Dictionary[string, ConnectionStringSettings] = Dictionary.[string, ConnectionStringSettings]();
+      
+      public GetConnectionStringName(env : string) : string
+      {
+          if (connections.ContainsKey(env))
+              connections[env];
+          else
+          {
+              def default = $"$defaultConnection.$env";
+              connections[env] = default;
+              default;
+          }
+      }
+
+      public GetConnectionString(env : string) : ConnectionStringSettings
+      {
+          ConnectionStrings[GetConnectionStringName(env)];
+      }
+
+      public ConnectionStringName : string
+      {
+          get {GetConnectionStringName(env);}
+      }
+
+      public SetConnectionStringName(env : string, connStr : string) : void
+      {
+          connections[env] = connStr;
+      }
+      
+      public ConnectionString: ConnectionStringSettings
+      {
+          get 
+          {
+              connectionStrings[ConnectionStringName];
+          }
+      }
+  }
+}
