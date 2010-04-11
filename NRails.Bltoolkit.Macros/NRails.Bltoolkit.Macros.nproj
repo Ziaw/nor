@@ -65,6 +65,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DbManager.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbManagerImpl.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model.n" />
     <Compile Include="ModelImpl.n">
       <SubType>Code</SubType>

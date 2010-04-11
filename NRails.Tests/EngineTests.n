@@ -13,7 +13,7 @@ namespace NRails.Tests
   /// <summary>
   /// Description of EngineTests.
   /// </summary>
-  class EngineTests: AssertionHelper
+  public class EngineTests: AssertionHelper
   {
       [Test]
       public SchemaProviderTest() : void

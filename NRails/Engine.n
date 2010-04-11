@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rsdn.Janus;
 using Rsdn.Janus.Mssql;
+using System.IO;
 
 namespace NRails
 {
@@ -34,10 +35,8 @@ namespace NRails
           when (cachedSchema == null)
           {
             def connStr = cfg.GetConnectionString(env).ConnectionString;
-            
             // todo: вынести в фабрику
             def db = MssqlDriver();
-
             def schemaDriver = db.CreateSchemaDriver();
             cachedSchema = schemaDriver.LoadExistingSchema(connStr);
           }
@@ -54,11 +53,24 @@ namespace NRails
       
       static instance : Engine;
       
-      public static Instance : Engine { get {instance;}}
+      public static Instance : Engine 
+      { 
+        get 
+        { 
+          instance;
+        }
+      }
       
+      static defaultConfigLocations : list[string] = ["../../nrails.cfg", "nrails.cfg"];
       static this()
       {
-        instance = Engine(Configuration())
+         def location = defaultConfigLocations.FirstOrDefault(f => File.Exists(f));
+         
+         when (location == null)
+             throw FileNotFoundException($"$(defaultConfigLocations) not found in $(Environment.CurrentDirectory)");
+
+         unless (String.IsNullOrEmpty(location))
+            instance = Engine(Configuration(location))
       }
   }
 }

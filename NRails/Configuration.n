@@ -3,7 +3,7 @@ using Nemerle.Text;
 using Nemerle.Utility;
 
 using System;
-using System.Collections.Generic;
+using SCG = System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -16,11 +16,13 @@ namespace NRails
   {
       static defaultConnection = "NRails" : string;
       [Accessor] rootPath : string;
+/*      
       public this()
       {
+          ["nrails.cfg", ]
           this("nrails.cfg")
       }
-
+*/
       public this(fileName : string)
       {
           rootPath = FileInfo(fileName).Directory.FullName;
@@ -43,8 +45,6 @@ namespace NRails
            | [] => null
               }
           }
-          def c = ConfigurationManager.ConnectionStrings.Item(ConnectionStringName);
-          connectionStrings[ConnectionStringName] = c;
           def acceptedFiles = ["Web.config", "App.config"];
           def configFile = checkFile(acceptedFiles);
           
@@ -65,13 +65,10 @@ namespace NRails
                     ));
           foreach ((name, str, prov) in strings)
           {
-              unless (connectionStrings.ContainsKey(name))
-              {
-                  def setting = ConnectionStringSettings();
-                  setting.ConnectionString = str;
-                  setting.ProviderName = prov;
-                  connectionStrings.Add(name, setting)
-              }
+              def setting = ConnectionStringSettings();
+              setting.ConnectionString = str;
+              setting.ProviderName = prov;
+              connectionStrings.Add(name, setting)
           }
       }
       
@@ -111,10 +108,10 @@ namespace NRails
       [Accessor]
       mutable env : string;
       
-      connections = Dictionary.[string, string]() : Dictionary[string, string];
+      connections = SCG.Dictionary.[string, string]() : SCG.Dictionary[string, string];
 
       [Accessor]
-      connectionStrings : Dictionary[string, ConnectionStringSettings] = Dictionary.[string, ConnectionStringSettings]();
+      connectionStrings : SCG.Dictionary[string, ConnectionStringSettings] = SCG.Dictionary.[string, ConnectionStringSettings]();
       
       public GetConnectionStringName(env : string) : string
       {
@@ -130,7 +127,9 @@ namespace NRails
 
       public GetConnectionString(env : string) : ConnectionStringSettings
       {
-          ConnectionStrings[GetConnectionStringName(env)];
+          def name = GetConnectionStringName(env);
+          def a = connectionStrings.Keys.First();
+          connectionStrings[name];
       }
 
       public ConnectionStringName : string

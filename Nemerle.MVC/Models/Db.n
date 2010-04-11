@@ -10,9 +10,7 @@ using BLToolkit.Data.Linq;
 
 namespace Nemerle.MVC.Models
 {
-  /// <summary>
-  /// Database accessor.
-  /// </summary>
+
   class Db: DbManager
   {
         public this() { base("NRails"); }

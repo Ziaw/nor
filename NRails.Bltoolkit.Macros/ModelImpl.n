@@ -20,32 +20,41 @@ namespace NRails.Bltoolkit.Macros
   {
       public Impl(t : TypeBuilder) : PExpr
       {
+          //DbManagerImpl.RegisterType(t.UnderlyingType);
           def engine = Engine.Instance;
-          def table = engine.GetTable(t.Name);
-          
-          when (table == null)
+          try 
           {
-             throw ArgumentException($"table for type $(t.Name) not found");
+            def table = engine.GetTable(t.Name);
+            
+            when (table == null)
+            {
+               Message.Error($"table for type $(t.Name) not found, env: '$(engine.Cfg.Env)'");
+            }
+            
+            foreach (col : TableColumnSchema in table.Columns)
+            {
+                def clrType = col.Type.ToClrType();
+                def fieldMemberName = $"_$(col.Name)";
+                t.Define(<[decl: 
+                    private mutable $(fieldMemberName : dyn) : $(clrType.Name : dyn); 
+                ]>);
+                t.Define(<[decl: 
+                    [BLToolkit.Mapping.MapField("$(field.Name)")] 
+                    public $(col.Name : dyn ) : $(clrType.Name : dyn)
+                    {
+                        get { $(fieldMemberName : dyn); }
+                        set { $(fieldMemberName : dyn) = value; }
+                    }
+                ]>);
+            }
+            
+            <[ [BLToolkit.DataAccess.TableName($(t.Name : dyn))] ]>
           }
-          
-          foreach (col : TableColumnSchema in table.Columns)
+          catch 
           {
-              def clrType = col.Type.ToClrType();
-              def fieldMemberName = $"_$(col.Name)";
-              t.Define(<[decl: 
-                  private mutable $(fieldMemberName : dyn) : $(clrType.Name : dyn); 
-              ]>);
-              t.Define(<[decl: 
-                  [BLToolkit.Mapping.MapField("$(field.Name)")] 
-                  public $(col.Name : dyn ) : $(col.Name : dyn)
-                  {
-                      get { $(fieldMemberName : dyn); }
-                      set { $(fieldMemberName : dyn) = value; }
-                  }
-              ]>);
+             | e => Message.Error($"$(t.Name) model error: $(e.ToString())");
+             <[]>
           }
-          
-          <[ [BLToolkit.DataAccess.TableName($(t.Name : dyn))] ]>
       }
   }
 }
