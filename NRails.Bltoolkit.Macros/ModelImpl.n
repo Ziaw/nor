@@ -7,7 +7,9 @@ using Nemerle.Compiler.Parsetree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NRails.DbMetadata;
+
+using NRails;
+using Rsdn.Janus;
 
 namespace NRails.Bltoolkit.Macros
 {
@@ -18,24 +20,31 @@ namespace NRails.Bltoolkit.Macros
   {
       public Impl(t : TypeBuilder) : PExpr
       {
-/*
-          def mp = MetadataProvider();
-          def fields = mp.GetTableFields(t.Name);
-          foreach (field in fields)
+          def engine = Engine.Instance;
+          def table = engine.GetTable(t.Name);
+          
+          when (table == null)
           {
-              def fieldMemberName = "_" + field.Name;
+             throw ArgumentException($"table for type $(t.Name) not found");
+          }
+          
+          foreach (col : TableColumnSchema in table.Columns)
+          {
+              def clrType = col.Type.ToClrType();
+              def fieldMemberName = $"_$(col.Name)";
               t.Define(<[decl: 
-                  private mutable $(fieldMemberName : dyn) : $(field.Type.Name : dyn); 
+                  private mutable $(fieldMemberName : dyn) : $(clrType.Name : dyn); 
               ]>);
               t.Define(<[decl: 
                   [BLToolkit.Mapping.MapField("$(field.Name)")] 
-                  public $(field.Name : dyn ) : $(field.Type.Name : dyn)
+                  public $(col.Name : dyn ) : $(col.Name : dyn)
                   {
                       get { $(fieldMemberName : dyn); }
                       set { $(fieldMemberName : dyn) = value; }
                   }
               ]>);
-          }*/
+          }
+          
           <[ [BLToolkit.DataAccess.TableName($(t.Name : dyn))] ]>
       }
   }

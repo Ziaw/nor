@@ -17,15 +17,11 @@ namespace NRails.Tests
       {
           get 
           {
-              match (testConfigurationInstance)
+              when (testConfigurationInstance == null)
               {
-                  | x when x != null => x;
-                  | null => 
-                        {
-                            testConfigurationInstance = Configuration("../../nrails.cfg");
-                            testConfigurationInstance;
-                        }
+                 testConfigurationInstance = Configuration("../../nrails.cfg");
               }
+              testConfigurationInstance;
           }
       }
       

@@ -1,3 +1,6 @@
+using System;
+using System.Data.SqlTypes;
+
 namespace Rsdn.Janus
 {
 	public enum ColumnType
@@ -94,4 +97,70 @@ namespace Rsdn.Janus
 		BlobSubtype1, // 
 		BlobSubtype2
 	}
+
+    public static class ColumnTypeExts
+    {
+        public static Type ToClrType(this ColumnType t)
+        {
+            switch (t)
+            {
+                case ColumnType.Character:
+                    return typeof (char);
+                case ColumnType.CharacterVaring:
+                case ColumnType.CharacterLargeObject:
+                case ColumnType.NCharacter:
+                case ColumnType.NCharacterVaring:
+                case ColumnType.NCharacterLargeObject:
+                    return typeof(string);
+                case ColumnType.BinaryLargeObject:
+                case ColumnType.Binary:
+                case ColumnType.BinaryVaring:
+                case ColumnType.SqlVariant:
+                case ColumnType.Array:
+                case ColumnType.BlobSubtypeImage:
+                case ColumnType.BlobSubtypeText:
+                case ColumnType.BlobSubtypeNText:
+                case ColumnType.BlobSubtype1:
+                case ColumnType.BlobSubtype2:
+                    return typeof(byte[]);
+                case ColumnType.Decimal:
+                case ColumnType.Money:
+                case ColumnType.SmallMoney:
+                    return typeof(decimal);
+                case ColumnType.Numeric:
+                case ColumnType.Integer:
+                    return typeof(int);
+                case ColumnType.SmallInt:
+                    return typeof(short);
+                case ColumnType.BigInt:
+                    return typeof(long);
+                case ColumnType.Float:
+                    return typeof(float);
+                case ColumnType.Real:
+                case ColumnType.DoublePrecision:
+                    return typeof(double);
+                case ColumnType.Boolean:
+                    return typeof(bool);
+                case ColumnType.Date:
+                case ColumnType.Time:
+                case ColumnType.Timestamp:
+                case ColumnType.MsTimestamp:
+                case ColumnType.SmallDateTime:
+                    return typeof(DateTime);
+                case ColumnType.TinyInt:
+                    return typeof(byte);
+                case ColumnType.Guid:
+                    return typeof(Guid);
+                case ColumnType.Xml:
+                    return typeof(SqlXml);
+                case ColumnType.Cursor:
+                case ColumnType.Table:
+                case ColumnType.Unknown:
+                case ColumnType.Interval:
+                    throw new NotSupportedException(t.ToString());
+                default:
+                    throw new ArgumentOutOfRangeException("t");
+            }
+        }
+    }
 }

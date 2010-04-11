@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
@@ -107,6 +108,7 @@ namespace Rsdn.Janus
 				(Nullable ? 2 : 0) ^
 				(int)Type;
 		}
-		#endregion
+
+	    #endregion
 	}
 }

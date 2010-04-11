@@ -5,11 +5,11 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.MVC", "Nemerle.MVC\
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Bltoolkit.Macros", "NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj", "{3129F3E8-694F-461E-905F-BDDC046F09AB}"
 EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.DbMetadata", "NRails.DbMetadata\NRails.DbMetadata.nproj", "{D0E618E7-EC44-47AB-9279-3897D411BE64}"
-EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails", "NRails\NRails.nproj", "{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Tests", "NRails.Tests\NRails.Tests.nproj", "{B4287CB5-676C-46AB-A4F1-C1C9FD184DE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NRails.Database", "NRails.Database\NRails.Database.csproj", "{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +25,6 @@ Global
 		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0E618E7-EC44-47AB-9279-3897D411BE64}.Release|Any CPU.Build.0 = Release|Any CPU
 		{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -37,6 +33,10 @@ Global
 		{B4287CB5-676C-46AB-A4F1-C1C9FD184DE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4287CB5-676C-46AB-A4F1-C1C9FD184DE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4287CB5-676C-46AB-A4F1-C1C9FD184DE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

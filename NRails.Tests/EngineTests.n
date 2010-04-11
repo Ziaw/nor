@@ -16,14 +16,16 @@ namespace NRails.Tests
   class EngineTests: AssertionHelper
   {
       [Test]
-      public TableDefProviderTest() : void
+      public SchemaProviderTest() : void
       {
           def cfg = ConfigurationTests.TestConfiguration;
           Expect(cfg, Is.Not.Null);
           def engine = Engine(cfg);
           Expect(engine.Cfg, Is.Not.Null);
-          def tables = engine.GetTables();
-          Console.WriteLine(tables);
+          def schema = engine.GetSchema();
+          Expect(schema.Tables.Count(), EqualTo(9));
+          def schema2 = engine.GetSchema();
+          Expect(schema2, Is.SameAs(schema));
       }
   }
 }

@@ -4,18 +4,6 @@ using BLToolkit.DataAccess;
 
 namespace Nemerle.MVC.Models
 {
-    [TableName("Person")]
-	public class Person
-	{
-	    [MapField("PersonID")]
-		public PersonID : int;
-	    [MapField("FirstName")]
-		public FirstName : string;
-	    [MapField("LastName")]
-		public LastName : string;
-	    [MapField("MiddleName")]
-		public MiddleName : string;
-	    [MapField("Gender")]
-		public Gender : char;
-	}
+  [Model]
+	public class Person	{	}
 }

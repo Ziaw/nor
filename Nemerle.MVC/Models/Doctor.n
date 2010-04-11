@@ -5,12 +5,6 @@ using NRails.Bltoolkit.Macros;
 
 namespace Nemerle.MVC.Models
 {
-    [Model()]
-	public class Doctor
-	{
-/*	    [MapField("PersonID")]
-	    public PersonID : int;
-	    [MapField("Taxonomy")]
-		public Taxonomy : string; */
-	}
+  [Model()]
+	public class Doctor	{	}
 }
