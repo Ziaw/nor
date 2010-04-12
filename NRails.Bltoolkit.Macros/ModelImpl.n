@@ -11,7 +11,7 @@ using System.Linq;
 using NRails;
 using Rsdn.Janus;
 
-namespace NRails.Bltoolkit.Macros
+namespace NRails.Macros
 {
   /// <summary>
   /// Description of ModelImpl.
@@ -20,7 +20,7 @@ namespace NRails.Bltoolkit.Macros
   {
       public Impl(t : TypeBuilder) : PExpr
       {
-          //DbManagerImpl.RegisterType(t.UnderlyingType);
+          DatabaseManagerImpl.RegisterType(t.Name, t.FullName);
           def engine = Engine.Instance;
           try 
           {

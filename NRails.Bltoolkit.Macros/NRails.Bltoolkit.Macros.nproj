@@ -65,10 +65,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbManager.n">
+    <Compile Include="DatabaseManager.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DbManagerImpl.n">
+    <Compile Include="DatabaseManagerImpl.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model.n" />

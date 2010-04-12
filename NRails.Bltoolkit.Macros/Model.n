@@ -9,12 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NRails.Bltoolkit.Macros
+namespace NRails.Macros
 {
     [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
                      Inherited = false)]
     public macro Model(t : TypeBuilder) : PExpr
     {
-        ModelImpl.Impl(t);
+        _ = ModelImpl.Impl(t);
     }
 }

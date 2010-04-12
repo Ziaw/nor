@@ -128,7 +128,6 @@ namespace NRails
       public GetConnectionString(env : string) : ConnectionStringSettings
       {
           def name = GetConnectionStringName(env);
-          def a = connectionStrings.Keys.First();
           connectionStrings[name];
       }
 

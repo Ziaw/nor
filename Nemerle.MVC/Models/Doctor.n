@@ -1,7 +1,7 @@
 ﻿using System;
 using BLToolkit.DataAccess;
 using BLToolkit.Mapping;
-using NRails.Bltoolkit.Macros;
+using NRails.Macros;
 
 namespace Nemerle.MVC.Models
 {

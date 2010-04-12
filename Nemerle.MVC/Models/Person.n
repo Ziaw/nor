@@ -1,9 +1,10 @@
 ﻿using System;
 using BLToolkit.Mapping;
 using BLToolkit.DataAccess;
+using NRails.Macros;
 
 namespace Nemerle.MVC.Models
 {
-  [Model]
-	public class Person	{	}
+   [Model]
+	 public class Person	{	}
 }

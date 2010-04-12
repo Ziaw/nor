@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NRails.Bltoolkit.Macros
+namespace NRails.Macros
 {
   /*
   [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
@@ -18,11 +18,12 @@ namespace NRails.Bltoolkit.Macros
   {
       <[]>
   }
-
-  [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeTypedMembers, Nemerle.MacroTargets.Class,
+*/
+  [Nemerle.MacroUsage(Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
                      Inherited = false)]
-  public macro DbManager(t : TypeBuilder) : PExpr
+  public macro DatabaseManager(t : TypeBuilder)
   {
-      <[]>
-  } */
+    def typer = Nemerle.Macros.ImplicitCTX();
+    DatabaseManagerImpl.BeforeTypedMembers(t, typer);
+  } 
 }
