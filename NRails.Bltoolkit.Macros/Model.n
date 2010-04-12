@@ -13,8 +13,8 @@ namespace NRails.Macros
 {
     [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
                      Inherited = false)]
-    public macro Model(t : TypeBuilder) : PExpr
+    public macro Model(t : TypeBuilder)
     {
-        _ = ModelImpl.Impl(t);
+        ModelImpl.Impl(t);
     }
 }

@@ -5,6 +5,7 @@ using NRails.Macros;
 
 namespace Nemerle.MVC.Models
 {
+   [TableName("Person")]
    [Model]
 	 public class Person	{	}
 }

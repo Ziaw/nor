@@ -11,19 +11,17 @@ using System.Linq;
 
 namespace NRails.Macros
 {
-  /*
   [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
                      Inherited = false)]
-  public macro DbManager(t : TypeBuilder) : PExpr
+  public macro DatabaseManager(t : TypeBuilder)
   {
-      <[]>
+    DatabaseManagerImpl.BeforeInheritance(t);
   }
-*/
+  
   [Nemerle.MacroUsage(Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
                      Inherited = false)]
   public macro DatabaseManager(t : TypeBuilder)
   {
-    def typer = Nemerle.Macros.ImplicitCTX();
-    DatabaseManagerImpl.BeforeTypedMembers(t, typer);
+    DatabaseManagerImpl.BeforeTypedMembers(t);
   } 
 }

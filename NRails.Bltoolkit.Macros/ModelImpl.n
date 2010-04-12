@@ -18,10 +18,17 @@ namespace NRails.Macros
   /// </summary>
   internal module ModelImpl
   {
-      public Impl(t : TypeBuilder) : PExpr
+      public Impl(t : TypeBuilder) : void
       {
           DatabaseManagerImpl.RegisterType(t.Name, t.FullName);
-          def engine = Engine.Instance;
+          def engine = try
+          {
+            Engine.Instance;
+          }
+          catch
+          {
+            | e => Message.Error($"Engine initialization error $e"); throw;
+          }
           try 
           {
             def table = engine.GetTable(t.Name);
@@ -39,7 +46,7 @@ namespace NRails.Macros
                     private mutable $(fieldMemberName : dyn) : $(clrType.Name : dyn); 
                 ]>);
                 t.Define(<[decl: 
-                    [BLToolkit.Mapping.MapField("$(field.Name)")] 
+                    [BLToolkit.Mapping.MapField($(col.Name : string))] 
                     public $(col.Name : dyn ) : $(clrType.Name : dyn)
                     {
                         get { $(fieldMemberName : dyn); }
@@ -47,13 +54,10 @@ namespace NRails.Macros
                     }
                 ]>);
             }
-            
-            <[ [BLToolkit.DataAccess.TableName($(t.Name : dyn))] ]>
           }
           catch 
           {
              | e => Message.Error($"$(t.Name) model error: $(e.ToString())");
-             <[]>
           }
       }
   }

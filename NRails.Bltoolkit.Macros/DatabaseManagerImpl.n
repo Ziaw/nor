@@ -32,7 +32,28 @@ namespace NRails.Macros
       }
     }
     
-    public BeforeTypedMembers(t : TypeBuilder, _ : Typer) : void
+    public BeforeInheritance(t : TypeBuilder) : void
+    {
+      t.Define(<[decl: static engine : NRails.Engine; ]>);
+      t.Define(<[decl: public Engine : NRails.Engine { get {engine} }; ]>);
+      t.Define(<[decl: static env : string; ]>);
+      t.Define(<[decl: public Env : string { get {env} }; ]>);
+      t.Define(<[decl:
+        static this()
+        {
+          engine = Engine.Instance;
+          env = engine.Cfg.Env;
+        }
+      ]>);
+      t.Define(<[decl:
+        public this()
+        {
+          base(engine.Cfg.ConnectionStringName);
+        }
+      ]>);
+    }
+    
+    public BeforeTypedMembers(t : TypeBuilder) : void
     {
       def typeNameToExpr(name) {
           match(NString.Split(name, '.')) {
@@ -56,15 +77,6 @@ namespace NRails.Macros
             }
         ]>);
       }
-      
-      def connStringName = Engine.Instance.Cfg.ConnectionStringName;
-      t.Define(<[decl:
-        public this()
-        {
-          base($(connStringName : string))
-        }
-      ]>
-      );            
     }
   }
 }

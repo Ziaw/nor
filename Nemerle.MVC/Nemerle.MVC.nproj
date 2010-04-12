@@ -139,6 +139,13 @@
       <Private>False</Private>
     </MacroProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NRails\NRails.nproj">
+      <Name>NRails</Name>
+      <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
