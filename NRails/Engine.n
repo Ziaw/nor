@@ -63,20 +63,19 @@ namespace NRails
         }
       }
       
-      static defaultConfigSearch : list[string] = ["../../nrails.cfg", "nrails.cfg"];
       static compileTimeConfigLocation() : string
       {
+         def defaultConfigSearch = ["../../nrails.cfg", "nrails.cfg"];
          def locations = [
               Environment.CurrentDirectory, 
               Assembly.GetCallingAssembly().Location, 
               Assembly.GetExecutingAssembly().Location,
          ].Distinct();
          
-         def paths = locations
+         locations
             .SelectMany(_ => defaultConfigSearch, (l, f) => (l, f))
-            .Map((path, file) => Path.Combine(path, file));
-
-         paths.FirstOrDefault(f => File.Exists(f));
+            .Map((path, file) => Path.Combine(path, file))
+            .FirstOrDefault(f => File.Exists(f));
       }
       
       static this()
