@@ -34,8 +34,6 @@ namespace NRails.Macros
     
     public BeforeTypedMembers(t : TypeBuilder, _ : Typer) : void
     {
-      //def engine = Engine.Instance;
-      
       def typeNameToExpr(name) {
           match(NString.Split(name, '.')) {
               | [] => <[ () ]>
@@ -58,6 +56,15 @@ namespace NRails.Macros
             }
         ]>);
       }
+      
+      def connStringName = Engine.Instance.Cfg.ConnectionStringName;
+      t.Define(<[decl:
+        public this()
+        {
+          base($(connStringName : string))
+        }
+      ]>
+      );            
     }
   }
 }
