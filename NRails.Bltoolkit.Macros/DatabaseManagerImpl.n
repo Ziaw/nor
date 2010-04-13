@@ -12,23 +12,35 @@ using System.Linq;
 namespace NRails.Macros
 {
   [Record]
-  class MyTypeInfo
+  class MyTypeInfo: IComparable[MyTypeInfo]
   {
     [Accessor] name : string; 
     [Accessor] fullName : string; 
+    
+    public CompareTo(obj : object) : int
+    {
+        def other = obj :> MyTypeInfo;
+        def cmp = Comparer.[string].Default;
+        
+        match (cmp.Compare(name, other.Name))
+        {
+            | 0 => cmp.Compare(fullName, other.fullName);
+            | x => x
+        }
+    }
   }
 
   internal module DatabaseManagerImpl
   {
-    mutable static modelTypes : list[MyTypeInfo];
+    mutable static modelTypes : Set[MyTypeInfo];
     
     public RegisterType(name : string, fullName : string) : void
     {
       def info = MyTypeInfo(name, fullName);
       modelTypes = match (modelTypes)
       {
-        | null => info :: []
-        | x => info :: x
+        | null => Set.[MyTypeInfo]([info])
+        | x => x.Add(info);
       }
     }
     
@@ -55,20 +67,12 @@ namespace NRails.Macros
     
     public BeforeTypedMembers(t : TypeBuilder) : void
     {
-      def typeNameToExpr(name) {
-          match(NString.Split(name, '.')) {
-              | [] => <[ () ]>
-              | n :: [] => <[ $(n : dyn) ]>
-              | n :: ns => ns.FoldLeft(<[ $(n : dyn) ]>, (n, acc) => <[ $acc.$(n : dyn) ]>)
-          }
-      }
-
       foreach (modelType in modelTypes)
       {
         def typeName = modelType.Name;
         def propertyName = $"$(typeName)s";
         def typeFullName = modelType.FullName;
-        def modelType = typeNameToExpr(typeFullName);
+        def modelType = PExpr.FromQualifiedIdentifier(t.Manager, typeFullName);
         
         t.Define(<[decl:
             public $(propertyName : dyn) : BLToolkit.Data.Linq.Table[ $modelType ]

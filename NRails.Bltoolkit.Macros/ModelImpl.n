@@ -42,14 +42,14 @@ namespace NRails.Macros
             
             foreach (col : TableColumnSchema in table.Columns)
             {
-                def clrType = col.Type.ToClrType();
+                def clrType = PExpr.FromQualifiedIdentifier(t.Manager, col.Type.ToClrType().FullName);
                 def fieldMemberName = $"_$(col.Name)";
                 t.Define(<[decl: 
-                    private mutable $(fieldMemberName : dyn) : $(clrType.Name : dyn); 
+                    private mutable $(fieldMemberName : dyn) : $clrType; 
                 ]>);
                 t.Define(<[decl: 
                     [BLToolkit.Mapping.MapField($(col.Name : string))] 
-                    public $(col.Name : dyn ) : $(clrType.Name : dyn)
+                    public $(col.Name : dyn ) : $clrType
                     {
                         get { $(fieldMemberName : dyn); }
                         set { $(fieldMemberName : dyn) = value; }
