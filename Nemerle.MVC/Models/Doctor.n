@@ -5,6 +5,6 @@ using NRails.Macros;
 
 namespace Nemerle.MVC.Models
 {
-  [Model()]
+  [Model]
 	public class Doctor	{	}
 }

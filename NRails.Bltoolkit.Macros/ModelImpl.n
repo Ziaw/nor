@@ -33,6 +33,8 @@ namespace NRails.Macros
           {
             def table = engine.GetTable(t.Name);
             
+            t.GetModifiers().AddCustomAttribute(<[  BLToolkit.DataAccess.TableName($(table.Name : string)) ]>);
+            
             when (table == null)
             {
                Message.Error($"table for type $(t.Name) not found, env: '$(engine.Cfg.Env)'");
