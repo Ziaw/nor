@@ -1,0 +1,52 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using NRails;
+using NRails.Database;
+using NRails.Database.Schema;
+using NRails.Migrations;
+
+namespace NRails.Tests
+{
+  /// <summary>
+  /// Description of MigrationTests.
+  /// </summary>
+  class MigrationTests: AssertionHelper
+  {
+      class CreateMigrationTest : MigrationBase
+      {
+          public Up() : void
+          {
+              CreateTable("Test", t => { t.Add(c => {}) });
+              CreateTable("Test2", t => {});
+          }
+      }
+      
+      [Test]
+      public CreateTableTest() : void
+      {
+          def schema = DBSchema();
+          def migr = CreateMigrationTest();
+          
+          def migrService = migr : IMigration;
+          migrService.AssignSchema(schema);
+          
+          migr.Up();
+          
+          def actions = migrService.GetActions();
+          
+          match (actions)
+          {
+            | MigrationAction.CreateTable(t, [TableAction.AddColumn]) :: MigrationAction.CreateTable(t2, []) :: [] => 
+                Expect(t.Name, Is.EqualTo("Test"));
+                Expect(t2.Name, Is.EqualTo("Test2"));
+            | _ => Assert.Fail();
+          }
+      }
+  }
+}

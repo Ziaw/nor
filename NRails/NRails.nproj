@@ -67,9 +67,13 @@
     <Compile Include="Engine.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Migrations\MigrationBase.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Migrations" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

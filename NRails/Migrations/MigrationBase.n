@@ -1,0 +1,135 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using Nemerle.Assertions;
+using Nemerle.Extensions;
+using NRails.Database.Schema;
+
+namespace NRails.Migrations
+{
+  public variant MigrationAction
+  {
+      | CreateTable { table : TableSchema; actions : list[TableAction] }
+      | ChangeTable { table : TableSchema; actions : list[TableAction] }
+      | RenameTable { table : TableSchema; newName : string }
+      | DropTable { table : TableSchema }
+  }
+  
+  public variant TableAction
+  {
+      | AddColumn { col : TableColumnSchema }
+      | ChanedColumn { col : TableColumnSchema; newCol : TableColumnSchema}
+      | RemoveColumn { colSchema : TableColumnSchema }
+  }
+  
+  public interface IActionHolder[T]
+  {
+      Add(action : T) : void;
+      GetActions() : list[T];
+  }
+  
+  public class ActionHolder[T] : IActionHolder[T]
+  {
+      mutable actionStack : list[T] = [];
+
+      protected AddAction(action : T) : void implements IActionHolder[T].Add
+      {
+          actionStack = action :: actionStack;
+      }
+      
+      GetActions() : list[T] implements IActionHolder[T].GetActions
+      {
+          actionStack.Rev();
+      }
+  }
+  
+  public class TableActions : ActionHolder[TableAction]
+  {
+      [Accessor]
+      tableSchema : TableSchema;
+      
+      public this(tableSchema : TableSchema)
+      {
+          this.tableSchema = tableSchema;
+      }
+      
+      public Add([NotNull] colAction : TableColumnSchema -> void) : void
+      {
+          def colSchema = TableColumnSchema();
+          colAction(colSchema);
+          AddAction(TableAction.AddColumn(colSchema));
+      }
+
+      public Change([NotNull] name : string, [NotNull] colAction : TableColumnSchema -> void) : void
+      {
+          def col = tableSchema.GetColumn(name);
+          when (col == null) throw ArgumentException($"Column '$name' not found in table $(tableSchema.Name)", "name");
+          
+          def colSchema = col.Clone();
+          
+          colAction(colSchema);
+          
+          AddAction(TableAction.ChanedColumn(col, colSchema));
+      }
+
+      public Remove([NotNull] name : string) : void
+      {
+          def col = tableSchema.GetColumn(name);
+          when (col == null) throw ArgumentException($"Column '$name' not found in table $(tableSchema.Name)", "name");
+          
+          AddAction(TableAction.RemoveColumn(col));
+      }
+  }
+  
+  public interface IMigration : IActionHolder[MigrationAction]
+  {
+      AssignSchema(schema : DBSchema) : void;
+  }
+  
+  public class MigrationBase : ActionHolder[MigrationAction], IMigration
+  {
+      mutable schema : DBSchema;
+      
+      protected CreateTable([NotNull] name : string, [NotNull] action : TableActions -> void) : void
+      {
+          when (schema == null) throw InvalidOperationException("Schema not set");
+          
+          def table = TableSchema();
+          table.Name = name;
+          def actions = TableActions(table);
+          
+          action(actions);
+          
+          AddAction(MigrationAction.CreateTable(table, (actions : IActionHolder[TableAction]).GetActions()));
+      }
+
+      protected RenameTable([NotNull] name : string, [NotNull] newName : string) : void
+      {
+          when (schema == null) throw InvalidOperationException("Schema not set");
+          
+          def table = schema.GetTable(name);
+          when (table == null) throw ArgumentException($"Table '$name' not found", "name");
+          
+          AddAction(MigrationAction.RenameTable(table, newName));
+      }
+      
+      protected DropTable([NotNull] name : string) : void
+      {
+          when (schema == null) throw InvalidOperationException("Schema not set");
+          
+          def table = schema.GetTable(name);
+          when (table == null) throw ArgumentException($"Table '$name' not found", "name");
+          
+          AddAction(MigrationAction.DropTable(table));
+      }
+      
+      _AssignSchema([NotNull] schema : DBSchema) : void implements IMigration.AssignSchema
+      {
+          this.schema = schema;
+      }
+  }
+}

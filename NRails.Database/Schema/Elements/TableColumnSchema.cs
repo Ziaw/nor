@@ -108,6 +108,23 @@ namespace NRails.Database.Schema
 				(int)Type;
 		}
 
+        public TableColumnSchema Clone()
+        {
+            return new TableColumnSchema()
+            {
+                AutoIncrement = AutoIncrement,
+                DecimalPrecision = DecimalPrecision,
+                DecimalScale = DecimalScale,
+                DefaultValue = DefaultValue,
+                Increment = Increment,
+                Name = Name,
+                Nullable = Nullable,
+                Seed = Seed,
+                Size = Size,
+                Type = Type
+            };
+        }
+
 	    #endregion
 	}
 }
