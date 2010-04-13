@@ -81,6 +81,7 @@ namespace NRails.Macros
             }
         ]>);
       }
+      modelTypes = null;
     }
   }
 }
