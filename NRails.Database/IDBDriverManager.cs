@@ -12,14 +12,5 @@ namespace NRails.Database
 		/// </summary>
 		[NotNull]
 		IDBDriver GetDriver([NotNull] string driverName);
-
-		/// <summary>
-		/// Возвращает список зарегистрированных драйверов.
-		/// </summary>
-		[NotNull]
-		JanusDBDriverInfo[] GetRegisteredDriverInfos();
-
-		[NotNull]
-		JanusDBDriverInfo GetDriverInfo([NotNull] string driverName);
 	}
 }

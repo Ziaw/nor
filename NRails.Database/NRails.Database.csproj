@@ -50,17 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DBSchemaDriverBase.cs" />
-    <Compile Include="DbTask.cs" />
-    <Compile Include="EmptyJanusRWLock.cs" />
     <Compile Include="IDBDriver.cs" />
     <Compile Include="IDBDriverManager.cs" />
-    <Compile Include="IDBVarsManager.cs" />
-    <Compile Include="IJanusDatabaseManager.cs" />
-    <Compile Include="IJanusRWLock.cs" />
     <Compile Include="ISqlFormatter.cs" />
-    <Compile Include="JanusDBDriverAttribute.cs" />
-    <Compile Include="JanusDBDriverInfo.cs" />
-    <Compile Include="OnlyForQueriesException.cs" />
     <Compile Include="Schema\DBSchemaException.cs" />
     <Compile Include="Schema\Elements\ColumnType.cs" />
     <Compile Include="Schema\Elements\ConstraintType.cs" />

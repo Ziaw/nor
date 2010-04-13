@@ -37,7 +37,7 @@ namespace NRails
           when (cachedSchema == null)
           {
             def connStr = cfg.GetConnectionString(env).ConnectionString;
-            // todo: вынести в фабрику
+            // todo: вынести в фабрику IDBDriverManager
             def db = MssqlDriver();
             def schemaDriver = db.CreateSchemaDriver();
             cachedSchema = schemaDriver.LoadExistingSchema(connStr);

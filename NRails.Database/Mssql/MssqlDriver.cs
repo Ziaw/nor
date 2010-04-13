@@ -7,11 +7,6 @@ using NRails.Database.Schema;
 
 namespace NRails.Database.Mssql
 {
-	[JanusDBDriver(
-		DriverName,
-		"Rsdn.Janus.Mssql.Resources",
-		"DriverDisplayName",
-		"DriverDescription")]
 	public class MssqlDriver : IDBDriver
 	{
 		public const string DriverName = "MSSql";
