@@ -23,7 +23,7 @@ namespace NRails.Macros
           DatabaseManagerImpl.RegisterType(t.Name, t.FullName);
           def engine = try
           {
-            Engine.Instance;
+            Engine.CompileTimeInstance(t.Manager.Options.ProjectPath);
           }
           catch
           {

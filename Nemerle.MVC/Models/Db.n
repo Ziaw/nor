@@ -12,7 +12,5 @@ using NRails.Macros;
 namespace Nemerle.MVC.Models
 {
   [DatabaseManager]
-  class Db: DbManager
-  {
-  }
+  class Db: DbManager {}
 }
