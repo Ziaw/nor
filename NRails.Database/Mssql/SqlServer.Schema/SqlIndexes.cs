@@ -2,7 +2,7 @@ using System;
 using System.Data;
 using System.Globalization;
 
-namespace Rsdn.Janus
+namespace NRails.Database.Mssql.SqlServer.Schema
 {
 	internal class SqlIndexes : SqlDbSchema
 	{

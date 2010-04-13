@@ -4,8 +4,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Text;
+using NRails.Database.Mssql.SqlServer.Schema;
+using NRails.Database.Schema;
 
-namespace Rsdn.Janus.Mssql
+namespace NRails.Database.Mssql
 {
 	internal static class MssqlSchemaLoader
 	{

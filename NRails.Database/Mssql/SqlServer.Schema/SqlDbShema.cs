@@ -4,10 +4,8 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using NRails.Database.Mssql;
-using Rsdn.Janus.Mssql;
 
-namespace Rsdn.Janus
+namespace NRails.Database.Mssql.SqlServer.Schema
 {
 	internal abstract class SqlDbSchema
 	{

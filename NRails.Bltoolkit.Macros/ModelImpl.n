@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using NRails;
-using Rsdn.Janus;
+using NRails.Database.Schema;
 
 namespace NRails.Macros
 {

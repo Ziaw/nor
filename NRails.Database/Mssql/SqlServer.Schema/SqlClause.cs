@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace Rsdn.Janus
+namespace NRails.Database.Mssql.SqlServer.Schema
 {
 	internal sealed class SqlClause
 	{

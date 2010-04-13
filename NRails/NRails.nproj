@@ -68,15 +68,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
-    <Compile Include="Schema\ColumnDef.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Schema\TableDef.n">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Schema" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

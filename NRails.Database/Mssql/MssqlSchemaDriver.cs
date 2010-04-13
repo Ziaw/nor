@@ -6,8 +6,10 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
+using NRails.Database;
+using NRails.Database.Schema;
 
-namespace Rsdn.Janus.Mssql
+namespace NRails.Database.Mssql
 {
 	internal sealed class MssqlSchemaDriver : DBSchemaDriverBase
 	{

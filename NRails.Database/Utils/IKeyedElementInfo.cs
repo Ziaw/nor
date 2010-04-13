@@ -1,4 +1,4 @@
-namespace Rsdn.Janus
+namespace NRails.Database
 {
     public interface IKeyedElementInfo<TKey>
     {

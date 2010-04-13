@@ -6,10 +6,10 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using Rsdn.Janus;
-using Rsdn.Janus.Mssql;
 using System.IO;
 using System.Web;
+using NRails.Database.Schema;
+using NRails.Database.Mssql;
 
 namespace NRails
 {
@@ -67,6 +67,7 @@ namespace NRails
         }
       }
       
+      // todo : в фабрику
       public static CompileTimeInstance(prjPath : string) : Engine 
       { 
         when (instance == null)
@@ -76,6 +77,7 @@ namespace NRails
         instance;
       }
       
+      // todo : в фабрику
       static compileTimeConfigLocation(locations : list[string]) : string
       {
          def defaultConfigSearch = ["../../nrails.cfg", "nrails.cfg"];
@@ -86,6 +88,7 @@ namespace NRails
             .FirstOrDefault(f => File.Exists(f));
       }
       
+      // todo : в фабрику
       static MakeRunTimeInstance() : Engine
       {
          def location = match (HttpContext.Current == null)
@@ -103,6 +106,7 @@ namespace NRails
          Engine(Configuration(location))
       }
 
+      // todo : в фабрику
       static MakeCompileTimeInstance(prjPath : string) : Engine
       {
          def location = match (HttpContext.Current == null)

@@ -1,6 +1,6 @@
 using System;
 
-namespace Rsdn.Janus
+namespace NRails.Database
 {
     public static class ServiceProviderExts
     {

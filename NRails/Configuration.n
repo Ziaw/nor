@@ -14,15 +14,9 @@ namespace NRails
 {
   public class Configuration
   {
-      static defaultConnection = "NRails" : string;
+      static defaultPrefix = "NRails" : string;
       [Accessor] rootPath : string;
-/*      
-      public this()
-      {
-          ["nrails.cfg", ]
-          this("nrails.cfg")
-      }
-*/
+
       public this(fileName : string)
       {
           rootPath = FileInfo(fileName).Directory.FullName;
@@ -36,17 +30,16 @@ namespace NRails
           {
               match (f)
               {
-               | x :: tail => 
-                    def path = Path.Combine(rootPath, x);
-                    if (File.Exists(path))
-                        path;
+                | x :: tail => 
+                      if (File.Exists(x))
+                        x;
                       else
                         checkFile(tail);
-           | [] => null
+                | [] => null
               }
           }
           def acceptedFiles = ["Web.config", "App.config"];
-          def configFile = checkFile(acceptedFiles);
+          def configFile = checkFile(acceptedFiles.Map(x => Path.Combine(rootPath, x)));
           
           when (String.IsNullOrEmpty(configFile))
             throw FileNotFoundException($"$acceptedFiles in $rootPath");
@@ -56,6 +49,7 @@ namespace NRails
       
       readConnectionStrings(configFile : string) : void
       {
+          // todo: отдельный ридер, надо читать все свойства
           def xdoc = XDocument.Load(configFile);
           def strings = xdoc.XPathSelectElements("//connectionStrings/add")
                 .Select(e => (
@@ -108,19 +102,19 @@ namespace NRails
       [Accessor]
       mutable env : string;
       
-      connections = SCG.Dictionary.[string, string]() : SCG.Dictionary[string, string];
+      connectionNames = SCG.Dictionary.[string, string]() : SCG.Dictionary[string, string];
 
       [Accessor]
       connectionStrings : SCG.Dictionary[string, ConnectionStringSettings] = SCG.Dictionary.[string, ConnectionStringSettings]();
       
       public GetConnectionStringName(env : string) : string
       {
-          if (connections.ContainsKey(env))
-              connections[env];
+          if (connectionNames.ContainsKey(env))
+              connectionNames[env];
           else
           {
-              def default = $"$defaultConnection.$env";
-              connections[env] = default;
+              def default = $"$defaultPrefix.$env";
+              connectionNames[env] = default;
               default;
           }
       }
@@ -138,7 +132,7 @@ namespace NRails
 
       public SetConnectionStringName(env : string, connStr : string) : void
       {
-          connections[env] = connStr;
+          connectionNames[env] = connStr;
       }
       
       public ConnectionString: ConnectionStringSettings

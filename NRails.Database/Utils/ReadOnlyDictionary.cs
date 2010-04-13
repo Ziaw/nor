@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
-namespace Rsdn.Janus
+namespace NRails.Database
 {
 	/// <summary>
 	/// Обертка, защищающая <see cref="IDictionary{TKey,TValue}"/> от изменений.

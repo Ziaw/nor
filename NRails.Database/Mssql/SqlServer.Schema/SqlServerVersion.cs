@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace Rsdn.Janus
+namespace NRails.Database.Mssql.SqlServer.Schema
 {
 	internal sealed class SqlServerVersion
 	{

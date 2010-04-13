@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
-namespace Rsdn.Janus
+namespace NRails.Database
 {
 	public sealed class LambdaEqualityComparer<T> : IEqualityComparer<T>
 	{

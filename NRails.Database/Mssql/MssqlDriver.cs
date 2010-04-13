@@ -3,8 +3,9 @@ using System.Data.Common;
 using System.Data.SqlClient;
 
 using BLToolkit.Data.DataProvider;
+using NRails.Database.Schema;
 
-namespace Rsdn.Janus.Mssql
+namespace NRails.Database.Mssql
 {
 	[JanusDBDriver(
 		DriverName,

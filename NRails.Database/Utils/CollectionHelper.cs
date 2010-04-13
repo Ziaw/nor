@@ -5,7 +5,7 @@ using System.Linq;
 
 using JetBrains.Annotations;
 
-namespace Rsdn.Janus
+namespace NRails.Database
 {
 	public static class CollectionHelper
 	{

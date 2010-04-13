@@ -1,4 +1,4 @@
-﻿namespace Rsdn.Janus.Mssql
+﻿namespace NRails.Database.Mssql
 {
 	internal class MssqlSqlFormatter : SqlFormatterBase
 	{

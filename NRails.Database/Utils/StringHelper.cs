@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Rsdn.Janus
+namespace NRails.Database
 {
 	/// <summary>
 	/// Вспомогательные методы для работы со строками.
