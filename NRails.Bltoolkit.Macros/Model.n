@@ -8,6 +8,8 @@ using Nemerle.Compiler.Parsetree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NRails;
+using NRails.Database.Schema;
 
 namespace NRails.Macros
 {
@@ -15,6 +17,77 @@ namespace NRails.Macros
                      Inherited = false)]
     public macro Model(t : TypeBuilder)
     {
-        ModelImpl.Impl(t);
+        ModelImpl.RegisterModelType(t);
     }
+
+    [Nemerle.MacroUsage (Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
+                     Inherited = false)]
+    public macro Model(t : TypeBuilder)
+    {
+        ModelImpl.GenerateColumns(t);
+    }
+
+  
+  internal module ModelImpl
+  {
+      public RegisterModelType(t : TypeBuilder) : void
+      {
+          DatabaseManagerImpl.RegisterModelType(t.Name, t.FullName);
+      }
+      
+      public GenerateColumns(t : TypeBuilder) : void
+      {
+          def engine = try
+          {
+            Engine.CompileTimeInstance(t.Manager.Options.ProjectPath);
+          }
+          catch
+          {
+            | e => Message.Error($"Engine initialization error $e"); throw;
+          }
+          try 
+          {
+            def table = engine.GetTable(t.Name);
+            
+            t.GetModifiers().AddCustomAttribute(<[  BLToolkit.DataAccess.TableName($(table.Name : string)) ]>);
+            
+            when (table == null)
+            {
+               Message.Error($"table for type $(t.Name) not found, env: '$(engine.Cfg.Env)'");
+            }
+            
+            def existingProperties = t.GetProperties().Map(p => p.Name);            
+            
+            foreach (col : TableColumnSchema in table.Columns)
+            {
+                // todo : по хорошему проверка должна идти по атрибутам тулкита, 
+                // а не по именам свойств, как только узнаю как их доставать 
+                unless (existingProperties.Any(p => p == col.Name))
+                {
+                    def clrType = PExpr.FromQualifiedIdentifier(t.Manager, col.Type.ToClrType().FullName);
+                    def fieldMemberName = $"_$(col.Name)";
+                    
+                   
+                    t.Define(<[decl: 
+                        private mutable $(fieldMemberName : dyn) : $clrType; 
+                    ]>);
+                    
+                    
+                    t.Define(<[decl: 
+                        [BLToolkit.Mapping.MapField($(col.Name : string))] 
+                        public $(col.Name : dyn ) : $clrType
+                        {
+                            get { $(fieldMemberName : dyn); }
+                            set { $(fieldMemberName : dyn) = value; }
+                        }
+                    ]>);
+                }
+            }
+          }
+          catch 
+          {
+             | e => Message.Error($"$(t.Name) model error: $(e.ToString())");
+          }
+      }
+  }
 }

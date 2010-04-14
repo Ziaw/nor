@@ -68,13 +68,7 @@
     <Compile Include="DatabaseManager.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DatabaseManagerImpl.n">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model.n" />
-    <Compile Include="ModelImpl.n">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>

@@ -15,13 +15,90 @@ namespace NRails.Macros
                      Inherited = false)]
   public macro DatabaseManager(t : TypeBuilder)
   {
-    DatabaseManagerImpl.BeforeInheritance(t);
+    DatabaseManagerImpl.GenerateHelpers(t);
   }
   
   [Nemerle.MacroUsage(Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
                      Inherited = false)]
   public macro DatabaseManager(t : TypeBuilder)
   {
-    DatabaseManagerImpl.BeforeTypedMembers(t);
+    DatabaseManagerImpl.GenerateTables(t);
   } 
+  
+
+  internal module DatabaseManagerImpl
+  {
+    [Record]
+    class MyTypeInfo: IComparable[MyTypeInfo]
+    {
+      [Accessor] name : string; 
+      [Accessor] fullName : string; 
+      
+      public CompareTo(obj : object) : int
+      {
+          def other = obj :> MyTypeInfo;
+          def cmp = Comparer.[string].Default;
+          
+          match (cmp.Compare(name, other.Name))
+          {
+             | 0 => cmp.Compare(fullName, other.fullName);
+             | x => x
+          }
+      }
+    }
+    
+    mutable static modelTypes : Set[MyTypeInfo] = Set.[MyTypeInfo]();
+    
+    public RegisterModelType(name : string, fullName : string) : void
+    {
+      def info = MyTypeInfo(name, fullName);
+      modelTypes = modelTypes.Add(info);
+    }
+    
+    public GenerateHelpers(t : TypeBuilder) : void
+    {
+      t.Define(<[decl: static engine : NRails.Engine; ]>);
+      t.Define(<[decl: public Engine : NRails.Engine { get {engine} }; ]>);
+      t.Define(<[decl: static env : string; ]>);
+      t.Define(<[decl: public Env : string { get {env} }; ]>);
+      t.Define(<[decl:
+        static this()
+        {
+          engine = Engine.Instance;
+          env = engine.Cfg.Env;
+        }
+      ]>);
+      t.Define(<[decl:
+        public this()
+        {
+          base(engine.Cfg.ConnectionStringName);
+        }
+      ]>);
+    }
+    
+    public GenerateTables(t : TypeBuilder) : void
+    {
+      def existingProperties = t.GetProperties();
+      foreach (modelType in modelTypes)
+      {
+        def typeName = modelType.Name;
+        def propertyName = $"$(typeName)s";
+        
+        unless (existingProperties.Any(p => p.Name == propertyName))
+        {
+            def typeFullName = modelType.FullName;
+            def modelType = PExpr.FromQualifiedIdentifier(t.Manager, typeFullName);
+            
+            t.Define(<[decl:
+                public $(propertyName : dyn) : BLToolkit.Data.Linq.Table[ $modelType ]
+                {
+                  get { this.GetTable.[$modelType](); }
+                }
+            ]>);
+        }
+      }
+      modelTypes = Set.[MyTypeInfo]();
+    }
+  }
+
 }
