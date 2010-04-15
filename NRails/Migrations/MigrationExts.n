@@ -1,0 +1,43 @@
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using Nemerle.Assertions;
+using Nemerle.Extensions;
+using NRails.Database.Schema;
+
+namespace NRails.Migrations
+{
+  public module MigrationUtils
+  {
+    public ClrToColumnType(@type : Type) : ColumnType
+    {
+	    Add(null, "aasd", typeof(int), AutoIncrement = Some(true));
+        match (Type.GetTypeCode(@type))
+        {
+            | TypeCode.String => ColumnType.NCharacterVaring
+            | TypeCode.Int32 => ColumnType.Integer
+            | _ => throw NotSupportedException(@type.FullName + " is not supported");
+        }
+    }
+      
+	public Add(this ta : TableActions, [NotNull] Name : string, [NotNull] @type : Type, 
+	    AutoIncrement : option[bool],
+	    ) : void
+	{
+	    def action(t)
+	    {
+	        t.Name = Name;
+	        
+	        t.Type = ClrToColumnType(@type);
+	        
+	        when (AutoIncrement.IsSome) t.AutoIncrement = AutoIncrement.Value;
+	    }
+	    
+	    ta.Add(action);
+	}
+  }
+}

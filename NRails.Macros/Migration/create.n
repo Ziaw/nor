@@ -1,0 +1,53 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Macros.Migration
+{
+  public macro create(name, code) : PExpr
+  syntax("create", name, code)
+  {
+      _ = <[ $name : name ]>;
+      _ = <[ $code : PExpr.Sequence ]>;
+      MigrationImpl.Create(Nemerle.Macros.ImplicitCTX(), name, code);
+  }
+  
+  module MigrationImpl
+  {
+      public Create(_ : Typer, name : PExpr, code : PExpr) : PExpr
+      {
+          def compile(s)          
+          {
+            match (s)          
+            {
+                | <[ $name : $type_]> => Console.WriteLine($" $name with type $type_");
+                | x => Console.WriteLine($"unknown $x");
+            }
+          }
+          assert2(false);
+          match (code)
+          {
+            | PExpr.Sequence(seq) => seq.Iter(compile);
+            | x => compile(x);
+          }
+          <[
+            {
+                this.CreateTable($(name.ToString() : string), t => 
+                {
+                    def $("Add" : dyn)(colAction : NRails.Database.Schema.TableColumnSchema -> void)
+                    {
+                        t.Add(colAction);
+                    }
+                    $code;
+                });
+            }
+          ]>
+      }
+  }
+}

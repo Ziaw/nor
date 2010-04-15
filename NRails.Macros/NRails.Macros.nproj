@@ -3,18 +3,18 @@
   <PropertyGroup>
     <NoStdLib>true</NoStdLib>
     <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
-    <Name>NRails</Name>
+    <Name>NRails.Macros</Name>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</ProjectGuid>
+    <ProjectGuid>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NRails</RootNamespace>
-    <AssemblyName>NRails</AssemblyName>
+    <RootNamespace>NRails.Macros</RootNamespace>
+    <AssemblyName>NRails.Macros</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,21 +33,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\NRails.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\NRails.Macros.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
-    <Reference Include="System.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Name>System.Configuration</Name>
-      <AssemblyName>System.configuration.dll</AssemblyName>
-    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Web, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Name>System.Web</Name>
-      <AssemblyName>System.Web.dll</AssemblyName>
     </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -61,28 +53,25 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Nemerle)\Nemerle.dll</HintPath>
     </Reference>
+    <Reference Include="Nemerle.Compiler">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.Compiler.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.n" />
-    <Compile Include="Engine.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Migrations\MigrationBase.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Migrations\MigrationExts.n">
+    <Compile Include="Migration\create.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Migrations" />
+    <Folder Include="Migration" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NRails.Database\NRails.Database.csproj">
-      <Name>NRails.Database</Name>
-      <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
+    <ProjectReference Include="..\NRails\NRails.nproj">
+      <Name>NRails</Name>
+      <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

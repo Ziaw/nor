@@ -11,6 +11,8 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Tests", "NRails.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NRails.Database", "NRails.Database\NRails.Database.csproj", "{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}"
 EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Macros", "NRails.Macros\NRails.Macros.nproj", "{D22C1976-8647-4CB6-A57F-B82E3949B21D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

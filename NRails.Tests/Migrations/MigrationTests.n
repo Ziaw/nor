@@ -10,6 +10,7 @@ using NRails;
 using NRails.Database;
 using NRails.Database.Schema;
 using NRails.Migrations;
+using NRails.Macros.Migration;
 
 namespace NRails.Tests
 {
@@ -22,13 +23,21 @@ namespace NRails.Tests
       {
           public Up() : void
           {
-              CreateTable("Test", t => { t.Add(c => {}) });
-              CreateTable("Test2", t => {});
+              create Test
+              {
+                  Id : string;
+              };
+              CreateTable("Test2", _ => {});
           }
       }
-      
+
       [Test]
       public CreateTableTest() : void
+      {
+          CreateTableTest.[CreateMigrationTest]();
+      }
+      
+      protected CreateTableTest[T]() : void where T : MigrationBase
       {
           def schema = DBSchema();
           def migr = CreateMigrationTest();
