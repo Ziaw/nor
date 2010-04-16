@@ -1,0 +1,45 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using NRails.Migrations;
+
+namespace NRails.Macros.Migration
+{
+  public macro create(name, code) : PExpr
+  syntax("create", name, code)
+  {
+      _ = <[ $name : name ]>;
+      _ = <[ $code : PExpr.Sequence ]>;
+      MigrationImpl.Create(Nemerle.Macros.ImplicitCTX(), name, code);
+  }
+  
+  public macro change(name, code) : PExpr
+  syntax("change", name, code)
+  {
+      _ = <[ $name : name ]>;
+      _ = <[ $code : PExpr.Sequence ]>;
+      MigrationImpl.Change(Nemerle.Macros.ImplicitCTX(), name, code);
+  }
+  
+  public macro rename(name, newName) : PExpr
+  syntax("rename", name, newName)
+  {
+      _ = <[ $name : name ]>;
+      _ = <[ $newName : name ]>;
+      <[ this.RenameTable($(name.ToString() : string), $(newName.ToString() : string)); ]>
+  }
+  
+  public macro drop(name) : PExpr
+  syntax("drop", name)
+  {
+      _ = <[ $name : name ]>;
+      <[ this.DropTable($(name.ToString() : string)); ]>
+  }
+}

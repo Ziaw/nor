@@ -12,21 +12,39 @@ using NRails.Migrations;
 
 namespace NRails.Macros.Migration
 {
-  public macro create(name, code) : PExpr
-  syntax("create", name, code)
-  {
-      _ = <[ $name : name ]>;
-      _ = <[ $code : PExpr.Sequence ]>;
-      MigrationImpl.Create(Nemerle.Macros.ImplicitCTX(), name, code);
-  }
-  
   module MigrationImpl
   {
       public Create(_ : Typer, name : PExpr, code : PExpr) : PExpr
       {
+          def t = <[ $("t" : usesite) ]>;
+          def c = <[ $("c" : usesite) ]>;
+          
+          <[
+            this.CreateTable($(name.ToString() : string), $t => 
+            {
+                $(CompileColumns(t, c, code))
+            });
+          ]>
+      }
+
+      public Change(_ : Typer, name : PExpr, code : PExpr) : PExpr
+      {
+          // todo: возможность не указывать тип поля, например:
+          // Id : same(len = 20)
           def c = <[ $("c" : usesite) ]>;
           def t = <[ $("t" : usesite) ]>;
           
+          
+          <[
+            this.ChangeTable($(name.ToString() : string), $t => 
+            {
+                $(CompileColumns(t, c, code))
+            });
+          ]>
+      }
+      
+      CompileColumns(t : PExpr.Ref, c : PExpr.Ref, code : PExpr) : PExpr
+      {
           mutable colNames = Set.[string]();
           
           def compile(s : PExpr) : PExpr
@@ -46,20 +64,16 @@ namespace NRails.Macros.Migration
                       CompileColumn(t, c, name, type_, defExpr);
                   }
 
-                | PExpr.Sequence(seq) => PExpr.Sequence(seq.Map(compile));
-                
                 | x => 
                     Message.Error(x.loc, $"Ivalid field definition $x");
                     <[]>;
             }
           }
-          
-          <[
-            this.CreateTable($(name.ToString() : string), $t => 
-            {
-                $(compile(code))
-            });
-          ]>
+          match (code)
+          {
+              | PExpr.Sequence(seq) => PExpr.Sequence(seq.Map(compile))
+              | x => compile(x);
+          }
       }
 
       CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr) : PExpr
