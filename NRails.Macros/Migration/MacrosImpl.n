@@ -29,8 +29,10 @@ namespace NRails.Macros.Migration
 
       public Change(_ : Typer, name : PExpr, code : PExpr) : PExpr
       {
-          // todo: возможность не указывать тип поля, например:
+          // todo: поправить CompileColumn, для изменения существующего поля
+          // возможность не указывать тип поля, например:
           // Id : same(len = 20)
+          // также нужно продумать ренейм и дроп колонок
           def c = <[ $("c" : usesite) ]>;
           def t = <[ $("t" : usesite) ]>;
           

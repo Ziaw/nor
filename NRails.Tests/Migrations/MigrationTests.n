@@ -28,6 +28,11 @@ namespace NRails.Tests
                   Id : Guid;
                   Zip : string?(len = 10) = "zzzz";
               };
+              
+              change Test
+              {
+                  Street : string;
+              }
           }
       }
 

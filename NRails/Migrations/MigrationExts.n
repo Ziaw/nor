@@ -6,7 +6,6 @@ using System;
 using SCG = System.Collections.Generic;
 using System.Linq;
 using Nemerle.Assertions;
-using Nemerle.Text;
 using Nemerle.Extensions;
 using NRails.Database.Schema;
 
