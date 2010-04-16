@@ -49,39 +49,46 @@ namespace NRails.Migrations
   
   public class TableActions : ActionHolder[TableAction]
   {
+      #region Helpers
       [Accessor]
       tableSchema : TableSchema;
       
-      public this(tableSchema : TableSchema)
+      private GetColumn([NotNull]name : string) : TableColumnSchema
+      {
+          def col = tableSchema.GetColumn(name);
+          when (col == null) throw ArgumentException($"Column '$name' not found in table $(tableSchema.Name)", "name");
+          col;          
+      }
+
+      public this([NotNull]tableSchema : TableSchema)
       {
           this.tableSchema = tableSchema;
       }
+      #endregion
       
       public Add([NotNull] colAction : TableColumnSchema -> void) : void
       {
           def colSchema = TableColumnSchema();
+          
           colAction(colSchema);
+          
           AddAction(TableAction.AddColumn(colSchema));
       }
 
       public Change([NotNull] name : string, [NotNull] colAction : TableColumnSchema -> void) : void
       {
-          def col = tableSchema.GetColumn(name);
-          when (col == null) throw ArgumentException($"Column '$name' not found in table $(tableSchema.Name)", "name");
+          def oldColumn = GetColumn(name);
           
-          def colSchema = col.Clone();
+          def newColumn = oldColumn.Clone();
           
-          colAction(colSchema);
+          colAction(newColumn);
           
-          AddAction(TableAction.ChanedColumn(col, colSchema));
+          AddAction(TableAction.ChanedColumn(oldColumn, newColumn));
       }
 
       public Remove([NotNull] name : string) : void
       {
-          def col = tableSchema.GetColumn(name);
-          when (col == null) throw ArgumentException($"Column '$name' not found in table $(tableSchema.Name)", "name");
-          
-          AddAction(TableAction.RemoveColumn(col));
+          AddAction(TableAction.RemoveColumn(GetColumn(name)));
       }
   }
   
@@ -93,43 +100,63 @@ namespace NRails.Migrations
   public class MigrationBase : ActionHolder[MigrationAction], IMigration
   {
       mutable schema : DBSchema;
-      
-      protected CreateTable([NotNull] name : string, [NotNull] action : TableActions -> void) : void
+
+      #region Helpers
+      private GetTable([NotNull]name : string) : TableSchema
       {
-          when (schema == null) throw InvalidOperationException("Schema not set");
+          AssertSchema();
           
-          def table = TableSchema();
-          table.Name = name;
+          def table = schema.GetTable(name);
+         
+          when (table == null) throw ArgumentException($"Table '$name' not found", "name");
+          
+          table;
+      }
+      
+      private RunActions([NotNull]table : TableSchema, [NotNull]action : TableActions -> void) 
+         : (TableSchema * list[TableAction])
+      {
           def actions = TableActions(table);
-          
+
           action(actions);
           
-          AddAction(MigrationAction.CreateTable(table, (actions : IActionHolder[TableAction]).GetActions()));
-      }
-
-      protected RenameTable([NotNull] name : string, [NotNull] newName : string) : void
-      {
-          when (schema == null) throw InvalidOperationException("Schema not set");
-          
-          def table = schema.GetTable(name);
-          when (table == null) throw ArgumentException($"Table '$name' not found", "name");
-          
-          AddAction(MigrationAction.RenameTable(table, newName));
+          (table, (actions : IActionHolder[TableAction]).GetActions())
       }
       
-      protected DropTable([NotNull] name : string) : void
+      private AssertSchema() : void
       {
           when (schema == null) throw InvalidOperationException("Schema not set");
-          
-          def table = schema.GetTable(name);
-          when (table == null) throw ArgumentException($"Table '$name' not found", "name");
-          
-          AddAction(MigrationAction.DropTable(table));
       }
+      #endregion
       
+      #region IMigration
       _AssignSchema([NotNull] schema : DBSchema) : void implements IMigration.AssignSchema
       {
           this.schema = schema;
       }
-  }
+      #endregion
+      
+      protected CreateTable([NotNull] name : string, [NotNull] action : TableActions -> void) : void
+      {
+          def table = TableSchema();
+          table.Name = name;
+          
+          AddAction(MigrationAction.CreateTable(RunActions(table, action)));
+      }
+
+      protected ChangeTable([NotNull] name : string, [NotNull] action : TableActions -> void) : void
+      {
+          AddAction(MigrationAction.ChangeTable(RunActions(GetTable(name), action)));
+      }
+
+      protected RenameTable([NotNull] name : string, [NotNull] newName : string) : void
+      {
+          AddAction(MigrationAction.RenameTable(GetTable(name), newName));
+      }
+      
+      protected DropTable([NotNull] name : string) : void
+      {
+          AddAction(MigrationAction.DropTable(GetTable(name)));
+      }
+   }
 }
