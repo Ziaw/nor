@@ -6,6 +6,7 @@ using Nemerle.Utility;
 using Nemerle.Compiler.Parsetree;
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using NRails;
@@ -58,31 +59,37 @@ namespace NRails.Macros
             
             def existingProperties = t.GetProperties().Map(p => p.Name);            
             
+            def hintBuilder = StringBuilder();
+            
             foreach (col : TableColumnSchema in table.Columns)
             {
                 // todo : по хорошему проверка должна идти по атрибутам тулкита, 
                 // а не по именам свойств, как только узнаю как их доставать 
                 unless (existingProperties.Any(p => p == col.Name))
                 {
-                    def clrType = PExpr.FromQualifiedIdentifier(t.Manager, col.Type.ToClrType().FullName);
+                    def clrType = col.Type.ToClrType();
+                    def propType = PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
                     def fieldMemberName = $"_$(col.Name)";
-                    
                    
                     t.Define(<[decl: 
-                        private mutable $(fieldMemberName : dyn) : $clrType; 
+                        private mutable $(fieldMemberName : dyn) : $propType; 
                     ]>);
                     
                     
                     t.Define(<[decl: 
                         [BLToolkit.Mapping.MapField($(col.Name : string))] 
-                        public $(col.Name : dyn ) : $clrType
+                        public $(col.Name : dyn ) : $propType
                         {
                             get { $(fieldMemberName : dyn); }
                             set { $(fieldMemberName : dyn) = value; }
                         }
                     ]>);
+                    _ = hintBuilder.Append($"$(col.Name) : $(clrType.Name)\n");
                 }
             }
+            
+            unless (hintBuilder.Length == 0)
+                Message.Hint("\n" + hintBuilder.ToString())
           }
           catch 
           {

@@ -79,11 +79,12 @@ namespace NRails.Macros
     public GenerateTables(t : TypeBuilder) : void
     {
       def existingProperties = t.GetProperties();
+      def hintBuilder = Text.StringBuilder();
       foreach (modelType in modelTypes)
       {
         def typeName = modelType.Name;
         def propertyName = $"$(typeName)s";
-        
+
         unless (existingProperties.Any(p => p.Name == propertyName))
         {
             def typeFullName = modelType.FullName;
@@ -95,8 +96,12 @@ namespace NRails.Macros
                   get { this.GetTable.[$modelType](); }
                 }
             ]>);
+
+            _ = hintBuilder.Append($"$propertyName : table of $(typeName)\n");
         }
       }
+      unless (hintBuilder.Length == 0)
+          Message.Hint("\n" + hintBuilder.ToString());
       modelTypes = Set.[MyTypeInfo]();
     }
   }
