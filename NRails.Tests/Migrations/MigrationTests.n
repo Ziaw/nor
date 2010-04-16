@@ -25,19 +25,41 @@ namespace NRails.Tests
           {
               create Test
               {
-                  Id : string;
+                  Id : Guid;
+                  Zip : string?(len = 10) = "zzzz";
               };
-              CreateTable("Test2", _ => {});
           }
       }
 
       [Test]
       public CreateTableTest() : void
       {
-          CreateTableTest.[CreateMigrationTest]();
+          CreateTableTest.[CreateMigrationTest](actions =>
+          {
+              match (actions)
+              {
+                | [MigrationAction.CreateTable(table, tableActions)] => 
+                    Expect(table.Name, Is.EqualTo("Test"));
+                    match (tableActions)
+                    {
+                        | [TableAction.AddColumn(col), TableAction.AddColumn(col2)] => 
+                            Expect(col.Name, Is.EqualTo("Id"));
+                            Expect(col.Type, Is.EqualTo(ColumnType.Guid));
+                            
+                            Expect(col2.Name, Is.EqualTo("Zip"));
+                            Expect(col2.Type, Is.EqualTo(ColumnType.NCharacterVaring));
+                            Expect(col2.Size, Is.EqualTo(10));
+                            Expect(col2.Nullable, Is.EqualTo(true));
+                            Expect(col2.DefaultValue, Is.EqualTo("zzzz"));
+                            
+                        | _ => Assert.Fail("2 AddColumn actions expected");
+                    }
+                | _ => Assert.Fail("Create table action expected");
+              }
+          });
       }
       
-      protected CreateTableTest[T]() : void where T : MigrationBase
+      protected CreateTableTest[T](checkActions : list[MigrationAction] -> void) : void where T : MigrationBase
       {
           def schema = DBSchema();
           def migr = CreateMigrationTest();
@@ -47,15 +69,7 @@ namespace NRails.Tests
           
           migr.Up();
           
-          def actions = migrService.GetActions();
-          
-          match (actions)
-          {
-            | MigrationAction.CreateTable(t, [TableAction.AddColumn]) :: MigrationAction.CreateTable(t2, []) :: [] => 
-                Expect(t.Name, Is.EqualTo("Test"));
-                Expect(t2.Name, Is.EqualTo("Test2"));
-            | _ => Assert.Fail();
-          }
+          checkActions(migrService.GetActions());
       }
   }
 }

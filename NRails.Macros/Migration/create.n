@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using NRails.Migrations;
+
 namespace NRails.Macros.Migration
 {
   public macro create(name, code) : PExpr
@@ -22,31 +24,102 @@ namespace NRails.Macros.Migration
   {
       public Create(_ : Typer, name : PExpr, code : PExpr) : PExpr
       {
-          def compile(s)          
+          def c = <[ $("c" : usesite) ]>;
+          def t = <[ $("t" : usesite) ]>;
+          
+          mutable colNames = Set.[string]();
+          
+          def compileColumn(name, type_, defExpr) : PExpr
+          {
+              mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
+              
+              def Add(p)
+              {
+                  body = p :: body;
+              }
+              
+              def compileParm(parm : PExpr)
+              {
+                  match (parm)
+                  {
+                      | <[ length = $(number : int)]> 
+                      | <[ len = $(number : int)]> 
+                      | <[ size = $(number : int)]> => Add(<[ $c.Size = $(number : long); ]>)
+                      
+                      | <[ $x = $_ ]> 
+                      | x => Message.Error(x.loc, $"Invalid param '$x'")
+                  }
+              }
+              
+              match (type_)
+              {
+                | <[ $typeName?(..$parms) ]> with isNullable = true
+                | <[ $typeName(..$parms) ]> with isNullable = false
+                | <[ $typeName? ]> with (parms = [], isNullable = true)
+                | <[ $typeName ]> with (parms = [], isNullable = false) => 
+                    def strType = typeName.ToString();
+                    
+                    def columnType = MigrationUtils.ColumnTypeFromString(strType);
+                    
+                    if (columnType.HasValue)
+                    {
+                        parms.Iter(compileParm);
+                        Add(<[ $c.Type = NRails.Database.Schema.ColumnType.$(columnType.Value.ToString() : usesite); ]>);
+                        
+                        when (isNullable)
+                            Add(<[ $c.Nullable = true; ]>);
+                    }
+                    else
+                    {
+                        Message.Error(typeName.loc, "Invalid type name");
+                    }
+              }
+              
+              match (defExpr)
+              {
+                  | null => {}
+                  // todo: надо разобраться как вычислять выражения типа даты
+                  // и преобразовывать их в нужный сиквельный эквиваент
+                  | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $(x.ToString() : string); ]>);
+                  | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $(x : string); ]>);
+                  | <[ $x ]> => Message.Error(x.loc, "Only string or int default value supported.");
+              }
+              
+              if (colNames.Contains(name.ToString()))
+              {
+                  Message.Error(name.loc, $"Duplicate column name $name");
+                  <[]>
+              }
+              else
+              {
+                  colNames = colNames.Add(name.ToString());
+                  <[ 
+                      $t.Add($c => {
+                          ..$body
+                      });
+                  ]>;
+              }
+          }
+
+          // разбираем по колонкам
+          def compile(s : PExpr) : PExpr
           {
             match (s)          
             {
-                | <[ $name : $type_]> => Console.WriteLine($" $name with type $type_");
-                | x => Console.WriteLine($"unknown $x");
+                | <[ $name : $type_]> with defExpr = null
+                | <[ $name : $type_ = $defExpr]> => compileColumn(name, type_, defExpr);
+                | PExpr.Sequence(seq) => PExpr.Sequence(seq.Map(compile));
+                | x => 
+                    Message.Error(x.loc, $"Ivalid field definition $x");
+                    <[]>;
             }
           }
-          assert2(false);
-          match (code)
-          {
-            | PExpr.Sequence(seq) => seq.Iter(compile);
-            | x => compile(x);
-          }
+          
           <[
+            this.CreateTable($(name.ToString() : string), $t => 
             {
-                this.CreateTable($(name.ToString() : string), t => 
-                {
-                    def $("Add" : dyn)(colAction : NRails.Database.Schema.TableColumnSchema -> void)
-                    {
-                        t.Add(colAction);
-                    }
-                    $code;
-                });
-            }
+                $(compile(code))
+            });
           ]>
       }
   }
