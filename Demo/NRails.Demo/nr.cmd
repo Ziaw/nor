@@ -1,0 +1,1 @@
+..\..\NRails.Console\bin\Debug\NRails.Console.exe %*

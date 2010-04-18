@@ -3,6 +3,7 @@ using Nemerle.Text;
 using Nemerle.Utility;
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Console;
 using System.Linq;
@@ -51,9 +52,21 @@ module Program
   
   Migrate(_args : list[string]) : void
   {
-      def ma = Assembly.LoadFile(migrationAssmbly);
+      def maAbsolutePath = Path.GetFullPath(migrationAssmbly);
+      def ma = Assembly.LoadFile(maAbsolutePath);
       def migrationBaseType = typeof(MigrationBase);
-      def migrationTypes = NList.ToList(ma.GetExportedTypes().Where(t => t.IsSubclassOf(migrationBaseType)));
+      def maTypes = ma.GetExportedTypes();
+      def migrationTypes = maTypes.Filter(t => t.IsSubclassOf(migrationBaseType));
       
+      migrationTypes.Iter(t => Console.WriteLine(t.Name));
+      
+      def migrator = Migrator(Engine.Instance);
+      
+      def makeMigration(migrationType)
+      {
+          Activator.CreateInstance(migrationType) :> MigrationBase;
+      }
+      
+      migrator.Migrate(migrationTypes.Map(makeMigration));
   }
 }

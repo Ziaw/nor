@@ -57,9 +57,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="TestMigration.n">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\..\NRails.Macros\NRails.Macros.nproj">
+      <Name>NRails.Macros</Name>
+      <Project>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
+    <ProjectReference Include="..\..\NRails.Database\NRails.Database.csproj">
+      <Name>NRails.Database</Name>
+      <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NRails\NRails.nproj">
+      <Name>NRails</Name>
+      <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--

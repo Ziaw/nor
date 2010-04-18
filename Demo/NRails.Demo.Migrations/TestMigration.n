@@ -1,0 +1,30 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NRails.Migrations;
+using NRails.Macros.Migration;
+
+namespace NRails.Demo.Migrations
+{
+  /// <summary>
+  /// Description of TestMigration.
+  /// </summary>
+  public class TestMigration : MigrationBase
+  {
+          public this () {base("000000")}
+          
+          protected override Up() : void
+          {
+              create TestTable
+              {
+                  Id : Guid;
+                  Zip : string?(len = 10) = "zzzz";
+              };
+          }
+      
+  }
+}
