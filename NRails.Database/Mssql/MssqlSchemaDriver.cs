@@ -347,7 +347,7 @@ namespace NRails.Database.Mssql
 			return eIndex.Unique;
 		}
 
-		protected override void ExecuteDdlCommands(IEnumerable<string> commands, string connStr)
+	    public override void ExecuteDdlCommands(IEnumerable<string> commands, string connStr)
 		{
 			using (var con = new SqlConnection(connStr))
 			{

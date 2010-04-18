@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data;
 using NRails.Database.Schema;
 
@@ -40,5 +41,15 @@ namespace NRails.Database.Schema
 		IDbDataParameter ConvertToDbParameter(TableColumnSchema column, IDbDataParameter parameter);
 		void BeginTableLoad(IDbConnection connection, TableSchema table);
 		void EndTableLoad(IDbConnection connection, TableSchema table);
+	    string MakeDdlTableCreate(TableSchema table, bool withConstraint);
+	    void ExecuteDdlCommands(IEnumerable<string> commands, string connStr);
+	    string MakeDdlColumnCreate(TableColumnSchema column, TableSchema table);
+	    string MakeDdlTableDrop(TableSchema table);
+	    string MakeDdlTableRename(TableSchema table, string newName);
+
+	    string MakeDdlColumnAlter(TableColumnSchema mColumn, TableColumnSchema eColumn,
+	                                              TableSchema table);
+
+	    string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table);
 	}
 }

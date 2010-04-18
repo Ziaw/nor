@@ -1,0 +1,121 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Data;
+using System.Collections.Generic;
+using System.Linq;
+using NRails;
+using NRails.Database;
+using NRails.Database.Schema;
+
+namespace NRails.Migrations
+{
+  /// <summary>
+  /// Description of Migrator.
+  /// </summary>
+  public class Migrator
+  {
+      engine : Engine;
+      
+      public this(engine : Engine)
+      {
+          this.engine = engine;
+      }
+      
+      public Migrate(migrs : list[MigrationBase]) : void
+      {
+          def s(m) { m : IMigration }
+          
+          def migrs = migrs.Sort((m, m2) => s(m).Version.CompareTo(s(m2).Version));
+
+          def dbDriver = engine.CreateDbDriver();
+          def connString = engine.Cfg.ConnectionString.ConnectionString;
+          def schemaDriver = dbDriver.CreateSchemaDriver();
+          
+          // todo: нужна более адекватная проверка существования БД
+          unless (dbDriver.CheckConnectionString(connString))
+          {
+              // try create
+              schemaDriver.CreateDatabase(connString);
+          }
+          
+          def schema = schemaDriver.LoadExistingSchema(connString);
+          using (conn = schemaDriver.CreateConnection(connString))
+          {          
+              foreach (m in migrs)
+              {
+                  def serv = s(m);
+                  
+                  serv.AssignSchema(schema);
+                  
+                  mutable ddls = [];
+                  try 
+                  {
+                      using (serv.HandlerScope(MakeDdl(schemaDriver, ddl => ddls = ddl :: ddls, _)))
+                      {
+                          serv.Up();
+                      }
+                      ddls = ddls.Rev();
+                  }
+                  catch 
+                  {
+                      | _ => throw; // todo: log, show error
+                  }
+                  
+                  try
+                  {
+                      schemaDriver.ExecuteDdlCommands(ddls, connString);
+                  }
+                  catch
+                  {
+                      | _ => throw;  // todo: log, show error statement
+                  }
+              }
+          }
+      }
+      
+      MakeDdl(schemaDriver : IDBSchemaDriver, ddlHandler: string -> void, ddlAction : MigrationAction) : void
+      {
+          def processCreate(table, columnActions : list[TableAction]) {
+               match (columnActions)
+               {
+                   | TableAction.AddColumn(col) :: tail => 
+                        col :: processCreate(table, tail)
+                   | [] => []
+                   | _ => throw InvalidOperationException("Only new columns allowed in create table.");
+               }
+          }
+
+          def processChange(table, columnActions) {
+               match (columnActions)
+               {
+                   | TableAction.AddColumn(col) :: tail => 
+                        ddlHandler(schemaDriver.MakeDdlColumnCreate(col, table));
+                        processChange(table, tail);
+                   | TableAction.ChangeColumn(col, newCol) :: tail =>
+                        ddlHandler(schemaDriver.MakeDdlColumnAlter(col, newCol, table));
+                        processChange(table, tail);
+                   | TableAction.DropColumn(col) :: tail =>
+                        ddlHandler(schemaDriver.MakeDdlColumnDrop(col, table));
+                        processChange(table, tail);
+                   | [] => {}
+                   | _ => throw InvalidOperationException();
+               }
+          }
+          match (ddlAction)
+          {
+            |  MigrationAction.CreateTable(table, columns) => 
+                table.Columns = processCreate(table, columns).ToArray();
+                ddlHandler(schemaDriver.MakeDdlTableCreate(table, true));
+            |  MigrationAction.ChangeTable(table, actions) => 
+                _ = processChange(table, actions);
+            |  MigrationAction.DropTable(table) => 
+                ddlHandler(schemaDriver.MakeDdlTableDrop(table));
+                            
+                
+          }
+      }
+  }
+}

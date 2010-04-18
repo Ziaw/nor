@@ -2,7 +2,7 @@
 using NRails.Macros;
 using BLToolkit.Mapping;
 
-namespace Nemerle.MVC.Models
+namespace NRails.Demo.Models
 {
     [Model]
     public class Person

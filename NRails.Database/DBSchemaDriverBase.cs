@@ -272,6 +272,9 @@ namespace NRails.Database
 		}
 		#endregion
 
+	    public abstract void ExecuteDdlCommands(IEnumerable<string> commands, string connStr);
+
+
 		#region Private Metods
 		/// <summary>
 		/// Добавить DDL команду.
@@ -380,14 +383,7 @@ namespace NRails.Database
 				MakeDdlTableDrop(eTable));
 		}
 
-		/// <summary>
-		/// Выполнить набор DDL команд.
-		/// </summary>
-		/// <param name="commands">набор DDL команд</param>
-		/// <param name="connStr"></param>
-		protected abstract void ExecuteDdlCommands(IEnumerable<string> commands, string connStr);
-
-		/// <summary>
+	    /// <summary>
 		/// Записать набор DDL команд с помощью писателя.
 		/// </summary>
 		/// <param name="wr">писатель</param>
@@ -614,7 +610,7 @@ namespace NRails.Database
 			return @"[" + name + @"]";
 		}
 
-		protected virtual string MakeDdlTableCreate(TableSchema table, bool withConstraint)
+	    public virtual string MakeDdlTableCreate(TableSchema table, bool withConstraint)
 		{
 			var stat = new StringBuilder();
 
@@ -639,13 +635,13 @@ namespace NRails.Database
 				MakeDdlElementName(table.Name), stat);
 		}
 
-		protected string MakeDdlTableDrop(TableSchema table)
+	    public string MakeDdlTableDrop(TableSchema table)
 		{
 			return string.Format(@"DROP TABLE {0}",
 				MakeDdlElementName(table.Name));
 		}
 
-		protected string MakeDdlTableRename(TableSchema table, string newName)
+	    public string MakeDdlTableRename(TableSchema table, string newName)
 		{
 			return string.Format(@"ALTER TABLE {0} RENAME TO {1}",
 				MakeDdlElementName(table.Name), newName);
@@ -658,20 +654,20 @@ namespace NRails.Database
 				MakeDdlElementName(fromTable.Name), fromTable.ColumnsList(MakeDdlElementName));
 		}
 
-		private string MakeDdlColumnCreate(TableColumnSchema column, TableSchema table)
+	    public string MakeDdlColumnCreate(TableColumnSchema column, TableSchema table)
 		{
 			return string.Format(@"ALTER TABLE {0} ADD {1}",
 				MakeDdlElementName(table.Name), ParseColumn(column));
 		}
 
-		protected virtual string MakeDdlColumnAlter(TableColumnSchema mColumn, TableColumnSchema eColumn,
+	    public virtual string MakeDdlColumnAlter(TableColumnSchema mColumn, TableColumnSchema eColumn,
 			TableSchema table)
 		{
 			return string.Format(@"ALTER TABLE {0} ALTER COLUMN {1}",
 				MakeDdlElementName(table.Name), ParseColumnAlter(mColumn, eColumn));
 		}
 
-		protected virtual string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table)
+	    public virtual string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table)
 		{
 			return string.Format(@"ALTER TABLE {0} DROP COLUMN {1}",
 				MakeDdlElementName(table.Name), MakeDdlElementName(column.Name));

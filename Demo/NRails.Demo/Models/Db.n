@@ -9,7 +9,7 @@ using BLToolkit.Data;
 using BLToolkit.Data.Linq;
 using NRails.Macros;
 
-namespace Nemerle.MVC.Models
+namespace NRails.Demo.Models
 {
   [DatabaseManager]
   class Db: DbManager {}

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Web;
+using NRails.Database;
 using NRails.Database.Schema;
 using NRails.Database.Mssql;
 
@@ -31,14 +32,28 @@ namespace NRails
           GetSchema(cfg.Env);
       }
       
+      public CreateDbDriver() : IDBDriver
+      {
+          CreateDbDriver(cfg.Env);
+      }
+      
+      public CreateDbDriver(env : string) : IDBDriver
+      {
+          def connStr = cfg.GetConnectionString(env);
+          match (connStr.ProviderName)
+          {
+              | "System.Data.SqlClient" => MssqlDriver();
+              | x => throw NotImplementedException($"Driver for '$x' provider is not implemented");
+          }
+      }
+      
       mutable cachedSchema : DBSchema;
       public GetSchema(env : string) : DBSchema
       {
           when (cachedSchema == null)
           {
             def connStr = cfg.GetConnectionString(env).ConnectionString;
-            // todo: вынести в фабрику IDBDriverManager
-            def db = MssqlDriver();
+            def db = CreateDbDriver(env);
             def schemaDriver = db.CreateSchemaDriver();
             cachedSchema = schemaDriver.LoadExistingSchema(connStr);
           }

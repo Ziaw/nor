@@ -22,22 +22,42 @@ namespace NRails.Migrations
   public variant TableAction
   {
       | AddColumn { col : TableColumnSchema }
-      | ChanedColumn { col : TableColumnSchema; newCol : TableColumnSchema}
-      | RemoveColumn { colSchema : TableColumnSchema }
+      | ChangeColumn { col : TableColumnSchema; newCol : TableColumnSchema}
+      | DropColumn { col : TableColumnSchema }
   }
   
   public interface IActionHolder[T]
   {
       Add(action : T) : void;
       GetActions() : list[T];
+      HandlerScope(handler : T -> void) : IDisposable;
   }
   
   public class ActionHolder[T] : IActionHolder[T]
   {
       mutable actionStack : list[T] = [];
-
+      protected mutable actionHandler : T -> void;
+      
+      class DisposableHelper : IDisposable
+      {
+          onDispose : void -> void;
+          
+          public this(onDispose : void -> void)
+          {
+              this.onDispose = onDispose;
+          }
+          
+          public Dispose() : void
+          {
+              onDispose();
+          }
+      }
+      
+      
       protected AddAction(action : T) : void implements IActionHolder[T].Add
       {
+          when (actionHandler != null) actionHandler(action);
+          
           actionStack = action :: actionStack;
       }
       
@@ -45,6 +65,14 @@ namespace NRails.Migrations
       {
           actionStack.Rev();
       }
+      
+      HandlerScope(handler : T -> void) : IDisposable  implements IActionHolder[T].HandlerScope
+      {
+          this.actionHandler = handler;
+          DisposableHelper(() => this.actionHandler = null);
+      }
+      
+      
   }
   
   public class TableActions : ActionHolder[TableAction]
@@ -83,23 +111,33 @@ namespace NRails.Migrations
           
           colAction(newColumn);
           
-          AddAction(TableAction.ChanedColumn(oldColumn, newColumn));
+          AddAction(TableAction.ChangeColumn(oldColumn, newColumn));
       }
 
-      public Remove([NotNull] name : string) : void
+      public Drop([NotNull] name : string) : void
       {
-          AddAction(TableAction.RemoveColumn(GetColumn(name)));
+          AddAction(TableAction.DropColumn(GetColumn(name)));
       }
   }
   
   public interface IMigration : IActionHolder[MigrationAction]
   {
       AssignSchema(schema : DBSchema) : void;
+      Version : string {get};
+      Up() : void;
+      Down() : void;
   }
   
   public class MigrationBase : ActionHolder[MigrationAction], IMigration
   {
       mutable schema : DBSchema;
+      version : string;
+      mutable dry : bool;
+      
+      protected this([NotNull]version : string)
+      {
+          this.version = version;
+      }
 
       #region Helpers
       private GetTable([NotNull]name : string) : TableSchema
@@ -134,6 +172,21 @@ namespace NRails.Migrations
       {
           this.schema = schema;
       }
+      
+      _Up() : void implements IMigration.Up
+      {
+          Up();
+      }
+
+      _Down() : void implements IMigration.Down
+      {
+          Down();
+      }
+      
+      Version : string implements IMigration.Version
+      {
+          get {version;}
+      }
       #endregion
       
       protected CreateTable([NotNull] name : string, [NotNull] action : TableActions -> void) : void
@@ -157,6 +210,14 @@ namespace NRails.Migrations
       protected DropTable([NotNull] name : string) : void
       {
           AddAction(MigrationAction.DropTable(GetTable(name)));
+      }
+      
+      protected virtual Up() : void
+      {
+      }
+
+      protected virtual Down() : void
+      {
       }
    }
 }

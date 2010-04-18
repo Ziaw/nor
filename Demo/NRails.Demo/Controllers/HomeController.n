@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using Nemerle.MVC.Models;
+using NRails.Demo.Models;
 
-namespace Nemerle.MVC.Controllers {
+namespace NRails.Demo.Controllers {
 
     [HandleError]
     public class HomeController : Controller {

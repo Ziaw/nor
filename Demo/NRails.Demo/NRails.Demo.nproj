@@ -3,7 +3,7 @@
   <PropertyGroup>
     <NoStdLib>false</NoStdLib>
     <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
-    <Name>Nemerle.MVC</Name>
+    <Name>NRails.Demo</Name>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -14,8 +14,8 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{edcc3b85-0bad-11db-bc1a-00112fde8b61}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nemerle.MVC</RootNamespace>
-    <AssemblyName>Nemerle.MVC</AssemblyName>
+    <RootNamespace>NRails.Demo</RootNamespace>
+    <AssemblyName>NRails.Demo</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
   </PropertyGroup>
@@ -40,7 +40,7 @@
     <Reference Include="BLToolkit.3, Version=3.2.0.0, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
       <Name>BLToolkit.3</Name>
       <AssemblyName>BLToolkit.3.dll</AssemblyName>
-      <HintPath>..\lib\BLToolkit.3.dll</HintPath>
+      <HintPath>..\..\lib\BLToolkit.3.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Nemerle">
@@ -129,14 +129,14 @@
     <Folder Include="Views\Shared\" />
   </ItemGroup>
   <ItemGroup>
-    <MacroProjectReference Include="..\NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj">
+    <MacroProjectReference Include="..\..\NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj">
       <Name>NRails.Bltoolkit.Macros</Name>
       <Project>{3129f3e8-694f-461e-905f-bddc046f09ab}</Project>
       <Private>False</Private>
     </MacroProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NRails\NRails.nproj">
+    <ProjectReference Include="..\..\NRails\NRails.nproj">
       <Name>NRails</Name>
       <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
       <Private>True</Private>

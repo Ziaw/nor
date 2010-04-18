@@ -1,0 +1,59 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Console;
+using System.Linq;
+using System.Reflection;
+using NRails;
+using NRails.Migrations;
+
+module Program
+{
+  mutable migrationAssmbly : string;
+  
+  Main() : void
+  {
+      mutable command : string;
+      mutable args = [];
+      
+      def opts = [
+        Getopt.CliOption.String(name = "--migration-assembly",
+            aliases = ["-ma"],
+            handler = (c) =>
+            {
+                migrationAssmbly = c;
+            }
+        ),
+        Getopt.CliOption.NonOption(name = "command",
+            aliases = [],
+            handler = (c) =>
+            {
+                if (command == null)
+                    command = c;
+                else
+                    args = c :: args;
+            }
+        )
+      ];
+      
+      Getopt.Parse(opts);
+      args = args.Rev();
+      
+      match (command)
+      {
+          | "migrate" => Migrate(args);
+          | x => Console.WriteLine("Valid commands: migrate.");
+      }
+  }
+  
+  Migrate(_args : list[string]) : void
+  {
+      def ma = Assembly.LoadFile(migrationAssmbly);
+      def migrationBaseType = typeof(MigrationBase);
+      def migrationTypes = NList.ToList(ma.GetExportedTypes().Where(t => t.IsSubclassOf(migrationBaseType)));
+      
+  }
+}

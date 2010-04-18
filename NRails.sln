@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.MVC", "Nemerle.MVC\Nemerle.MVC.nproj", "{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92}"
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo", "Demo\NRails.Demo\NRails.Demo.nproj", "{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Bltoolkit.Macros", "NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj", "{3129F3E8-694F-461E-905F-BDDC046F09AB}"
 EndProject
@@ -12,6 +12,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NRails.Database", "NRails.Database\NRails.Database.csproj", "{9BBC85B7-7590-43EB-8FE6-8A1EF9218E08}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Macros", "NRails.Macros\NRails.Macros.nproj", "{D22C1976-8647-4CB6-A57F-B82E3949B21D}"
+EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Console", "NRails.Console\NRails.Console.nproj", "{9599F34C-A9B1-4704-9E0D-F8C9D09AD9E3}"
+EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo.Migrations", "Demo\NRails.Demo.Migrations\NRails.Demo.Migrations.nproj", "{C3FB7D20-85AF-45CE-B407-4B9F782097D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +47,14 @@ Global
 		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D22C1976-8647-4CB6-A57F-B82E3949B21D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9599F34C-A9B1-4704-9E0D-F8C9D09AD9E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9599F34C-A9B1-4704-9E0D-F8C9D09AD9E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9599F34C-A9B1-4704-9E0D-F8C9D09AD9E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9599F34C-A9B1-4704-9E0D-F8C9D09AD9E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3FB7D20-85AF-45CE-B407-4B9F782097D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3FB7D20-85AF-45CE-B407-4B9F782097D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3FB7D20-85AF-45CE-B407-4B9F782097D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3FB7D20-85AF-45CE-B407-4B9F782097D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
