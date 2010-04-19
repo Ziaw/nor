@@ -147,7 +147,6 @@ namespace NRails.Migrations
   {
       mutable schema : DBSchema;
       version : string;
-      mutable dry : bool;
       
       protected this([NotNull]version : string)
       {

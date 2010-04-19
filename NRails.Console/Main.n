@@ -46,7 +46,7 @@ module Program
       match (command)
       {
           | "migrate" => Migrate(args);
-          | x => Console.WriteLine("Valid commands: migrate.");
+          | _ => Console.WriteLine("Valid commands: migrate.");
       }
   }
   

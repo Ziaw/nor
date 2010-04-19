@@ -53,7 +53,7 @@ namespace NRails.Migrations
                   mutable ddls = [];
                   try 
                   {
-                      using (serv.HandlerScope(MakeDdl(schemaDriver, ddl => ddls = ddl :: ddls, _)))
+                      using (serv.HandlerScope(MakeDdl(schema, schemaDriver, ddl => ddls = ddl :: ddls, _)))
                       {
                           serv.Up();
                       }
@@ -76,7 +76,9 @@ namespace NRails.Migrations
           }
       }
       
-      MakeDdl(schemaDriver : IDBSchemaDriver, ddlHandler: string -> void, ddlAction : MigrationAction) : void
+      
+      
+      MakeDdl(schema : DBSchema, schemaDriver : IDBSchemaDriver, ddlHandler: string -> void, ddlAction : MigrationAction) : void
       {
           def processCreate(table, columnActions : list[TableAction]) {
                match (columnActions)
@@ -93,12 +95,16 @@ namespace NRails.Migrations
                {
                    | TableAction.AddColumn(col) :: tail => 
                         ddlHandler(schemaDriver.MakeDdlColumnCreate(col, table));
+                        table.Columns = table.Columns.With(col);
                         processChange(table, tail);
                    | TableAction.ChangeColumn(col, newCol) :: tail =>
                         ddlHandler(schemaDriver.MakeDdlColumnAlter(col, newCol, table));
+                        def oldIndex = Array.IndexOf(table.Columns, col);
+                        table.Columns[oldIndex] = newCol;
                         processChange(table, tail);
                    | TableAction.DropColumn(col) :: tail =>
                         ddlHandler(schemaDriver.MakeDdlColumnDrop(col, table));
+                        table.Columns = table.Columns.Without(col);
                         processChange(table, tail);
                    | [] => {}
                    | _ => throw InvalidOperationException();
@@ -109,12 +115,15 @@ namespace NRails.Migrations
             |  MigrationAction.CreateTable(table, columns) => 
                 table.Columns = processCreate(table, columns).ToArray();
                 ddlHandler(schemaDriver.MakeDdlTableCreate(table, true));
+                _ = schema.Tables.Add(table);
+            |  MigrationAction.RenameTable(table, newName) => 
+                ddlHandler(schemaDriver.MakeDdlTableRename(table, newName));
+                table.Name = newName;
             |  MigrationAction.ChangeTable(table, actions) => 
                 _ = processChange(table, actions);
             |  MigrationAction.DropTable(table) => 
                 ddlHandler(schemaDriver.MakeDdlTableDrop(table));
-                            
-                
+                _= schema.Tables.Remove(table);
           }
       }
   }

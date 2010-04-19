@@ -6,5 +6,8 @@ using NRails.Macros;
 namespace NRails.Demo.Models
 {
     [Model]
-    public class Doctor	{	}
+    public class Doctor	
+    {
+        
+    }
 }

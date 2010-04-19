@@ -77,9 +77,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="Utils\Exts.n">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations" />
+    <Folder Include="Utils" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

@@ -23,7 +23,16 @@ namespace NRails.Demo.Migrations
               {
                   Id : Guid(pk);
                   Zip : string?(len = 10) = "zzzz";
-              };
+                  Price : int = 10;
+              }
+              
+              change TestTable
+              {
+                  change Zip : string(len = 20);
+                  //drop Price;
+              }
+              
+              //drop TestTable;
           }
       
   }

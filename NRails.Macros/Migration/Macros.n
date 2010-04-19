@@ -28,6 +28,13 @@ namespace NRails.Macros.Migration
       MigrationImpl.Change(Nemerle.Macros.ImplicitCTX(), name, code);
   }
   
+  public macro changeField(_code) : PExpr
+  syntax("change", _code)
+  {
+      // returning value is not used, parsed by outer macro
+      <[]>
+  }
+  
   public macro rename(name, newName) : PExpr
   syntax("rename", name, newName)
   {

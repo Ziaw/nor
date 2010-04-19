@@ -22,7 +22,7 @@ namespace NRails.Macros.Migration
           <[
             this.CreateTable($(name.ToString() : string), $t => 
             {
-                $(CompileColumns(t, c, code))
+                $(CompileColumns(t, c, code, false))
             });
           ]>
       }
@@ -40,22 +40,59 @@ namespace NRails.Macros.Migration
           <[
             this.ChangeTable($(name.ToString() : string), $t => 
             {
-                $(CompileColumns(t, c, code))
+                $(CompileColumns(t, c, code, true))
             });
           ]>
       }
       
-      CompileColumns(t : PExpr.Ref, c : PExpr.Ref, code : PExpr) : PExpr
+      variant ParsedAction
+      {
+          | Create
+          | Change
+      }
+      
+      CompileColumns(t : PExpr.Ref, c : PExpr.Ref, code : PExpr, allowChanges : bool) : PExpr
       {
           mutable colNames = Set.[string]();
           
-          def compile(s : PExpr) : PExpr
+          def checkChangesMode(loc : Location, allowedResult : void -> PExpr)
+          {
+              if (allowChanges)
+                allowedResult()
+              else
+              {
+                Message.Error(loc, "No changes allowed here.");
+                <[]>
+              }
+          }
+          
+          def compile(s : PExpr, action) : PExpr
           {
             match (s)          
             {
-                | <[ $name : $type_?;]> with (defExpr = null, isNullable = true)
-                | <[ $name : $type_;]> with (defExpr = null, isNullable = false)
-                | <[ $name : $type_ = $defExpr;]> with isNullable = false => 
+                | PExpr.MacroCall(name, _, expr) =>
+                    match (name.ToString(), expr)
+                    {
+                        | ("change", [SyntaxElement.Expression(x)]) => 
+                            checkChangesMode(s.loc, () => compile(x, ParsedAction.Change()));
+
+                        | ("drop", [SyntaxElement.Expression(x)]) => 
+                            checkChangesMode(s.loc, () => 
+                                match (x)
+                                {
+                                    | PExpr.Ref(name) =>
+                                       <[ $t.Drop($(name.ToString() : string)) ]>
+                                    | _ => Message.Error(x.loc, "Invalid drop syntax"); <[]>
+                                });
+                        | _ => 
+                           Message.Error(s.loc, $"Invalid macro call '$name.ToString()'");
+                           <[]>
+                    }
+                    
+                | <[ $name : $type_?; ]> with (defExpr = null, isNullable = true)
+                | <[ $name : $type_; ]> with (defExpr = null, isNullable = false)
+                | <[ $name : $type_? = $defExpr; ]> with isNullable = true
+                | <[ $name : $type_ = $defExpr; ]> with isNullable = false => 
                   if (colNames.Contains(name.ToString()))
                   {
                       Message.Error(name.loc, $"Duplicate column '$name'");
@@ -64,22 +101,22 @@ namespace NRails.Macros.Migration
                   else
                   {
                       colNames = colNames.Add(name.ToString());
-                      CompileColumn(t, c, name, type_, defExpr, isNullable);
+                      CompileColumn(t, c, name, type_, defExpr, isNullable, action);
                   }
 
                 | x => 
-                    Message.Error(x.loc, $"Ivalid field definition $x");
+                    Message.Error(x.loc, $"Ivalid field definition $x, $(x.GetType())");
                     <[]>;
             }
           }
           match (code)
           {
-              | PExpr.Sequence(seq) => PExpr.Sequence(seq.Map(compile))
-              | x => compile(x);
+              | PExpr.Sequence(seq) => PExpr.Sequence(seq.Map(compile(_, ParsedAction.Create())))
+              | x => compile(x, ParsedAction.Create());
           }
       }
 
-      CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr, isNullable : bool) : PExpr
+      CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr, isNullable : bool, action : ParsedAction) : PExpr
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
           mutable pkAction = <[]>;
@@ -108,9 +145,8 @@ namespace NRails.Macros.Migration
           
           match (type_)
           {
-            | <[ $typeName?(..$parms) ]> with isNullable = true
-            | <[ $typeName(..$parms) ]> with isNullable = false
-            | <[ $typeName ]> with (parms = [], isNullable = isNullable) => 
+            | <[ $typeName(..$parms) ]> 
+            | <[ $typeName ]> with parms = [] => 
                 def strType = typeName.ToString();
                 
                 def columnType = MigrationUtils.ColumnTypeFromString(strType);
@@ -120,12 +156,11 @@ namespace NRails.Macros.Migration
                     parms.Iter(compileParm);
                     Add(<[ $c.Type = NRails.Database.Schema.ColumnType.$(columnType.Value.ToString() : usesite); ]>);
                     
-                    when (isNullable)
-                        Add(<[ $c.Nullable = true; ]>);
+                    Add(<[ $c.Nullable = $(isNullable : bool); ]>);
                 }
                 else
                 {
-                    Message.Error(typeName.loc, $"Invalid type name '$strType' on $(name.ToString()) $isNullable");
+                    Message.Error(typeName.loc, $"Invalid type name '$strType'");
                 }
           }
           
@@ -139,12 +174,23 @@ namespace NRails.Macros.Migration
               | <[ $x ]> => Message.Error(x.loc, "Only string or int default value supported.");
           }
           
-          <[ 
-              $t.Add($c => {
-                  ..$body
-              });
-              $(pkAction);
-          ]>;
+          match (action)
+          {
+              | ParsedAction.Change() =>
+                  <[ 
+                      $t.Change($(name.ToString() : string), $c => {
+                          ..$body
+                      });
+                      $(pkAction);
+                  ]>;
+              | _ =>
+                  <[ 
+                      $t.Add($c => {
+                          ..$body
+                      });
+                      $(pkAction);
+                  ]>;
+          }
       }
   }
 }
