@@ -98,7 +98,7 @@ namespace NRails.Macros.Migration
                   | <[ size = $(number : int)]> => Add(<[ $c.Size = $(number : long); ]>)
                   
 
-                  | <[ pk ]> => pkAction = <[ $t.AddPk($name.ToString() : string); ]>;
+                  | <[ pk ]> => pkAction = <[ $t.AddPk($(name.ToString() : string)); ]>;
                   
                   | <[ $x = $_ ]> 
                   | x => Message.Error(x.loc, $"Invalid param '$x'")
