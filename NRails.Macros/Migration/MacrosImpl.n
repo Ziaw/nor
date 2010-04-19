@@ -53,8 +53,9 @@ namespace NRails.Macros.Migration
           {
             match (s)          
             {
-                | <[ $name : $type_]> with defExpr = null
-                | <[ $name : $type_ = $defExpr]> => 
+                | <[ $name : $type_?;]> with (defExpr = null, isNullable = true)
+                | <[ $name : $type_;]> with (defExpr = null, isNullable = false)
+                | <[ $name : $type_ = $defExpr;]> with isNullable = false => 
                   if (colNames.Contains(name.ToString()))
                   {
                       Message.Error(name.loc, $"Duplicate column '$name'");
@@ -63,7 +64,7 @@ namespace NRails.Macros.Migration
                   else
                   {
                       colNames = colNames.Add(name.ToString());
-                      CompileColumn(t, c, name, type_, defExpr);
+                      CompileColumn(t, c, name, type_, defExpr, isNullable);
                   }
 
                 | x => 
@@ -78,7 +79,7 @@ namespace NRails.Macros.Migration
           }
       }
 
-      CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr) : PExpr
+      CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr, isNullable : bool) : PExpr
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
           mutable pkAction = <[]>;
@@ -109,8 +110,7 @@ namespace NRails.Macros.Migration
           {
             | <[ $typeName?(..$parms) ]> with isNullable = true
             | <[ $typeName(..$parms) ]> with isNullable = false
-            | <[ $typeName? ]> with (parms = [], isNullable = true)
-            | <[ $typeName ]> with (parms = [], isNullable = false) => 
+            | <[ $typeName ]> with (parms = [], isNullable = isNullable) => 
                 def strType = typeName.ToString();
                 
                 def columnType = MigrationUtils.ColumnTypeFromString(strType);
@@ -125,7 +125,7 @@ namespace NRails.Macros.Migration
                 }
                 else
                 {
-                    Message.Error(typeName.loc, "Invalid type name");
+                    Message.Error(typeName.loc, $"Invalid type name '$strType' on $(name.ToString()) $isNullable");
                 }
           }
           
@@ -134,8 +134,8 @@ namespace NRails.Macros.Migration
               | null => {}
               // todo: надо разобраться как вычислять выражения типа даты
               // и преобразовывать их в нужный сиквельный эквивалент
-              | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = "'" + $(x.ToString() : string) + "'"; ]>);
-              | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = "'" + $(x : string) + "'"; ]>);
+              | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $("'"  + x.ToString() + "'": string) ; ]>);
+              | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $("'"  + x + "'": string); ]>);
               | <[ $x ]> => Message.Error(x.loc, "Only string or int default value supported.");
           }
           
