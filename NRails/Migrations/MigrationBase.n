@@ -71,8 +71,6 @@ namespace NRails.Migrations
           this.actionHandler = handler;
           DisposableHelper(() => this.actionHandler = null);
       }
-      
-      
   }
   
   public class TableActions : ActionHolder[TableAction]
@@ -93,6 +91,23 @@ namespace NRails.Migrations
           this.tableSchema = tableSchema;
       }
       #endregion
+      
+      public AddPk([NotNull] colName : string) : void
+      {
+          // todo: composite key
+          def key = KeySchema();
+          key.KeyType = ConstraintType.KeyPrimary;
+          key.Columns = colName;
+
+          tableSchema.Keys = if (tableSchema.Keys == null)
+            array[key]
+          else
+          {
+            def old = SCG.List(tableSchema.Keys);
+            old.Add(key);
+            old.ToArray();
+          }
+      }
       
       public Add([NotNull] colAction : TableColumnSchema -> void) : void
       {
@@ -193,6 +208,9 @@ namespace NRails.Migrations
       {
           def table = TableSchema();
           table.Name = name;
+          table.Columns = array[];
+          table.Keys = array[];
+          table.Indexes = array[];
           
           AddAction(MigrationAction.CreateTable(RunActions(table, action)));
       }

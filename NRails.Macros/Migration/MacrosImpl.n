@@ -81,6 +81,7 @@ namespace NRails.Macros.Migration
       CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr) : PExpr
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
+          mutable pkAction = <[]>;
           
           def Add(p)
           {
@@ -95,6 +96,9 @@ namespace NRails.Macros.Migration
                   | <[ len = $(number : int)]> 
                   | <[ length = $(number : int)]> 
                   | <[ size = $(number : int)]> => Add(<[ $c.Size = $(number : long); ]>)
+                  
+
+                  | <[ pk ]> => pkAction = <[ $t.AddPk($name.ToString() : string); ]>;
                   
                   | <[ $x = $_ ]> 
                   | x => Message.Error(x.loc, $"Invalid param '$x'")
@@ -129,9 +133,9 @@ namespace NRails.Macros.Migration
           {
               | null => {}
               // todo: надо разобраться как вычислять выражения типа даты
-              // и преобразовывать их в нужный сиквельный эквиваент
-              | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $(x.ToString() : string); ]>);
-              | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $(x : string); ]>);
+              // и преобразовывать их в нужный сиквельный эквивалент
+              | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = "'" + $(x.ToString() : string) + "'"; ]>);
+              | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = "'" + $(x : string) + "'"; ]>);
               | <[ $x ]> => Message.Error(x.loc, "Only string or int default value supported.");
           }
           
@@ -139,6 +143,7 @@ namespace NRails.Macros.Migration
               $t.Add($c => {
                   ..$body
               });
+              $(pkAction);
           ]>;
       }
   }
