@@ -129,9 +129,9 @@
     <Folder Include="Views\Shared\" />
   </ItemGroup>
   <ItemGroup>
-    <MacroProjectReference Include="..\..\NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj">
-      <Name>NRails.Bltoolkit.Macros</Name>
-      <Project>{3129f3e8-694f-461e-905f-bddc046f09ab}</Project>
+    <MacroProjectReference Include="..\..\NRails.Macros\NRails.Macros.nproj">
+      <Name>NRails.Macros</Name>
+      <Project>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</Project>
       <Private>False</Private>
     </MacroProjectReference>
   </ItemGroup>

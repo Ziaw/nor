@@ -12,7 +12,7 @@ using System.Linq;
 using NRails;
 using NRails.Database.Schema;
 
-namespace NRails.Macros
+namespace NRails.Macros.Model
 {
     [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
                      Inherited = false)]

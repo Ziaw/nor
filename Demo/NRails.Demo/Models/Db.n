@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BLToolkit.Data;
 using BLToolkit.Data.Linq;
-using NRails.Macros;
+using NRails.Macros.Model;
 
 namespace NRails.Demo.Models
 {

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo", "Demo\NRails.Demo\NRails.Demo.nproj", "{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92}"
 EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Bltoolkit.Macros", "NRails.Bltoolkit.Macros\NRails.Bltoolkit.Macros.nproj", "{3129F3E8-694F-461E-905F-BDDC046F09AB}"
-EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails", "NRails\NRails.nproj", "{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Tests", "NRails.Tests\NRails.Tests.nproj", "{B4287CB5-676C-46AB-A4F1-C1C9FD184DE8}"
@@ -17,6 +15,8 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Console", "NRails.Co
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo.Migrations", "Demo\NRails.Demo.Migrations\NRails.Demo.Migrations.nproj", "{C3FB7D20-85AF-45CE-B407-4B9F782097D2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{FCE4439C-9BD4-4418-972C-16DAB5DE776F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,10 +27,6 @@ Global
 		{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3129F3E8-694F-461E-905F-BDDC046F09AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -58,5 +54,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D04F4656-0C57-48EF-A8AC-E4A1B8F7ED92} = {FCE4439C-9BD4-4418-972C-16DAB5DE776F}
+		{C3FB7D20-85AF-45CE-B407-4B9F782097D2} = {FCE4439C-9BD4-4418-972C-16DAB5DE776F}
 	EndGlobalSection
 EndGlobal

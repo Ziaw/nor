@@ -36,6 +36,12 @@
     <DocumentationFile>bin\Release\NRails.Macros.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BLToolkit.3, Version=3.2.0.0, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+      <Name>BLToolkit.3</Name>
+      <AssemblyName>BLToolkit.3.dll</AssemblyName>
+      <HintPath>..\lib\BLToolkit.3.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -65,10 +71,17 @@
     <Compile Include="Migration\MacrosImpl.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\DatabaseManager.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\Model.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migration" />
+    <Folder Include="Model" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

@@ -395,7 +395,7 @@ namespace NRails.Database.Mssql
 		{
 			var stat = new StringBuilder();
 
-			stat.Append(MakeDdlElementName(column.Name) + MssqlSchemaLoader.TypeDbsmToSql(column));
+			stat.Append(MakeDdlElementName(column.Name) + " " + MssqlSchemaLoader.TypeDbsmToSql(column));
 
 			if (column.AutoIncrement)
 				stat.AppendFormat(@" IDENTITY ({0},{1})", column.Seed, column.Increment);

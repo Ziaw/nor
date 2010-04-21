@@ -1,7 +1,7 @@
 ﻿using System;
 using BLToolkit.Mapping;
 using BLToolkit.DataAccess;
-using NRails.Macros;
+using NRails.Macros.Model;
 
 namespace NRails.Demo.Models
 {
