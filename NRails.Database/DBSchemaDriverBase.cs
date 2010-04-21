@@ -36,6 +36,7 @@ namespace NRails.Database
 	    /// </summary>
 	    /// <param name="connStr"></param>
 	    public abstract DBSchema LoadExistingSchema(string connStr);
+	    public abstract void ReloadTableSchema(IDbConnection conn, DBSchema schema, TableSchema table);
 
 		/// <summary>
 		/// Сравнение схемы с эталонной и выдача во внутреннюю хеш таблицу DDL комманд,
@@ -669,8 +670,8 @@ namespace NRails.Database
 
 	    public virtual string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table)
 		{
-			return string.Format(@"ALTER TABLE {0} DROP COLUMN {1}",
-				MakeDdlElementName(table.Name), MakeDdlElementName(column.Name));
+            return String.Format(@"ALTER TABLE {0} DROP COLUMN {1}",
+                                 MakeDdlElementName(table.Name), MakeDdlElementName(column.Name));
 		}
 
 		protected string MakeDdlDefaultDrop(KeySchema key, TableSchema table)
@@ -693,7 +694,7 @@ namespace NRails.Database
 				ParseKey(key));
 		}
 
-		protected string MakeDdlKeyDrop(KeySchema key, TableSchema table)
+	    public string MakeDdlKeyDrop(KeySchema key, TableSchema table)
 		{
 			return string.Format(@"ALTER TABLE {0} DROP CONSTRAINT {1}",
 				MakeDdlElementName(table.Name), MakeDdlElementName(key.Name));

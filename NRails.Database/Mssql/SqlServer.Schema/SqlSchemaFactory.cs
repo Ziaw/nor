@@ -9,13 +9,23 @@ namespace NRails.Database.Mssql.SqlServer.Schema
 {
 	internal static class SqlSchemaFactory
 	{
-		public static DataTable GetSchema(SqlConnection con, string collectionName, object[] restrictions)
+        private static DataSet _ds;
+
+	    public static DataSet GetMetaDataSet()
+	    {
+            if (_ds == null)
+            {
+                _ds = new DataSet();
+                _ds.ReadXml(new StringReader(Resources.MetaData));
+            }
+	        return _ds;
+	    }
+
+	    public static DataTable GetSchema(SqlConnection con, string collectionName, object[] restrictions)
 		{
 			var filter = String.Format("CollectionName = '{0}'", collectionName);
 
-
-            var ds = new DataSet();
-            ds.ReadXml(new StringReader(Resources.MetaData));
+            var ds = GetMetaDataSet();
 
             var collection = ds.Tables[DbMetaDataCollectionNames.MetaDataCollections].Select(filter);
 

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using NRails.Database.Mssql.SqlServer.Schema;
 using NRails.Database.Schema;
+using System.Linq;
 
 namespace NRails.Database.Mssql
 {
@@ -54,54 +55,60 @@ namespace NRails.Database.Mssql
 		{
 			var tables = new List<TableSchema>();
 			string[] restrict4 = {null, null, null, "TABLE"};
-			string[] restrict3 = {null, null, null};
 
             var dtTables = SqlSchemaFactory.GetSchema(con, "Tables", restrict4);
 			for (var i = 0; i < dtTables.Rows.Count; i++)
 			{
 				var tRow = dtTables.Rows[i];
-				var eTable = new TableSchema {Name = tRow["TABLE_NAME"].ToString()};
-				// Columns
-				restrict3[0] = null;
-				restrict3[1] = null;
-				restrict3[2] = eTable.Name;
+				TableSchema eTable = GetTable(con, tRow);
 
-                var dtShema = SqlSchemaFactory.GetSchema(con, "Columns", restrict3);
-				if (dtShema.Rows.Count > 0)
-				{
-					eTable.Columns = new TableColumnSchema[dtShema.Rows.Count];
-
-					for (var j = 0; j < dtShema.Rows.Count; j++)
-					{
-						var cRow = dtShema.Rows[j];
-
-						var eColumn = new TableColumnSchema
-						{
-							Name = cRow["COLUMN_NAME"].ToString(),
-							Size = Convert.ToInt32(cRow["COLUMN_SIZE"], CultureInfo.InvariantCulture),
-							Type = TypeSqlToDbsm(cRow["COLUMN_DATA_TYPE"].ToString()),
-							Nullable = Convert.ToBoolean(cRow["IS_NULLABLE"], CultureInfo.InvariantCulture),
-							DefaultValue = cRow["COLUMN_DEFAULT"].ToString(),
-							Increment = Convert.ToInt32(cRow["IDENTITY_INCREMENT"], CultureInfo.InvariantCulture),
-							Seed = Convert.ToInt32(cRow["IDENTITY_SEED"], CultureInfo.InvariantCulture),
-							AutoIncrement = Convert.ToBoolean(cRow["IS_IDENTITY"], CultureInfo.InvariantCulture),
-							DecimalPrecision = Convert.ToInt32(cRow["NUMERIC_PRECISION"], CultureInfo.InvariantCulture),
-							DecimalScale = Convert.ToInt32(cRow["NUMERIC_SCALE"], CultureInfo.InvariantCulture)
-						};
-						eColumn.DefaultValue = string.IsNullOrEmpty(eColumn.DefaultValue)
-						                       	? null
-						                       	: UnBracket.ParseUnBracket(eColumn.DefaultValue);
-
-						eTable.Columns[j] = eColumn;
-					}
-				}
-
-				tables.Add(eTable);
+			    tables.Add(eTable);
 			}
 			return tables;
 		}
 
-        private static List<KeySchema> GetKeys(SqlConnection con, SchemaNamedElement eTable)
+	    private static TableSchema GetTable(SqlConnection con, DataRow tRow)
+	    {
+	        var eTable = new TableSchema {Name = tRow["TABLE_NAME"].ToString()};
+	        // Columns
+	        string[] restrict3 = { null, null, null };
+	        restrict3[0] = null;
+	        restrict3[1] = null;
+	        restrict3[2] = eTable.Name;
+
+	        var dtShema = SqlSchemaFactory.GetSchema(con, "Columns", restrict3);
+	        if (dtShema.Rows.Count > 0)
+	        {
+	            eTable.Columns = new TableColumnSchema[dtShema.Rows.Count];
+
+	            for (var j = 0; j < dtShema.Rows.Count; j++)
+	            {
+	                var cRow = dtShema.Rows[j];
+
+	                var eColumn = new TableColumnSchema
+	                                  {
+	                                      Name = cRow["COLUMN_NAME"].ToString(),
+	                                      Size = Convert.ToInt32(cRow["COLUMN_SIZE"], CultureInfo.InvariantCulture),
+	                                      Type = TypeSqlToDbsm(cRow["COLUMN_DATA_TYPE"].ToString()),
+	                                      Nullable = Convert.ToBoolean(cRow["IS_NULLABLE"], CultureInfo.InvariantCulture),
+	                                      DefaultValue = cRow["COLUMN_DEFAULT"].ToString(),
+	                                      Increment = Convert.ToInt32(cRow["IDENTITY_INCREMENT"], CultureInfo.InvariantCulture),
+	                                      Seed = Convert.ToInt32(cRow["IDENTITY_SEED"], CultureInfo.InvariantCulture),
+	                                      AutoIncrement = Convert.ToBoolean(cRow["IS_IDENTITY"], CultureInfo.InvariantCulture),
+	                                      DecimalPrecision = Convert.ToInt32(cRow["NUMERIC_PRECISION"], CultureInfo.InvariantCulture),
+	                                      DecimalScale = Convert.ToInt32(cRow["NUMERIC_SCALE"], CultureInfo.InvariantCulture)
+	                                  };
+	                eColumn.DefaultValue = string.IsNullOrEmpty(eColumn.DefaultValue)
+	                                           ? null
+	                                           : UnBracket.ParseUnBracket(eColumn.DefaultValue);
+
+	                eTable.Columns[j] = eColumn;
+	            }
+	        }
+	        return eTable;
+	    }
+
+	    private static List<KeySchema> GetKeys(SqlConnection con, SchemaNamedElement eTable)
 		{
 			var keys = new List<KeySchema>();
 			var aHash = new Dictionary<string, bool>();
@@ -450,5 +457,28 @@ namespace NRails.Database.Mssql
 			}
 		}
 		#endregion
+
+	    public static void ReloadTableSchema(SqlConnection conn, DBSchema schema, TableSchema table)
+	    {
+            string[] restrict4 = { null, null, table.Name, "TABLE" };
+
+            var dtTables = SqlSchemaFactory.GetSchema(conn, "Tables", restrict4);
+
+            if (dtTables.Rows.Count == 0)
+            {
+                schema.Tables.Remove(table);
+                table.Name += "_FANTOM";
+                table.Columns = new TableColumnSchema[0];
+                table.Keys = new KeySchema[0];
+                table.Indexes = new IndexSchema[0];
+                return;
+            }
+
+	        var freshTable = GetTable(conn, dtTables.Rows[0]);
+	    
+            table.Columns = freshTable.Columns;
+            table.Keys = GetKeys(conn, table).ToArray();
+            table.Indexes = GetIndexes(conn, table).ToArray();
+        }
 	}
 }

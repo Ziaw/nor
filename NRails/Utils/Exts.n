@@ -17,7 +17,7 @@ namespace NRails
       {
           def dst = array.[T](src.Length+1);
           Array.Copy(src, dst, src.Length);
-          dst[dst.Length - 2] = withMember;
+          dst[dst.Length - 1] = withMember;
           dst
       }
 

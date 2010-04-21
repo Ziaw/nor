@@ -1,35 +1,62 @@
 ﻿using Nemerle.Collections;
 using Nemerle.Text;
 using Nemerle.Utility;
+using Nemerle.Data;
 
 using System;
+using System.Transactions;
 using System.Data;
 using System.Collections.Generic;
 using System.Linq;
 using NRails;
 using NRails.Database;
 using NRails.Database.Schema;
+using BLToolkit.Data;
+using BLToolkit.Data.Linq;
+using BLToolkit.DataAccess;
 
 namespace NRails.Migrations
 {
-  /// <summary>
-  /// Description of Migrator.
-  /// </summary>
+  public class SchemaMigrations
+  {
+      public Version : string { get; set; }
+  }
+    
   public class Migrator
   {
+      public static SchemaMigrations = "SchemaMigrations" : string;
       engine : Engine;
+      
+      class InitMigration : MigrationBase
+      {
+          public this () 
+          {
+              base("!init!");
+          }
+          
+          protected override Up() : void
+          {
+              this.CreateTable(SchemaMigrations, t => 
+              {
+                  t.Add(c => 
+                  {
+                      c.Name = "Version";
+                      c.Type = ColumnType.NCharacterVaring;
+                      c.Size = 255L;
+                      c.Nullable = false;
+                  });
+                  t.AddPk("Version");
+              });
+          }
+      }
       
       public this(engine : Engine)
       {
           this.engine = engine;
       }
       
-      public Migrate(migrs : list[MigrationBase]) : void
+      public Migrate(migrs : list[IMigration]) : void
       {
-          def s(m) { m : IMigration }
-          
-          def migrs = migrs.Sort((m, m2) => s(m).Version.CompareTo(s(m2).Version));
-
           def dbDriver = engine.CreateDbDriver();
           def connString = engine.Cfg.ConnectionString.ConnectionString;
           def schemaDriver = dbDriver.CreateSchemaDriver();
@@ -42,44 +69,73 @@ namespace NRails.Migrations
           }
           
           def schema = schemaDriver.LoadExistingSchema(connString);
-          using (conn = schemaDriver.CreateConnection(connString))
-          {          
-              foreach (m in migrs)
+          
+          def absentMigrations = if (!schema.Tables.Any(t => t.Name == SchemaMigrations))
+          {
+              InitMigration() :: migrs.Sort((m, m2) => m.Version.CompareTo(m2.Version))
+          }
+          else
+          {
+              def existing = using (conn = schemaDriver.CreateConnection(connString))
               {
-                  def serv = s(m);
-                  
-                  serv.AssignSchema(schema);
-                  
-                  mutable ddls = [];
-                  try 
+                  conn.Open();
+                  using (db = DbManager(conn))
                   {
-                      using (serv.HandlerScope(MakeDdl(schema, schemaDriver, ddl => ddls = ddl :: ddls, _)))
+                      db.GetTable.[SchemaMigrations]().Select(sm => sm.Version);
+                  }
+              }
+              migrs.Filter(m => !existing.Contains(m.Version)).Sort((m, m2) => m.Version.CompareTo(m2.Version));
+          }
+
+          foreach (m : IMigration in absentMigrations)
+          {
+              Console.WriteLine(m.Version);
+              m.AssignSchema(schema);
+              try 
+              {
+                  using (tx = TransactionScope())
+                  using (conn = schemaDriver.CreateConnection(connString))
+                  {
+                      conn.Open();
+                      using (m.HandlerScope(ExecuteAction(conn, schema, schemaDriver, _)))
                       {
-                          serv.Up();
+                          m.Up();
                       }
-                      ddls = ddls.Rev();
+                      
+                      when (!m.Version.EndsWith("!"))
+                          using (db = DbManager(conn))
+                          {
+                              def newVersion = SchemaMigrations();
+                              newVersion.Version = m.Version;
+                              db.Insert(newVersion);
+                          }
+                      tx.Complete();
                   }
-                  catch 
-                  {
-                      | _ => throw; // todo: log, show error
-                  }
-                  
-                  try
-                  {
-                      schemaDriver.ExecuteDdlCommands(ddls, connString);
-                  }
-                  catch
-                  {
-                      | _ => throw;  // todo: log, show error statement
-                  }
+              }
+              catch 
+              {
+                  | _ => throw; // todo: log, show error
               }
           }
       }
       
-      
-      
-      MakeDdl(schema : DBSchema, schemaDriver : IDBSchemaDriver, ddlHandler: string -> void, ddlAction : MigrationAction) : void
+      ExecuteDdl(conn : IDbConnection, ddl : string) : void
       {
+          using (cmd = conn.CreateCommand())
+          {
+              //cmd.Transaction = trans;
+              cmd.CommandText = ddl;
+              Console.WriteLine(ddl);
+              _ = cmd.ExecuteNonQuery();
+          }
+      }
+      
+      ExecuteAction(conn : IDbConnection, schema : DBSchema, schemaDriver : IDBSchemaDriver, ddlAction : MigrationAction) : void
+      {
+          def ddlHandler(ddl)
+          {
+              ExecuteDdl(conn, ddl);
+          }
           def processCreate(table, columnActions : list[TableAction]) {
                match (columnActions)
                {
@@ -103,6 +159,13 @@ namespace NRails.Migrations
                         table.Columns[oldIndex] = newCol;
                         processChange(table, tail);
                    | TableAction.DropColumn(col) :: tail =>
+                        
+                        when (table.Keys != null)
+                            foreach (key in table.Keys.Where(k => k.Columns == col.Name))
+		                    {
+		                        ddlHandler(schemaDriver.MakeDdlKeyDrop(key, table))
+		                    }
+
                         ddlHandler(schemaDriver.MakeDdlColumnDrop(col, table));
                         table.Columns = table.Columns.Without(col);
                         processChange(table, tail);
@@ -110,17 +173,24 @@ namespace NRails.Migrations
                    | _ => throw InvalidOperationException();
                }
           }
+          
+          def reload(table)
+          {
+              _ = schemaDriver.ReloadTableSchema(conn, schema, table);
+          }
+          
           match (ddlAction)
           {
             |  MigrationAction.CreateTable(table, columns) => 
                 table.Columns = processCreate(table, columns).ToArray();
                 ddlHandler(schemaDriver.MakeDdlTableCreate(table, true));
-                _ = schema.Tables.Add(table);
+                reload(table)
             |  MigrationAction.RenameTable(table, newName) => 
                 ddlHandler(schemaDriver.MakeDdlTableRename(table, newName));
                 table.Name = newName;
             |  MigrationAction.ChangeTable(table, actions) => 
                 _ = processChange(table, actions);
+                reload(table)
             |  MigrationAction.DropTable(table) => 
                 ddlHandler(schemaDriver.MakeDdlTableDrop(table));
                 _= schema.Tables.Remove(table);

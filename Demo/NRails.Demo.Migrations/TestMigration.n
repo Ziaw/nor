@@ -29,10 +29,10 @@ namespace NRails.Demo.Migrations
               change TestTable
               {
                   change Zip : string(len = 20);
-                  //drop Price;
+                  drop Price;
               }
               
-              //drop TestTable;
+              drop TestTable;
           }
       
   }

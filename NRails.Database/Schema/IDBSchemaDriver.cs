@@ -51,5 +51,7 @@ namespace NRails.Database.Schema
 	                                              TableSchema table);
 
 	    string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table);
+	    void ReloadTableSchema(IDbConnection conn, DBSchema schema, TableSchema table);
+	    string MakeDdlKeyDrop(KeySchema key, TableSchema table);
 	}
 }

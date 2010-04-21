@@ -15,8 +15,7 @@ namespace NRails.Database.Mssql.SqlServer.Schema
 
 		protected SqlDbSchema()
 		{
-            var ds = new DataSet();
-            ds.ReadXml(new StringReader(Resources.MetaData));
+		    var ds = SqlSchemaFactory.GetMetaDataSet();
             _sqlClauses = ds.Tables["SqlClauses"];
 		}
 

@@ -15,13 +15,12 @@ namespace NRails.Database.Schema
 
 		public TableSchema Clone()
 		{
-			return
-				new TableSchema
+			return new TableSchema
 					{
 						Name = Name,
-						Columns = Columns,
-						Indexes = Indexes,
-						Keys = Keys
+						Columns = (TableColumnSchema[]) Columns.Clone(),
+						Indexes = (IndexSchema[]) Indexes.Clone(),
+						Keys = (KeySchema[]) Keys.Clone()
 					};
 		}
 	}

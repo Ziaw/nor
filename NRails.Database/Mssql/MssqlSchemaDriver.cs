@@ -424,11 +424,16 @@ namespace NRails.Database.Mssql
 	    public override DBSchema LoadExistingSchema(string connStr)
 		{
             var schema = MssqlSchemaLoader.LoadSchema(connStr);
-			foreach (var table in schema.Tables)
-				table.Keys = table.Keys
-					.Where(key => key.KeyType != ConstraintType.Default)
-					.ToArray();
+//			foreach (var table in schema.Tables)
+//				table.Keys = table.Keys
+//					.Where(key => key.KeyType != ConstraintType.Default)
+//					.ToArray();
 			return schema;
 		}
+
+	    public override void ReloadTableSchema(IDbConnection conn, DBSchema schema, TableSchema table)
+	    {
+	        MssqlSchemaLoader.ReloadTableSchema((SqlConnection) conn, schema, table);
+	    }
 	}
 }

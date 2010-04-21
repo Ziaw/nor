@@ -15,11 +15,21 @@ namespace NRails.Migrations
   {
     public ColumnTypeFromString([NotNull]strType : string) : option[ColumnType]
     {
-        match (strType)
+        match (strType.ToLowerInvariant())
         {
+            | "bool" => Some(ColumnType.Boolean)
             | "string" => Some(ColumnType.NCharacterVaring)
+            | "text" => Some(ColumnType.NCharacterLargeObject)
             | "int" => Some(ColumnType.Integer)
-            | "Guid" => Some(ColumnType.Guid)
+            | "datetime" 
+            | "timestamp"
+            | "date"
+            | "time" => Some(ColumnType.Timestamp)
+            | "byte[]" => Some(ColumnType.Binary)
+            | "double" => Some(ColumnType.DoublePrecision)
+            | "decimal" => Some(ColumnType.Decimal)
+            | "char" => Some(ColumnType.NCharacter)
+            | "guid" => Some(ColumnType.Guid)
             | _ => None();
         }
     }
