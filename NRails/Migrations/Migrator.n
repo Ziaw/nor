@@ -19,7 +19,7 @@ namespace NRails.Migrations
 {
   public class SchemaMigrations
   {
-      public Version : string { get; set; }
+      mutable public Version : string;
   }
     
   public class Migrator
@@ -27,7 +27,7 @@ namespace NRails.Migrations
       public static SchemaMigrations = "SchemaMigrations" : string;
       engine : Engine;
       
-      class InitMigration : MigrationBase
+      class InitialMigration : MigrationBase
       {
           public this () 
           {
@@ -72,7 +72,7 @@ namespace NRails.Migrations
           
           def absentMigrations = if (!schema.Tables.Any(t => t.Name == SchemaMigrations))
           {
-              InitMigration() :: migrs.Sort((m, m2) => m.Version.CompareTo(m2.Version))
+              InitialMigration() :: migrs.Sort((m, m2) => m.Version.CompareTo(m2.Version))
           }
           else
           {
@@ -87,7 +87,12 @@ namespace NRails.Migrations
               migrs.Filter(m => !existing.Contains(m.Version)).Sort((m, m2) => m.Version.CompareTo(m2.Version));
           }
 
-          foreach (m : IMigration in absentMigrations)
+          RunMigrationsUp(absentMigrations, schema, schemaDriver, connString);
+      }
+      
+      RunMigrationsUp(migrations : list[IMigration], schema : DBSchema, schemaDriver : IDBSchemaDriver, connString : string) : void
+      {
+          foreach (m in migrations)
           {
               Console.WriteLine(m.Version);
               m.AssignSchema(schema);
@@ -107,7 +112,7 @@ namespace NRails.Migrations
                           {
                               def newVersion = SchemaMigrations();
                               newVersion.Version = m.Version;
-                              db.Insert(newVersion);
+                              _ = db.Insert(newVersion);
                           }
                       tx.Complete();
                   }
