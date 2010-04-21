@@ -66,6 +66,20 @@ namespace NRails.Macros.Migration
               }
           }
           
+          def newField(name, action) 
+          {
+              if (colNames.Contains(name.ToString()))
+              {
+                  Message.Error(name.loc, $"Duplicate column '$name'");
+                  <[]>
+              }
+              else
+              {
+                  colNames = colNames.Add(name.ToString());
+                  action();
+              }
+          }
+          
           def compile(s : PExpr, action) : PExpr
           {
             match (s)          
@@ -84,25 +98,23 @@ namespace NRails.Macros.Migration
                                        <[ $t.Drop($(name.ToString() : string)) ]>
                                     | _ => Message.Error(x.loc, "Invalid drop syntax"); <[]>
                                 });
+                        |  ("createindex", [SyntaxElement.Expression(_)]) =>
+                            Message.Warning(s.loc, "create index is not implemented."); <[]>
+                        |  ("dropindex", [SyntaxElement.Expression(_)]) =>
+                            Message.Warning(s.loc, "drop index is not implemented."); <[]>
                         | _ => 
-                           Message.Error(s.loc, $"Invalid macro call '$name.ToString()'");
+                           Message.Error(s.loc, $"Invalid macro call '$(name.ToString())'");
                            <[]>
                     }
-                    
+                | <[ $name :> $type_? ]> with isNullable = true
+                | <[ $name :> $type_ ]> with isNullable = false =>
+                  newField(name, () => CompileReference(t, c, name, type_, isNullable, action));
+                
                 | <[ $name : $type_?; ]> with (defExpr = null, isNullable = true)
                 | <[ $name : $type_; ]> with (defExpr = null, isNullable = false)
                 | <[ $name : $type_? = $defExpr; ]> with isNullable = true
                 | <[ $name : $type_ = $defExpr; ]> with isNullable = false => 
-                  if (colNames.Contains(name.ToString()))
-                  {
-                      Message.Error(name.loc, $"Duplicate column '$name'");
-                      <[]>
-                  }
-                  else
-                  {
-                      colNames = colNames.Add(name.ToString());
-                      CompileColumn(t, c, name, type_, defExpr, isNullable, action);
-                  }
+                  newField(name, () => CompileColumn(t, c, name, type_, defExpr, isNullable, action));
 
                 | x => 
                     Message.Error(x.loc, $"Ivalid field definition $x, $(x.GetType())");
@@ -116,15 +128,24 @@ namespace NRails.Macros.Migration
           }
       }
 
+      CompileReference(t : PExpr.Ref, _ : PExpr.Ref, name : PExpr, type_ : PExpr, isNullable : bool, action : ParsedAction) : PExpr
+      {
+          match (action)
+          {
+              | ParsedAction.Create =>
+                <[ $t.CreateReference($(name.ToString() : string), $(type_.ToString() : string), $(isNullable : bool)) ]>
+              | _ => 
+                Message.Error(type_.loc, "Only create references allowed");
+                <[]>
+          }
+      }
       CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr, isNullable : bool, action : ParsedAction) : PExpr
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
-          mutable pkAction = <[]>;
+          mutable pkAction = [<[]>];
           
-          def Add(p)
-          {
-              body = p :: body;
-          }
+          def Add(p)   { body = p :: body;}
+          def AddPk(p) { pkAction = p :: pkAction;}
           
           def compileParm(parm : PExpr)
           {
@@ -133,10 +154,19 @@ namespace NRails.Macros.Migration
                   | <[ Size = $(number : int)]> 
                   | <[ len = $(number : int)]> 
                   | <[ length = $(number : int)]> 
-                  | <[ size = $(number : int)]> => Add(<[ $c.Size = $(number : long); ]>)
+                  | <[ size = $(number : int)]> 
+                  | <[ $(number : int)]> => 
+                    Add(<[ $c.Size = $(number : long); ]>)
                   
 
-                  | <[ pk ]> => pkAction = <[ $t.AddPk($(name.ToString() : string)); ]>;
+                  | <[ pk ]> => 
+                    AddPk(<[ $t.AddPk($(name.ToString() : string)); ]>);
+                  
+                  | <[ identity($(seed : int), $(increment : int))]> =>
+                    Add(<[
+                          $c.AutoIncrement = true;
+                          $c.Seed = $(seed : int);
+                          $c.Increment = $(increment : int);]>);
                   
                   | <[ $x = $_ ]> 
                   | x => Message.Error(x.loc, $"Invalid param '$x'")
@@ -168,7 +198,7 @@ namespace NRails.Macros.Migration
           {
               | null => {}
               // todo: надо разобраться как вычислять выражения типа даты
-              // и преобразовывать их в нужный сиквельный эквивалент
+              // и преобразовывать их в нужный сиквельный эквивалент (похоже тулкит умеет, глядел мельком)
               | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $("'"  + x.ToString() + "'": string) ; ]>);
               | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $("'"  + x + "'": string); ]>);
               | <[ $x ]> => Message.Error(x.loc, "Only string or int default value supported.");
@@ -181,14 +211,14 @@ namespace NRails.Macros.Migration
                       $t.Change($(name.ToString() : string), $c => {
                           ..$body
                       });
-                      $(pkAction);
+                      {..$pkAction};
                   ]>;
               | _ =>
                   <[ 
                       $t.Add($c => {
                           ..$body
                       });
-                      $(pkAction);
+                      {..$pkAction};
                   ]>;
           }
       }

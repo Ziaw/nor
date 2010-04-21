@@ -19,20 +19,58 @@ namespace NRails.Demo.Migrations
           
           protected override Up() : void
           {
-              create TestTable
-              {
-                  Id : Guid(pk);
-                  Zip : string?(len = 10) = "zzzz";
-                  Price : int = 10;
-              }
+             create Person
+             {
+                 PersonID : int(pk, identity(1, 1));
+                 FirstName : string(50);
+                 LastName : string(50);
+                 MiddleName : string?(50);
+                 Gender : char(1); // todo : длинну у char явно указывать не нужно
+             }
               
-              change TestTable
-              {
-                  change Zip : string(len = 20);
-                  drop Price;
-              }
-              
-              drop TestTable;
+             create Doctor
+             {
+                 PersonID :> Person; //todo : pk в ссылках и какскадные операции
+                 Taxonomy : string(50);
+             }
+             
+             create Patient
+             {
+                 PersonID :> Person; 
+                 Diagnosis : string(256); 
+             }
+             
+/*
+CREATE TABLE Person
+(
+	PersonID   int          NOT NULL IDENTITY(1,1) CONSTRAINT PK_Person PRIMARY KEY CLUSTERED,
+	FirstName  nvarchar(50) NOT NULL,
+	LastName   nvarchar(50) NOT NULL,
+	MiddleName nvarchar(50)     NULL,
+	Gender     char(1)      NOT NULL CONSTRAINT CK_Person_Gender CHECK (Gender in ('M', 'F', 'U', 'O'))
+)
+CREATE TABLE Doctor
+(
+	PersonID int          NOT NULL
+		CONSTRAINT PK_Doctor        PRIMARY KEY CLUSTERED
+		CONSTRAINT FK_Doctor_Person FOREIGN KEY
+			REFERENCES Person ([PersonID])
+			ON UPDATE CASCADE
+			ON DELETE CASCADE,
+	Taxonomy nvarchar(50) NOT NULL
+)
+CREATE TABLE Patient
+(
+	PersonID  int           NOT NULL
+		CONSTRAINT PK_Patient        PRIMARY KEY CLUSTERED
+		CONSTRAINT FK_Patient_Person FOREIGN KEY
+			REFERENCES Person ([PersonID])
+			ON UPDATE CASCADE
+			ON DELETE CASCADE,
+	Diagnosis nvarchar(256) NOT NULL
+)
+*/              
+             
           }
       
   }

@@ -81,7 +81,7 @@ namespace NRails.Migrations
                   conn.Open();
                   using (db = DbManager(conn))
                   {
-                      db.GetTable.[SchemaMigrations]().Select(sm => sm.Version);
+                      db.GetTable.[SchemaMigrations]().Select(sm => sm.Version).ToArray();
                   }
               }
               migrs.Filter(m => !existing.Contains(m.Version)).Sort((m, m2) => m.Version.CompareTo(m2.Version));

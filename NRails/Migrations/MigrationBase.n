@@ -78,6 +78,7 @@ namespace NRails.Migrations
       #region Helpers
       [Accessor]
       tableSchema : TableSchema;
+      schema : DBSchema;
       
       private GetColumn([NotNull]name : string) : TableColumnSchema
       {
@@ -86,9 +87,10 @@ namespace NRails.Migrations
           col;          
       }
 
-      public this([NotNull]tableSchema : TableSchema)
+      public this([NotNull]schema : DBSchema, [NotNull]tableSchema : TableSchema)
       {
           this.tableSchema = tableSchema;
+          this.schema = schema;
       }
       #endregion
       
@@ -112,6 +114,40 @@ namespace NRails.Migrations
                 | None => 
                     tableSchema.Keys.With(key);
             }
+          }
+      }
+      
+      public CreateReference([NotNull]names : string, [NotNull]table : string, isNullable : bool) : void
+      {
+          def fieldNames = names
+            .Replace("(", "")
+            .Replace(")", "")
+            .Split(',')
+            .Map(_.Trim());
+          
+          def refTable = schema.GetTable(table);
+          
+          when (refTable == null) throw ArgumentException($"Table $table not found", "table");
+          
+          def refKey = refTable.KeyPrimary();
+          def refFields = refKey.Columns.Split(',').Map(_.Trim());
+          
+          when (fieldNames.Length != refFields.Length)
+            throw InvalidOperationException($"Table $table has key '$refKey', cannot reference with '$names'");
+            
+          foreach ((name, templateName) in fieldNames.ZipLazy(refFields))
+          {
+              def t = refTable.GetColumn(templateName);
+              
+              Add(col =>
+              {
+                  col.Name = name;
+                  col.Type = t.Type;
+                  col.DecimalPrecision = t.DecimalPrecision;
+                  col.DecimalScale = t.DecimalScale;
+                  col.Nullable = isNullable;
+                  col.Size = t.Size;
+              });
           }
       }
       
@@ -178,7 +214,7 @@ namespace NRails.Migrations
       private RunActions([NotNull]table : TableSchema, [NotNull]action : TableActions -> void) 
          : (TableSchema * list[TableAction])
       {
-          def actions = TableActions(table);
+          def actions = TableActions(schema, table);
 
           action(actions);
           

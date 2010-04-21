@@ -54,7 +54,7 @@ module Program
   {
       def ma = Assembly.LoadFile(Path.GetFullPath(migrationAssmbly));
 
-      def migrationTypes = ma.GetExportedTypes().Filter(t => t.IsSubclassOf(typeof(IMigration)));
+      def migrationTypes = ma.GetExportedTypes().Filter(t => t.IsSubclassOf(typeof(MigrationBase)));
       
       def migrator = Migrator(Engine.Instance);
       

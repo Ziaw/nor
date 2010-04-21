@@ -18,6 +18,21 @@ namespace NRails.Macros.Migration
       _ = <[ $name : name ]>;
       _ = <[ $code : PExpr.Sequence ]>;
       MigrationImpl.Create(Nemerle.Macros.ImplicitCTX(), name, code);
+
+  }
+
+  public macro createIndex(_expr) : PExpr
+  syntax("createindex", _expr)
+  {
+      // returning value is not used, parsed by outer macro
+      <[]>
+  }
+
+  public macro dropIndex(_name) : PExpr
+  syntax("drop", "index", _name)
+  {
+      // returning value is not used, parsed by outer macro
+      <[]>
   }
   
   public macro change(name, code) : PExpr
