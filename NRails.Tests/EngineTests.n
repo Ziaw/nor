@@ -24,7 +24,6 @@ namespace NRails.Tests
           def engine = Engine(cfg);
           Expect(engine.Cfg, Is.Not.Null);
           def schema = engine.GetSchema();
-          Expect(schema.Tables.Count(), EqualTo(9));
           def schema2 = engine.GetSchema();
           Expect(schema2, Is.SameAs(schema));
       }

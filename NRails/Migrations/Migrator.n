@@ -156,12 +156,9 @@ namespace NRails.Migrations
                {
                    | TableAction.AddColumn(col) :: tail => 
                         ddlHandler(schemaDriver.MakeDdlColumnCreate(col, table));
-                        table.Columns = table.Columns.With(col);
                         processChange(table, tail);
                    | TableAction.ChangeColumn(col, newCol) :: tail =>
                         ddlHandler(schemaDriver.MakeDdlColumnAlter(col, newCol, table));
-                        def oldIndex = Array.IndexOf(table.Columns, col);
-                        table.Columns[oldIndex] = newCol;
                         processChange(table, tail);
                    | TableAction.DropColumn(col) :: tail =>
                         
@@ -172,7 +169,6 @@ namespace NRails.Migrations
 		                    }
 
                         ddlHandler(schemaDriver.MakeDdlColumnDrop(col, table));
-                        table.Columns = table.Columns.Without(col);
                         processChange(table, tail);
                    | [] => {}
                    | _ => throw InvalidOperationException();

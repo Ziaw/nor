@@ -52,19 +52,15 @@ module Program
   
   Migrate(_args : list[string]) : void
   {
-      def maAbsolutePath = Path.GetFullPath(migrationAssmbly);
-      def ma = Assembly.LoadFile(maAbsolutePath);
-      def migrationBaseType = typeof(MigrationBase);
-      def maTypes = ma.GetExportedTypes();
-      def migrationTypes = maTypes.Filter(t => t.IsSubclassOf(migrationBaseType));
-      
-      migrationTypes.Iter(t => Console.WriteLine(t.Name));
+      def ma = Assembly.LoadFile(Path.GetFullPath(migrationAssmbly));
+
+      def migrationTypes = ma.GetExportedTypes().Filter(t => t.IsSubclassOf(typeof(IMigration)));
       
       def migrator = Migrator(Engine.Instance);
       
       def makeMigration(migrationType)
       {
-          Activator.CreateInstance(migrationType) :> MigrationBase;
+          Activator.CreateInstance(migrationType) :> IMigration;
       }
       
       migrator.Migrate(migrationTypes.Map(makeMigration));

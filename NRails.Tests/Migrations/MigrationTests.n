@@ -27,14 +27,18 @@ namespace NRails.Tests
           {
               create Test
               {
-                  Id : Guid;
+                  Id : Guid(pk);
                   Zip : string?(len = 10) = "zzzz";
               };
               
               change Test
               {
                   Street : string;
+                  change Zip : string(len = 20);
+                  drop Id;
               }
+              
+              drop Test;
           }
       }
 
@@ -45,7 +49,9 @@ namespace NRails.Tests
           {
               match (actions)
               {
-                | [MigrationAction.CreateTable(table, tableActions)] => 
+                | [MigrationAction.CreateTable(table, tableActions), 
+                   MigrationAction.ChangeTable(table2, table2Actions),
+                   MigrationAction.DropTable(table3)] => 
                     Expect(table.Name, Is.EqualTo("Test"));
                     match (tableActions)
                     {
@@ -57,11 +63,32 @@ namespace NRails.Tests
                             Expect(col2.Type, Is.EqualTo(ColumnType.NCharacterVaring));
                             Expect(col2.Size, Is.EqualTo(10));
                             Expect(col2.Nullable, Is.EqualTo(true));
-                            Expect(col2.DefaultValue, Is.EqualTo("zzzz"));
+                            Expect(col2.DefaultValue, Is.EqualTo("'zzzz'"));
                             
                         | _ => Assert.Fail("2 AddColumn actions expected");
                     }
-                | _ => Assert.Fail("Create table action expected");
+                    match (table.Keys.ToNList())
+                    {
+                        | [key] =>
+                          Expect(key.Columns, Is.EqualTo("Id"));
+                          Expect(key.KeyType, Is.EqualTo(ConstraintType.KeyPrimary));
+                        | _ => Assert.Fail("pk")
+                    }
+                    Expect(table2.Name, Is.EqualTo("Test"));
+                    match (table2Actions)
+                    {
+                        | [TableAction.AddColumn(col), 
+                           TableAction.ChangeColumn(colZip, colNewZip),
+                           TableAction.DropColumn(colId)] =>
+                           def cols = [col, colZip, colNewZip, colId];
+                           Expect(cols.Map(_.Name), Is.EquivalentTo(["Street", "Zip", "Zip", "Id"]));
+                           Expect(cols.Map(_.Type), Is.EquivalentTo([ColumnType.NCharacterVaring, ColumnType.NCharacterVaring, ColumnType.NCharacterVaring, ColumnType.Guid]));
+                           Expect(colNewZip.Nullable, EqualTo(false));
+                           Expect(colNewZip.Size, EqualTo(20))
+                        | _ => Assert.Fail("change");
+                    }
+                    Expect(table3.Name, EqualTo("Test"));
+                | _ => Assert.Fail();
               }
           });
       }

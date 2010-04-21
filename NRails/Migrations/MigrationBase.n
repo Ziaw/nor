@@ -121,6 +121,7 @@ namespace NRails.Migrations
           
           colAction(colSchema);
           
+          tableSchema.Columns = tableSchema.Columns.With(colSchema);
           AddAction(TableAction.AddColumn(colSchema));
       }
 
@@ -132,12 +133,15 @@ namespace NRails.Migrations
           
           colAction(newColumn);
           
+          tableSchema.Columns.Replace(oldColumn, newColumn);
           AddAction(TableAction.ChangeColumn(oldColumn, newColumn));
       }
 
       public Drop([NotNull] name : string) : void
       {
-          AddAction(TableAction.DropColumn(GetColumn(name)));
+          def col = GetColumn(name);
+          tableSchema.Columns = tableSchema.Columns.Without(col);
+          AddAction(TableAction.DropColumn(col));
       }
   }
   
