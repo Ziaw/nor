@@ -17,6 +17,12 @@ namespace NRails.Demo.Migrations
   {
           public this () {base("000000")}
           
+          public class Person 
+          { 
+            public mutable PersonID : int; 
+            public mutable LastName : string;
+          }
+          
           protected override Up() : void
           {
              create Person
@@ -30,15 +36,16 @@ namespace NRails.Demo.Migrations
               
              create Doctor
              {
-                 PersonID :> Person; //todo : pk в ссылках и какскадные операции
+                 PersonID :> Person(pk); 
                  Taxonomy : string(50);
              }
              
              create Patient
              {
-                 PersonID :> Person; 
+                 PersonID :> Person;
                  Diagnosis : string(256); 
              }
+
              
 /*
 CREATE TABLE Person

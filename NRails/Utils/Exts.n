@@ -15,6 +15,8 @@ namespace NRails
   {
       public With[T](this src : array[T], withMember : T) : array[T]
       {
+          def src = if (src != null) src else array[];
+          
           def dst = array.[T](src.Length+1);
           Array.Copy(src, dst, src.Length);
           dst[dst.Length - 1] = withMember;
@@ -23,6 +25,7 @@ namespace NRails
 
       public Without[T](this src : array[T], withMember : T) : array[T]
       {
+          def src = if (src != null) src else array[];
           def index = Array.IndexOf(src, withMember);
           if (index >= 0)
           {

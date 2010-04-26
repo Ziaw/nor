@@ -24,6 +24,8 @@ namespace NRails.Migrations
       | AddColumn { col : TableColumnSchema }
       | ChangeColumn { col : TableColumnSchema; newCol : TableColumnSchema}
       | DropColumn { col : TableColumnSchema }
+      | CreateIndex { idx : IndexSchema }
+      | DropIndex { idx : IndexSchema }
   }
   
   public interface IActionHolder[T]
@@ -87,7 +89,15 @@ namespace NRails.Migrations
           col;          
       }
 
+      private GetIndex([NotNull]name : string) : IndexSchema
+      {
+          def idx = tableSchema.GetIndex(name);
+          when (idx == null) throw ArgumentException($"Index '$name' not found in table $(tableSchema.Name)", "name");
+          idx;          
+      }
+
       public this([NotNull]schema : DBSchema, [NotNull]tableSchema : TableSchema)
+
       {
           this.tableSchema = tableSchema;
           this.schema = schema;
@@ -115,6 +125,22 @@ namespace NRails.Migrations
                     tableSchema.Keys.With(key);
             }
           }
+      }
+      
+      public AddIndex([NotNull] idxAction : IndexSchema -> void) : void
+      {
+          def idx = IndexSchema();
+          
+          idxAction(idx);
+          
+          AddAction(TableAction.CreateIndex(idx));
+      }
+      
+      public DropIndex([NotNull] name : string) : void
+      {
+          def idx = GetIndex(name);
+          
+          AddAction(TableAction.DropIndex(idx));
       }
       
       public CreateReference([NotNull]names : string, [NotNull]table : string, isNullable : bool) : void
