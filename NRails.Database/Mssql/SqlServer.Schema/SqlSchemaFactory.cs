@@ -10,13 +10,20 @@ namespace NRails.Database.Mssql.SqlServer.Schema
 	internal static class SqlSchemaFactory
 	{
         private static DataSet _ds;
+        private static readonly object _dsCreateLock = new object();
 
 	    public static DataSet GetMetaDataSet()
 	    {
             if (_ds == null)
             {
-                _ds = new DataSet();
-                _ds.ReadXml(new StringReader(Resources.MetaData));
+                lock (_dsCreateLock)
+                {
+                    if (_ds == null)
+                    {
+                        _ds = new DataSet();
+                        _ds.ReadXml(new StringReader(Resources.MetaData));
+                    }
+                }
             }
 	        return _ds;
 	    }

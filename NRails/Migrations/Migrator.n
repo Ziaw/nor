@@ -66,6 +66,17 @@ namespace NRails.Migrations
           {
               // try create
               schemaDriver.CreateDatabase(connString);
+              // хак для исправления асинхронного создания БД в MSSQL2008
+              mutable trys = 20;
+              while (!dbDriver.CheckConnectionString(connString))
+              {
+                  System.Threading.Thread.Sleep(100);
+                  trys --;
+                  when (trys <= 0)
+                  {
+                      throw Exception("Can't connect to created DB.")
+                  }
+              }
           }
           
           def schema = schemaDriver.LoadExistingSchema(connString);
