@@ -29,7 +29,7 @@ namespace NRails.Tests
               {
                   Id : Guid(pk);
                   Zip : string?(len = 10) = "zzzz";
-                  create index IDX_Test(Id, Zip);
+                  createindex IDX_Test(Id(desc), Zip);
               };
               
               change Test
@@ -37,6 +37,7 @@ namespace NRails.Tests
                   Street : string;
                   change Zip : string(len = 20);
                   drop Id;
+                  dropindex IDX_Test;
               }
               
               drop Test;
@@ -56,7 +57,9 @@ namespace NRails.Tests
                     Expect(table.Name, Is.EqualTo("Test"));
                     match (tableActions)
                     {
-                        | [TableAction.AddColumn(col), TableAction.AddColumn(col2)] => 
+                        | [TableAction.AddColumn(col), 
+                           TableAction.AddColumn(col2),
+                           TableAction.CreateIndex(idx)] => 
                             Expect(col.Name, Is.EqualTo("Id"));
                             Expect(col.Type, Is.EqualTo(ColumnType.Guid));
                             
@@ -65,6 +68,8 @@ namespace NRails.Tests
                             Expect(col2.Size, Is.EqualTo(10));
                             Expect(col2.Nullable, Is.EqualTo(true));
                             Expect(col2.DefaultValue, Is.EqualTo("'zzzz'"));
+                            Expect(idx.Name, Is.EqualTo("IDX_Test"));
+                            Expect(idx.Columns, Is.EqualTo("Id desc, Zip"));
                             
                         | _ => Assert.Fail("2 AddColumn actions expected");
                     }
@@ -80,12 +85,14 @@ namespace NRails.Tests
                     {
                         | [TableAction.AddColumn(col), 
                            TableAction.ChangeColumn(colZip, colNewZip),
-                           TableAction.DropColumn(colId)] =>
+                           TableAction.DropColumn(colId),
+                           TableAction.DropIndex(idx)] =>
                            def cols = [col, colZip, colNewZip, colId];
                            Expect(cols.Map(_.Name), Is.EquivalentTo(["Street", "Zip", "Zip", "Id"]));
                            Expect(cols.Map(_.Type), Is.EquivalentTo([ColumnType.NCharacterVaring, ColumnType.NCharacterVaring, ColumnType.NCharacterVaring, ColumnType.Guid]));
                            Expect(colNewZip.Nullable, EqualTo(false));
-                           Expect(colNewZip.Size, EqualTo(20))
+                           Expect(colNewZip.Size, EqualTo(20));
+                           Expect(idx.Name, Is.EqualTo("IDX_Test"));
                         | _ => Assert.Fail("change");
                     }
                     Expect(table3.Name, EqualTo("Test"));

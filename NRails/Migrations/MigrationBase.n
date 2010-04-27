@@ -127,13 +127,24 @@ namespace NRails.Migrations
           }
       }
       
-      public AddIndex([NotNull] idxAction : IndexSchema -> void) : void
+      public CreateIndex([NotNull] idxAction : IndexSchema -> void) : void
       {
           def idx = IndexSchema();
           
           idxAction(idx);
           
+          tableSchema.Indexes = tableSchema.Indexes.With(idx);
+          
           AddAction(TableAction.CreateIndex(idx));
+      }
+      
+      public CreateIndex([NotNull] indexName : string, [NotNull] fields : string) : void
+      {
+          CreateIndex(i => {
+             i.Name = indexName;
+             i.PrimaryKey = false;
+             i.Columns = fields;
+          });
       }
       
       public DropIndex([NotNull] name : string) : void

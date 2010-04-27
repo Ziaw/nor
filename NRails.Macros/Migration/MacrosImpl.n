@@ -98,10 +98,10 @@ namespace NRails.Macros.Migration
                                        <[ $t.Drop($(name.ToString() : string)) ]>
                                     | _ => Message.Error(x.loc, "Invalid drop syntax"); <[]>
                                 });
-                        |  ("createindex", [SyntaxElement.Expression(_)]) =>
-                            Message.Warning(s.loc, "create index is not implemented."); <[]>
-                        |  ("dropindex", [SyntaxElement.Expression(_)]) =>
-                            Message.Warning(s.loc, "drop index is not implemented."); <[]>
+                        |  ("createindex", [SyntaxElement.Expression(expr)]) =>
+                            CompileCreateIndex(t, expr);
+                        |  ("dropindex", [SyntaxElement.Expression(expr)]) =>
+                            CompileDropIndex(t, expr);
                         | _ => 
                            Message.Error(s.loc, $"Invalid macro call '$(name.ToString())'");
                            <[]>
@@ -129,6 +129,41 @@ namespace NRails.Macros.Migration
           }
       }
 
+      CompileCreateIndex(t : PExpr.Ref, expr : PExpr) : PExpr
+      {
+          def parseField(f)
+          {
+              match (f)
+              {
+                  | <[ $(id : name) ]> => id.ToString();
+                  | <[ $(id : name)(desc) ]> => $"$(id.ToString()) desc";
+                  | <[ $(id : name)(asc) ]> => $"$(id.ToString()) desc";
+                  | _ => Message.Error(f.loc, "Invalid field, syntax: FieldName[(desc)]"); String.Empty;
+              }
+          }
+          match (expr)
+          {
+              | <[ $(indexName : name)(..$fields) ]> =>
+                def fieldsDef = String.Join(", ", fields.Map(parseField).ToArray());
+                <[ $t.CreateIndex($(indexName.ToString() : string), $(fieldsDef : string)); ]>
+              | _ => 
+                Message.Error(expr.loc, "Invalid index definition, valid syntax: createindex IndexName(field1, field2 [desc])");
+                <[]>
+          }
+      }
+      
+      CompileDropIndex(t : PExpr.Ref, expr : PExpr) : PExpr
+      {
+          match (expr)
+          {
+              | <[ $(indexName : name) ]> =>
+                <[ $t.DropIndex($(indexName.ToString() : string)); ]>
+              | _ => 
+                Message.Error(expr.loc, "Invalid dropindex syntax, valid: dropindex IndexName");
+                <[]>
+          }
+      }
+      
       CompileReference(t : PExpr.Ref, _ : PExpr.Ref, name : PExpr, type_ : PExpr, isNullable : bool, action : ParsedAction) : PExpr
       {
           match (action)
