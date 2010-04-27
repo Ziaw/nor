@@ -39,7 +39,22 @@ namespace NRails.Database.Mssql
 			}
 		}
 
-		#region Migration
+        public override bool DatabaseExists(string connectionString)
+	    {
+            string dbName;
+
+            using (var con = ConnectToMaster(connectionString, out dbName))
+            using (var cmd = con.CreateCommand())
+            {
+                con.Open();
+                cmd.CommandText = "select 1 from sys.databases where name=@dbName";
+                cmd.Parameters.Add(new SqlParameter("@dbName", dbName));
+                var res = cmd.ExecuteScalar();
+                return res == (object)1;
+            }
+        }
+
+	    #region Migration
 		public override IDbConnection CreateConnection(string connStr)
 		{
 			return new SqlConnection(connStr);

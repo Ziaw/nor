@@ -57,29 +57,19 @@ namespace NRails.Migrations
       
       public Migrate(migrs : list[IMigration]) : void
       {
+          log("begin migrations");
           def dbDriver = engine.CreateDbDriver();
           def connString = engine.Cfg.ConnectionString.ConnectionString;
           def schemaDriver = dbDriver.CreateSchemaDriver();
           
-          // todo: нужна более адекватная проверка существования БД
-          unless (dbDriver.CheckConnectionString(connString))
+          unless (schemaDriver.DatabaseExists(connString))
           {
-              // try create
               schemaDriver.CreateDatabase(connString);
-              // хак для исправления асинхронного создания БД в MSSQL2008
-              mutable trys = 20;
-              while (!dbDriver.CheckConnectionString(connString))
-              {
-                  System.Threading.Thread.Sleep(100);
-                  trys --;
-                  when (trys <= 0)
-                  {
-                      throw Exception("Can't connect to created DB.")
-                  }
-              }
+              log("database created");
           }
           
           def schema = schemaDriver.LoadExistingSchema(connString);
+          log("schema loaded");
           
           def absentMigrations = if (!schema.Tables.Any(t => t.Name == SchemaMigrations))
           {
@@ -99,13 +89,24 @@ namespace NRails.Migrations
           }
 
           RunMigrationsUp(absentMigrations, schema, schemaDriver, connString);
+          log("end migrations");
+      }
+      
+      log(str : string) : void
+      {
+          def ts()
+          {
+              def now = DateTime.Now.ToString("hh:mm:ss.fff");
+              $"[$now]"
+          }
+          Console.WriteLine($"$(ts()) $str");
       }
       
       RunMigrationsUp(migrations : list[IMigration], schema : DBSchema, schemaDriver : IDBSchemaDriver, connString : string) : void
       {
           foreach (m in migrations)
           {
-              Console.WriteLine(m.Version);
+              log($"Start migration '$(m.Version)'");
               m.AssignSchema(schema);
               try 
               {
@@ -121,12 +122,15 @@ namespace NRails.Migrations
                       when (!m.Version.EndsWith("!"))
                           using (db = DbManager(conn))
                           {
+                              log($"insert migration info $(m.Version)");
                               def newVersion = SchemaMigrations();
                               newVersion.Version = m.Version;
                               _ = db.Insert(newVersion);
+                              log("migration info inserted");
                           }
                       tx.Complete();
                   }
+                  log($"Finish migration '$(m.Version)'");
               }
               catch 
               {
@@ -141,7 +145,7 @@ namespace NRails.Migrations
           {
               //cmd.Transaction = trans;
               cmd.CommandText = ddl;
-              Console.WriteLine(ddl);
+              log($"$ddl");
               _ = cmd.ExecuteNonQuery();
           }
       }

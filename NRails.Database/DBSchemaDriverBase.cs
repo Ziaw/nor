@@ -30,6 +30,7 @@ namespace NRails.Database
 
 		#region Public Metods
 		public abstract void CreateDatabase(string constr);
+	    public abstract bool DatabaseExists(string constr);
 
 	    /// <summary>
 	    /// Создать схему метаданных из исходной базы
@@ -632,7 +633,7 @@ namespace NRails.Database
 					stat.Append(@" " + ParseKey(key));
 			}
 
-			return string.Format(@"CREATE TABLE {0} ({1})",
+			return string.Format("CREATE TABLE {0} (\n\t{1})",
 				MakeDdlElementName(table.Name), stat);
 		}
 

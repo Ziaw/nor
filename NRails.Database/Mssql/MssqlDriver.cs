@@ -33,7 +33,7 @@ namespace NRails.Database.Mssql
 			return true;
 		}
 
-		/// <summary>
+	    /// <summary>
 		/// Получить драйвер схемы.
 		/// </summary>
 		/// <returns></returns>

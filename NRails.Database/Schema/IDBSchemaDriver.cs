@@ -12,7 +12,13 @@ namespace NRails.Database.Schema
 		/// <param name="constr">строка подключения</param>
 		void CreateDatabase(string constr);
 
-	    /// <summary>
+        /// <summary>
+        /// Проверить наличие БД.
+        /// </summary>
+        /// <param name="connectionString">строка подключения</param>
+        bool DatabaseExists(string connectionString);
+
+        /// <summary>
 	    /// Создать схему метаданных из исходной базы
 	    /// </summary>
 	    /// <param name="connStr"></param>
