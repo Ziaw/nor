@@ -31,7 +31,7 @@ namespace NRails.Migrations
       {
           public this () 
           {
-              base("!init!");
+              base("init!");
           }
           
           protected override Up() : void

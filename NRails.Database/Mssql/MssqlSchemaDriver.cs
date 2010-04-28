@@ -50,7 +50,7 @@ namespace NRails.Database.Mssql
                 cmd.CommandText = "select 1 from sys.databases where name=@dbName";
                 cmd.Parameters.Add(new SqlParameter("@dbName", dbName));
                 var res = cmd.ExecuteScalar();
-                return res == (object)1;
+                return res != null;
             }
         }
 
