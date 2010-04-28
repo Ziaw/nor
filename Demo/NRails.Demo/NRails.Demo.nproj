@@ -80,6 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.n" />
+    <Compile Include="Migrations\TestMigration.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Models\Db.n">
       <SubType>Code</SubType>
     </Compile>
@@ -121,6 +124,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Content\" />
     <Folder Include="Controllers\" />
+    <Folder Include="Migrations\" />
     <Folder Include="Models\" />
     <Folder Include="Properties\" />
     <Folder Include="Scripts\" />
@@ -136,6 +140,11 @@
     </MacroProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NRails.Database\NRails.Database.csproj">
+      <Name>NRails.Database</Name>
+      <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\NRails\NRails.nproj">
       <Name>NRails</Name>
       <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
