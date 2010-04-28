@@ -1,0 +1,157 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using Nemerle.Assertions;
+using Nemerle.Extensions;
+using NRails.Database.Schema;
+
+namespace NRails.Migrations
+{
+  public class TableActions : ActionHolder[TableAction]
+  {
+      #region Helpers
+      [Accessor]
+      tableSchema : TableSchema;
+      schema : DBSchema;
+      
+      private GetColumn([NotNull]name : string) : TableColumnSchema
+      {
+          def col = tableSchema.GetColumn(name);
+          when (col == null) throw ArgumentException($"Column '$name' not found in table $(tableSchema.Name)", "name");
+          col;          
+      }
+
+      private GetIndex([NotNull]name : string) : IndexSchema
+      {
+          def idx = tableSchema.GetIndex(name);
+          when (idx == null) throw ArgumentException($"Index '$name' not found in table $(tableSchema.Name)", "name");
+          idx;          
+      }
+
+      public this([NotNull]schema : DBSchema, [NotNull]tableSchema : TableSchema)
+
+      {
+          this.tableSchema = tableSchema;
+          this.schema = schema;
+      }
+      #endregion
+      
+      public AddPk([NotNull] colName : string) : void
+      {
+          def key = KeySchema();
+          key.KeyType = ConstraintType.KeyPrimary;
+          key.Columns = colName;
+
+          tableSchema.Keys = if (tableSchema.Keys == null)
+            array[key]
+          else
+          {
+            def old = tableSchema.Keys.Find(k => k.KeyType == ConstraintType.KeyPrimary);
+            match (old)
+            {
+                | Some(key) => 
+                    key.Columns += $", $colName";
+                    tableSchema.Keys;
+                    
+                | None => 
+                    tableSchema.Keys.With(key);
+            }
+          }
+      }
+      
+      public CreateIndex([NotNull] idxAction : IndexSchema -> void) : void
+      {
+          def idx = IndexSchema();
+          
+          idxAction(idx);
+          
+          tableSchema.Indexes = tableSchema.Indexes.With(idx);
+          
+          AddAction(TableAction.CreateIndex(idx));
+      }
+      
+      public CreateIndex([NotNull] indexName : string, [NotNull] fields : string) : void
+      {
+          CreateIndex(i => {
+             i.Name = indexName;
+             i.PrimaryKey = false;
+             i.Columns = fields;
+          });
+      }
+      
+      public DropIndex([NotNull] name : string) : void
+      {
+          def idx = GetIndex(name);
+          
+          AddAction(TableAction.DropIndex(idx));
+      }
+      
+      public CreateReference([NotNull]names : string, [NotNull]table : string, isNullable : bool) : void
+      {
+          def fieldNames = names
+            .Replace("(", "")
+            .Replace(")", "")
+            .Split(',')
+            .Map(_.Trim());
+          
+          def refTable = schema.GetTable(table);
+          
+          when (refTable == null) throw ArgumentException($"Table $table not found", "table");
+          
+          def refKey = refTable.KeyPrimary();
+          def refFields = refKey.Columns.Split(',').Map(_.Trim());
+          
+          when (fieldNames.Length != refFields.Length)
+            throw InvalidOperationException($"Table $table has key '$refKey', cannot reference with '$names'");
+            
+          foreach ((name, templateName) in fieldNames.ZipLazy(refFields))
+          {
+              def t = refTable.GetColumn(templateName);
+              
+              Add(col =>
+              {
+                  col.Name = name;
+                  col.Type = t.Type;
+                  col.DecimalPrecision = t.DecimalPrecision;
+                  col.DecimalScale = t.DecimalScale;
+                  col.Nullable = isNullable;
+                  col.Size = t.Size;
+              });
+          }
+      }
+      
+      public Add([NotNull] colAction : TableColumnSchema -> void) : void
+      {
+          def colSchema = TableColumnSchema();
+          
+          colAction(colSchema);
+          
+          tableSchema.Columns = tableSchema.Columns.With(colSchema);
+          AddAction(TableAction.AddColumn(colSchema));
+      }
+
+      public Change([NotNull] name : string, [NotNull] colAction : TableColumnSchema -> void) : void
+      {
+          def oldColumn = GetColumn(name);
+          
+          def newColumn = oldColumn.Clone();
+          
+          colAction(newColumn);
+          
+          tableSchema.Columns.Replace(oldColumn, newColumn);
+          AddAction(TableAction.ChangeColumn(oldColumn, newColumn));
+      }
+
+      public Drop([NotNull] name : string) : void
+      {
+          def col = GetColumn(name);
+          tableSchema.Columns = tableSchema.Columns.Without(col);
+          AddAction(TableAction.DropColumn(col));
+      }
+  }
+ 
+}

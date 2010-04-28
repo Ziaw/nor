@@ -1,0 +1,22 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using Nemerle.Assertions;
+using Nemerle.Extensions;
+using NRails.Database.Schema;
+
+namespace NRails.Migrations
+{
+  public variant TableAction
+  {
+      | AddColumn { col : TableColumnSchema }
+      | ChangeColumn { col : TableColumnSchema; newCol : TableColumnSchema}
+      | DropColumn { col : TableColumnSchema }
+      | CreateIndex { idx : IndexSchema }
+      | DropIndex { idx : IndexSchema }
+  }
+}

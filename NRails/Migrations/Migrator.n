@@ -17,11 +17,6 @@ using BLToolkit.DataAccess;
 
 namespace NRails.Migrations
 {
-  public class SchemaMigrations
-  {
-      mutable public Version : string;
-  }
-    
   public class Migrator
   {
       public static SchemaMigrations = "SchemaMigrations" : string;

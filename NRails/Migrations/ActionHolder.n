@@ -1,0 +1,53 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using Nemerle.Assertions;
+using Nemerle.Extensions;
+using NRails.Database.Schema;
+
+namespace NRails.Migrations
+{
+  public class ActionHolder[T] : IActionHolder[T]
+  {
+      mutable actionStack : list[T] = [];
+      protected mutable actionHandler : T -> void;
+      
+      class DisposableHelper : IDisposable
+      {
+          onDispose : void -> void;
+          
+          public this(onDispose : void -> void)
+          {
+              this.onDispose = onDispose;
+          }
+          
+          public Dispose() : void
+          {
+              onDispose();
+          }
+      }
+      
+      
+      protected AddAction(action : T) : void implements IActionHolder[T].Add
+      {
+          when (actionHandler != null) actionHandler(action);
+          
+          actionStack = action :: actionStack;
+      }
+      
+      GetActions() : list[T] implements IActionHolder[T].GetActions
+      {
+          actionStack.Rev();
+      }
+      
+      HandlerScope(handler : T -> void) : IDisposable  implements IActionHolder[T].HandlerScope
+      {
+          this.actionHandler = handler;
+          DisposableHelper(() => this.actionHandler = null);
+      }
+  }
+}
