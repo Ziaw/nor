@@ -10,9 +10,6 @@ using NRails.Macros.Migration;
 
 namespace NRails.Demo.Migrations
 {
-  /// <summary>
-  /// Description of TestMigration.
-  /// </summary>
   public class TestMigration : MigrationBase
   {
           public this () {base("000000")}

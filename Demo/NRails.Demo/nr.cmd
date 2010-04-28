@@ -1,1 +1,1 @@
-..\..\NRails.Console\bin\Debug\NRails.Console.exe %*
+lib\nrails\NRails.Console.exe %*
