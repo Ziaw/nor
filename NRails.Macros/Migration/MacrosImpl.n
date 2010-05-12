@@ -229,53 +229,10 @@ namespace NRails.Macros.Migration
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
           mutable pkAction = [<[]>];
-          mutable size = -1;
-          mutable scale = 0;
-          mutable precision = -1;
           
           def Add(p)   { body = p :: body;}
           def AddPk(p) { pkAction = p :: pkAction;}
           
-          def compileParm(parm : PExpr)
-          {
-              match (parm)
-              {
-                  | <[ Scale = $(number : int)]>
-                  | <[ scale = $(number : int)]> 
-                    => 
-                    when (size > 0) Message.Error(parm.loc, "Can not define scale with size.");
-                    scale = number;
-                    
-                  | <[ Precision = $(number : int)]>
-                  | <[ precision = $(number : int)]> 
-                    => 
-                    when (size > 0) Message.Error(parm.loc, "Can not define precision with size.");
-                    precision = number;
-                  
-                  | <[ Size = $(number : int)]> 
-                  | <[ len = $(number : int)]> 
-                  | <[ length = $(number : int)]> 
-                  | <[ size = $(number : int)]> 
-                  | <[ $(number : int)]> 
-                    =>
-                    when (precision > 0 || scale > 0) Message.Error(parm.loc, "Can not define size with precision and scale.");
-                    size = number;
-
-                  | <[ pk ]> 
-                    => AddPk(<[ $t.AddPk($(name.ToString() : string)); ]>);
-                  
-                  | <[ identity]> with (seed = 1, increment = 1) 
-                  | <[ identity($(seed : int), $(increment : int))]> 
-                    => Add(<[
-                          $c.AutoIncrement = true;
-                          $c.Seed = $(seed : int);
-                          $c.Increment = $(increment : int);]>);
-                  
-                          
-                  | <[ $x = $_ ]> 
-                  | x => Message.Error(x.loc, $"Invalid param '$x'")
-              }
-          }
           
           match (type_)
           {
@@ -287,23 +244,70 @@ namespace NRails.Macros.Migration
                 
                 if (columnType != null)
                 {
-                    when (size <= 0 && columnType.Length > 0)
-                        size = columnType.Length;
-                        
+                    mutable size = columnType.Length;
+                    mutable scale = columnType.Scale;
+                    mutable precision = columnType.Precision;
+                    
+                    def compileParm(parm : PExpr)
+                    {
+                      match (parm)
+                      {
+                          | <[ Scale = $(number : int)]>
+                          | <[ scale = $(number : int)]> 
+                            => 
+                            when (size > 0) Message.Error(parm.loc, "Can not define scale with size.");
+                            scale = number;
+                            
+                          | <[ Precision = $(number : int)]>
+                          | <[ precision = $(number : int)]> 
+                            => 
+                            when (size > 0) Message.Error(parm.loc, "Can not define precision with size.");
+                            precision = number;
+                          
+                          | <[ Size = $(number : int)]> 
+                          | <[ len = $(number : int)]> 
+                          | <[ length = $(number : int)]> 
+                          | <[ size = $(number : int)]> 
+                          | <[ $(number : int)]> 
+                            =>
+                            when (precision > 0 || scale > 0) Message.Error(parm.loc, "Can not define size with precision and scale.");
+                            size = number;
+
+                          | <[ pk ]> 
+                            => AddPk(<[ $t.AddPk($(name.ToString() : string)); ]>);
+                          
+                          | <[ identity]> with (seed = 1, increment = 1) 
+                          | <[ identity($(seed : int), $(increment : int))]> 
+                            => 
+                              Add(<[ $c.AutoIncrement = true; ]>);
+                              Add(<[ $c.Seed = $(seed : int); ]>);
+                              Add(<[ $c.Increment = $(increment : int); ]>);
+                                  
+                          | <[ $x = $_ ]> 
+                          | x => Message.Error(x.loc, $"Invalid param '$x'")
+                      }
+                    }
+                    
                     parms.Iter(compileParm);
+                    
                     def sqlDbType = <[System.Data.SqlDbType.$(columnType.DbType.ToString() : usesite)]>;
                 
                     def typeExpr = match (size, precision, scale)
                     {
-                        | (size, precision, _) when (size <= 0 && precision <= 0) =>
-                             <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType); ]>;
-                        | (size, _, _) when (size > 0) =>
+                        | (size, _, _) when size > 0 
+                            =>
                              <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType, $(size : int)); ]>;
-                        | (_, precision, scale) =>
+                        | (_, _, _) when precision <= 0
+                            =>
+                             <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType); ]>;
+                        | (_, precision, scale) 
+                            =>
                              <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType, $(precision : int), $(scale : int)); ]>;
                     }
                     Add(typeExpr);
-                    Add(<[ $c.Nullable = $(isNullable : bool); ]>);
+                    
+                    when (isNullable)
+                        Add(<[ $c.Nullable = $(isNullable : bool); ]>);
                 }
                 else
                 {
@@ -313,7 +317,7 @@ namespace NRails.Macros.Migration
           
           match (defExpr)
           {
-              | null => {}
+              | null => ()
               // todo: надо разобраться как вычислять выражения типа даты
               // и преобразовывать их в нужный сиквельный эквивалент (похоже тулкит умеет, глядел мельком)
               | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $("'"  + x.ToString() + "'": string) ; ]>);
