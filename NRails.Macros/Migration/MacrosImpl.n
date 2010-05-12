@@ -287,9 +287,6 @@ namespace NRails.Macros.Migration
                 
                 if (columnType != null)
                 {
-                    def intType = columnType.DbType :> int;
-                    Message.Hint(typeName.loc, $"$(columnType.DbType.ToString()), $(intType)");
-                    
                     when (size <= 0 && columnType.Length > 0)
                         size = columnType.Length;
                         

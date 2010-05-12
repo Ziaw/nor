@@ -29,7 +29,7 @@ namespace NRails.Demo.Migrations
                  FirstName : string(50);
                  LastName : string(50);
                  MiddleName : string?(50);
-                 Gender : char(1); // todo : длину у char явно указывать не нужно
+                 Gender : char; // todo : длину у char явно указывать не нужно
              }
               
              create Doctor

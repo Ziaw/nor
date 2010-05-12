@@ -1,0 +1,1 @@
+%SystemRoot%\Microsoft.NET\Framework\v3.5\MSBuild.exe NRails_boot.sln /t:Clean;Build 

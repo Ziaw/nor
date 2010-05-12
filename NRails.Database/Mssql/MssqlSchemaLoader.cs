@@ -413,9 +413,7 @@ namespace NRails.Database.Mssql
             {
                 var sb = new StringBuilder();
                 BuildDataType(sb, type);
-                var buildType = sb.ToString();
-                Console.WriteLine("build type: {0}", buildType);
-                return buildType;
+                return sb.ToString();
             }
         }
 
