@@ -111,15 +111,11 @@ namespace NRails.Migrations
           foreach ((name, templateName) in fieldNames.ZipLazy(refFields))
           {
               def t = refTable.GetColumn(templateName);
-              
               Add(col =>
               {
                   col.Name = name;
                   col.Type = t.Type;
-                  col.DecimalPrecision = t.DecimalPrecision;
-                  col.DecimalScale = t.DecimalScale;
                   col.Nullable = isNullable;
-                  col.Size = t.Size;
               });
           }
       }

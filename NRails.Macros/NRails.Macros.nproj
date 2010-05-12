@@ -106,4 +106,8 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /D /Y $(TargetDir)NRails.Macros.dll $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>

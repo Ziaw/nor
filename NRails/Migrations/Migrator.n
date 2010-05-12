@@ -13,6 +13,7 @@ using NRails.Database;
 using NRails.Database.Schema;
 using BLToolkit.Data;
 using BLToolkit.Data.Linq;
+using BLToolkit.Data.Sql;
 using BLToolkit.DataAccess;
 
 namespace NRails.Migrations
@@ -36,8 +37,7 @@ namespace NRails.Migrations
                   t.Add(c => 
                   {
                       c.Name = "Version";
-                      c.Type = ColumnType.NCharacterVaring;
-                      c.Size = 255L;
+                      c.Type = SqlDataType.String;
                       c.Nullable = false;
                   });
                   t.AddPk("Version");

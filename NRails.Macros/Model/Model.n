@@ -50,24 +50,25 @@ namespace NRails.Macros.Model
           {
             def table = engine.GetTable(t.Name);
             
-            t.GetModifiers().AddCustomAttribute(<[  BLToolkit.DataAccess.TableName($(table.Name : string)) ]>);
-            
             when (table == null)
             {
-               Message.Error($"table for type $(t.Name) not found, env: '$(engine.Cfg.Env)'");
+               def msg = $"table $(t.Name) not found, env: '$(engine.Cfg.Env)'";
+               throw Exception(msg);
             }
             
+            t.GetModifiers().AddCustomAttribute(<[  BLToolkit.DataAccess.TableName($(table.Name : string)) ]>);
+
             def existingProperties = t.GetProperties().Map(p => p.Name);            
             
             def hintBuilder = StringBuilder();
             
             foreach (col : TableColumnSchema in table.Columns)
             {
-                // todo : по хорошему проверка должна идти по атрибутам тулкита, 
-                // а не по именам свойств, как только узнаю как их доставать 
+                // todo : проверка должна идти по атрибутам тулкита, 
+                // а не по именам свойств
                 unless (existingProperties.Any(p => p == col.Name))
                 {
-                    def clrType = col.Type.ToClrType();
+                    def clrType = col.Type.SystemType;
                     def propType = PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
                     def fieldMemberName = $"_$(col.Name)";
                    

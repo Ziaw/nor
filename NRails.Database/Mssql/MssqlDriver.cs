@@ -10,7 +10,6 @@ namespace NRails.Database.Mssql
 	public class MssqlDriver : IDBDriver
 	{
 		public const string DriverName = "MSSql";
-		private readonly MssqlSqlFormatter _sqlFormatter = new MssqlSqlFormatter();
 
 		public MssqlDriver()
 		{
@@ -68,13 +67,6 @@ namespace NRails.Database.Mssql
 			return text;
 		}
 
-		/// <summary>
-		/// —сылка на форматтер SQL.
-		/// </summary>
-		public ISqlFormatter Formatter
-		{
-			get { return _sqlFormatter; }
-		}
 		#endregion
 	}
 }

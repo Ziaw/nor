@@ -4,6 +4,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Text;
+using BLToolkit.Data.DataProvider;
+using BLToolkit.Data.Sql;
+using BLToolkit.Data.Sql.SqlProvider;
 using NRails.Database.Mssql.SqlServer.Schema;
 using NRails.Database.Schema;
 using System.Linq;
@@ -88,15 +91,12 @@ namespace NRails.Database.Mssql
 	                var eColumn = new TableColumnSchema
 	                                  {
 	                                      Name = cRow["COLUMN_NAME"].ToString(),
-	                                      Size = Convert.ToInt32(cRow["COLUMN_SIZE"], CultureInfo.InvariantCulture),
-	                                      Type = TypeSqlToDbsm(cRow["COLUMN_DATA_TYPE"].ToString()),
+	                                      Type = ColumnSchemaToSqlDataType(cRow),
 	                                      Nullable = Convert.ToBoolean(cRow["IS_NULLABLE"], CultureInfo.InvariantCulture),
 	                                      DefaultValue = cRow["COLUMN_DEFAULT"].ToString(),
 	                                      Increment = Convert.ToInt32(cRow["IDENTITY_INCREMENT"], CultureInfo.InvariantCulture),
 	                                      Seed = Convert.ToInt32(cRow["IDENTITY_SEED"], CultureInfo.InvariantCulture),
 	                                      AutoIncrement = Convert.ToBoolean(cRow["IS_IDENTITY"], CultureInfo.InvariantCulture),
-	                                      DecimalPrecision = Convert.ToInt32(cRow["NUMERIC_PRECISION"], CultureInfo.InvariantCulture),
-	                                      DecimalScale = Convert.ToInt32(cRow["NUMERIC_SCALE"], CultureInfo.InvariantCulture)
 	                                  };
 	                eColumn.DefaultValue = string.IsNullOrEmpty(eColumn.DefaultValue)
 	                                           ? null
@@ -107,6 +107,16 @@ namespace NRails.Database.Mssql
 	        }
 	        return eTable;
 	    }
+
+	    private static SqlDataType ColumnSchemaToSqlDataType(DataRow cRow)
+	    {
+            var size = Convert.ToInt32(cRow["COLUMN_SIZE"], CultureInfo.InvariantCulture);
+            var decimalPrecision = Convert.ToInt32(cRow["NUMERIC_PRECISION"], CultureInfo.InvariantCulture);
+            var decimalScale = Convert.ToInt32(cRow["NUMERIC_SCALE"], CultureInfo.InvariantCulture);
+            var type = TypeSqlToDbsm(cRow["COLUMN_DATA_TYPE"].ToString(), size, decimalPrecision, decimalScale);
+
+	        return type;
+        }
 
 	    private static List<KeySchema> GetKeys(SqlConnection con, SchemaNamedElement eTable)
 		{
@@ -329,132 +339,87 @@ namespace NRails.Database.Mssql
 
 		#region Преобразование типов MsSql Server <-> Dbsm.Types
 
-		private static ColumnType TypeSqlToDbsm(string typeName)
-		{
+        static SqlDataType TypeSqlToDbsm(string typeName, int size, int decimalPrecision, int decimalScale)
+        {
 			switch (typeName.ToUpper(CultureInfo.CurrentCulture))
 			{
 				case "BIT":
-					return ColumnType.Boolean;
+                    return SqlDataType.DbBit;
 				case "BIGINT":
-					return ColumnType.BigInt;
+                    return SqlDataType.DbBigInt;
 				case "BINARY":
-					return ColumnType.Binary;
+                    return SqlDataType.DbBinary;
 				case "CHAR":
-					return ColumnType.Character;
+                    return new SqlDataType(SqlDbType.Char, size);
 				case "CURSOR":
-					return ColumnType.Cursor;
+                    return SqlDataType.DbStructured;
 				case "DATETIME":
-					return ColumnType.Timestamp;
-				case "DECIMAL":
-					return ColumnType.Decimal;
+                    return SqlDataType.DbDateTime;
+                case "NUMERIC":
+                case "DECIMAL":
+					return new SqlDataType(SqlDbType.Decimal, decimalPrecision, decimalScale);
 				case "INT":
-					return ColumnType.Integer;
+					return SqlDataType.DbInt;
 				case "IMAGE":
-					return ColumnType.BlobSubtypeImage;
+                    return new SqlDataType(SqlDbType.Image, size);
 				case "FLOAT":
-					return ColumnType.Float;
-				case "MONEY":
-					return ColumnType.Money;
+                    return SqlDataType.DbFloat;
+                case "MONEY":
+                    return new SqlDataType(SqlDbType.Money, decimalPrecision, decimalScale);
 				case "NCHAR":
-					return ColumnType.Character;
-				case "NVARCHAR":
-					return ColumnType.NCharacterVaring;
-				case "NUMERIC":
-					return ColumnType.Numeric;
+                    return new SqlDataType(SqlDbType.NChar, size);
+                case "NVARCHAR":
+					return new SqlDataType(SqlDbType.NVarChar, size);
 				case "NTEXT":
-					return ColumnType.BlobSubtypeNText;
+                    return new SqlDataType(SqlDbType.NText, size);
 				case "REAL":
-					return ColumnType.Real;
+                    return SqlDataType.DbReal;
 				case "SMALLMONEY":
-					return ColumnType.SmallMoney;
-				case "SMALLDATETIME":
-					return ColumnType.SmallDateTime;
+                    return new SqlDataType(SqlDbType.SmallMoney, decimalPrecision, decimalScale);
+                case "SMALLDATETIME":
+                    return SqlDataType.DbSmallDateTime;
 				case "SMALLINT":
-					return ColumnType.SmallInt;
-				case "SQL_VARIANT":
-					return ColumnType.SqlVariant;
-				case "TABLE":
-					return ColumnType.Table;
+                    return SqlDataType.DbSmallInt;
+                case "SQL_VARIANT":
+                    return SqlDataType.DbVariant;
+                case "TABLE":
+                    return SqlDataType.DbStructured;
 				case "TEXT":
-					return ColumnType.BlobSubtypeText;
-				case "TIMESTAMP":
-					return ColumnType.MsTimestamp;
-				case "TINYINT":
-					return ColumnType.TinyInt;
-				case "UNIQUEIDENTIFIER":
-					return ColumnType.Guid;
-				case "VARBINARY":
-					return ColumnType.BinaryVaring;
-				case "VARCHAR":
-					return ColumnType.CharacterVaring;
-				case "XML":
-					return ColumnType.Xml;
+                    return new SqlDataType(SqlDbType.Text, size);
+                case "TIMESTAMP":
+                    return SqlDataType.DbTimestamp;
+                case "TINYINT":
+                    return SqlDataType.DbTinyInt;
+                case "UNIQUEIDENTIFIER":
+                    return SqlDataType.Guid;
+                case "VARBINARY":
+                    return new SqlDataType(SqlDbType.VarBinary, size);
+                case "VARCHAR":
+                    return new SqlDataType(SqlDbType.VarChar, size);
+                case "XML":
+                    return SqlDataType.DbXml;
 				default:
 					throw new ArgumentException("Unsupported data type for " + MssqlDriver.DriverName);
 			}
 		}
 
+        class SqlTypeBuilder : MsSql2008SqlProvider
+        {
+            public SqlTypeBuilder(DataProviderBase dataProvider) : base(dataProvider)
+            {
+            }
+
+            public string BuildType(SqlDataType type)
+            {
+                var sb = new StringBuilder();
+                BuildDataType(sb, type);
+                return sb.ToString();
+            }
+        }
+
 		public static string TypeDbsmToSql(TableColumnSchema eColumn)
 		{
-			switch (eColumn.Type)
-			{
-				case ColumnType.Boolean:
-					return "BIT";
-				case ColumnType.BigInt:
-					return "BIGINT";
-				case ColumnType.Binary:
-					return "BINARY";
-				case ColumnType.Character:
-					return "CHAR(" + eColumn.Size + ")";
-				case ColumnType.CharacterVaring:
-					return "VARCHAR(" + eColumn.Size + ")";
-				case ColumnType.Cursor:
-					return "CURSOR";
-				case ColumnType.Timestamp:
-					return "DATETIME";
-				case ColumnType.Decimal:
-					return "DECIMAL(" + eColumn.DecimalPrecision + ", " + eColumn.DecimalScale + ")";
-				case ColumnType.Integer:
-					return "INT";
-				case ColumnType.BlobSubtypeImage:
-					return "IMAGE";
-				case ColumnType.Float:
-					return "FLOAT(" + eColumn.DecimalPrecision + ")";
-				case ColumnType.Money:
-					return "MONEY";
-				case ColumnType.NCharacter:
-					return "NCHAR(" + eColumn.Size + ")";
-				case ColumnType.NCharacterVaring:
-					return "NVARCHAR(" + eColumn.Size + ")";
-				case ColumnType.Numeric:
-					return "NUMERIC(" + eColumn.DecimalPrecision + ", " + eColumn.DecimalScale + ")";
-				case ColumnType.BlobSubtypeNText:
-					return "NTEXT";
-				case ColumnType.Real:
-					return "REAL";
-				case ColumnType.SmallMoney:
-					return "SMALLMONEY";
-				case ColumnType.SmallDateTime:
-					return "SMALLDATETIME";
-				case ColumnType.SmallInt:
-					return "SMALLINT";
-				case ColumnType.SqlVariant:
-					return "SQL_VARIANT";
-				case ColumnType.Table:
-					return "TABLE";
-				case ColumnType.BlobSubtypeText:
-					return "TEXT";
-				case ColumnType.MsTimestamp:
-					return "TIMESTAMP";
-				case ColumnType.TinyInt:
-					return "TINYINT";
-				case ColumnType.Guid:
-					return "UNIQUEIDENTIFIER";
-				case ColumnType.BinaryVaring:
-					return "VARBINARY";
-				default:
-					throw new ArgumentException("Unsupported data type for " + MssqlDriver.DriverName);
-			}
+		    return new SqlTypeBuilder(null).BuildType(eColumn.Type);
 		}
 		#endregion
 

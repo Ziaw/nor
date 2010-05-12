@@ -11,6 +11,8 @@ using NRails.Database.Schema;
 
 namespace NRails.Migrations
 {
+using ColumnType = BLToolkit.Data.Sql.SqlDataType;
+
   public module MigrationUtils
   {
     public ColumnTypeFromString([NotNull]strType : string) : option[ColumnType]
@@ -18,17 +20,20 @@ namespace NRails.Migrations
         match (strType.ToLowerInvariant())
         {
             | "bool" => Some(ColumnType.Boolean)
-            | "string" => Some(ColumnType.NCharacterVaring)
-            | "text" => Some(ColumnType.NCharacterLargeObject)
-            | "int" => Some(ColumnType.Integer)
+            | "string" => Some(ColumnType.String)
+            | "text" => Some(ColumnType.DbText)
+            | "int" => Some(ColumnType.Int32)
+            | "long" => Some(ColumnType.Int64)
+            | "short" 
+            | "int16" => Some(ColumnType.Int16)
             | "datetime" 
             | "timestamp"
             | "date"
-            | "time" => Some(ColumnType.Timestamp)
-            | "byte[]" => Some(ColumnType.Binary)
-            | "double" => Some(ColumnType.DoublePrecision)
+            | "time" => Some(ColumnType.DateTime)
+            | "byte[]" => Some(ColumnType.ByteArray)
+            | "double" => Some(ColumnType.Double)
             | "decimal" => Some(ColumnType.Decimal)
-            | "char" => Some(ColumnType.NCharacter)
+            | "char" => Some(ColumnType.Char)
             | "guid" => Some(ColumnType.Guid)
             | _ => None();
         }

@@ -8,6 +8,8 @@ using System.Linq;
 using NUnit.Framework;
 using NRails;
 using NRails.Database;
+using BLToolkit.Data;
+using BLToolkit.Data.Sql;
 
 namespace NRails.Tests
 {
@@ -26,6 +28,14 @@ namespace NRails.Tests
           def schema = engine.GetSchema();
           def schema2 = engine.GetSchema();
           Expect(schema2, Is.SameAs(schema));
+          
+          def db = DbManager(cfg.ConnectionStringName);
+          def dataProvider =  db.DataProvider;
+          def sqlProvider = dataProvider.CreateSqlProvider();
+          Console.WriteLine(sqlProvider.ConvertExpression(SqlValue(DateTime.Now)));
+          Console.WriteLine(sqlProvider.ConvertExpression(SqlValue(1)));
+          Console.WriteLine(sqlProvider.ConvertExpression(SqlValue("123123")));
+          Console.WriteLine(sqlProvider.ConvertExpression(SqlValue(1.56677)));
       }
   }
 }

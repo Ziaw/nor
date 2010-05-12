@@ -11,12 +11,12 @@ using NRails.Database;
 using NRails.Database.Schema;
 using NRails.Migrations;
 using NRails.Macros.Migration;
+using System.Data;
 
 namespace NRails.Tests
 {
-  /// <summary>
-  /// Description of MigrationTests.
-  /// </summary>
+  using ColumnType = BLToolkit.Data.Sql.SqlDataType;
+  
   public class MigrationTests: AssertionHelper
   {
       class CreateMigrationTest : MigrationBase
@@ -61,10 +61,10 @@ namespace NRails.Tests
                            TableAction.AddColumn(col2),
                            TableAction.CreateIndex(idx)] => 
                             Expect(col.Name, Is.EqualTo("Id"));
-                            Expect(col.Type, Is.EqualTo(ColumnType.Guid));
+                            Expect(col.Type.DbType, Is.EqualTo(SqlDbType.UniqueIdentifier));
                             
                             Expect(col2.Name, Is.EqualTo("Zip"));
-                            Expect(col2.Type, Is.EqualTo(ColumnType.NCharacterVaring));
+                            Expect(col2.Type.DbType, Is.EqualTo(SqlDbType.NVarChar));
                             Expect(col2.Size, Is.EqualTo(10));
                             Expect(col2.Nullable, Is.EqualTo(true));
                             Expect(col2.DefaultValue, Is.EqualTo("'zzzz'"));
@@ -89,7 +89,7 @@ namespace NRails.Tests
                            TableAction.DropIndex(idx)] =>
                            def cols = [col, colZip, colNewZip, colId];
                            Expect(cols.Map(_.Name), Is.EquivalentTo(["Street", "Zip", "Zip", "Id"]));
-                           Expect(cols.Map(_.Type), Is.EquivalentTo([ColumnType.NCharacterVaring, ColumnType.NCharacterVaring, ColumnType.NCharacterVaring, ColumnType.Guid]));
+                           Expect(cols.Map(c => c.Type.DbType), Is.EquivalentTo([SqlDbType.NVarChar, SqlDbType.NVarChar, SqlDbType.NVarChar, SqlDbType.UniqueIdentifier]));
                            Expect(colNewZip.Nullable, EqualTo(false));
                            Expect(colNewZip.Size, EqualTo(20));
                            Expect(idx.Name, Is.EqualTo("IDX_Test"));

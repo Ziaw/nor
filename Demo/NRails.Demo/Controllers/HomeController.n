@@ -14,9 +14,8 @@ namespace NRails.Demo.Controllers {
             {
                 ViewData["Message"] = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
                 ViewData["Taxonomies"] = db.Doctors.Select(d => d.Taxonomy).ToList();
+                View()
             }
-            
-            View()
         }
 
         public About() : ActionResult {

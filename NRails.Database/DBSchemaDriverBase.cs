@@ -524,6 +524,7 @@ namespace NRails.Database
 		#endregion
 
 		#region Migration
+        /*
 		public virtual IDbDataParameter ConvertToDbParameter(TableColumnSchema column,
 			IDbDataParameter parameter)
 		{
@@ -558,7 +559,7 @@ namespace NRails.Database
 
 			return parameter;
 		}
-
+        */
 		public abstract IDbConnection CreateConnection(string connStr);
 
 		public virtual string MakeSelect(TableSchema table, bool orderedByPK)

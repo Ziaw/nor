@@ -96,8 +96,8 @@
 	</Target>
 	-->
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y $(TargetDir)*.dll $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
-xcopy /Y $(TargetDir)*.exe $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
+    <PostBuildEvent>xcopy /D /Y $(TargetDir)*.dll $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
+xcopy /D /Y $(TargetDir)*.exe $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
     </PostBuildEvent>
   </PropertyGroup>
 </Project>

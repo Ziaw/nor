@@ -44,10 +44,5 @@ namespace NRails.Database
 		/// ќбработать запрос перед выполнением.
 		/// </summary>
 		string PreprocessQueryText(string text);
-
-		/// <summary>
-		/// —сылка на форматтер SQL.
-		/// </summary>
-		ISqlFormatter Formatter { get; }
 	}
 }

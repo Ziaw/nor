@@ -191,6 +191,9 @@ namespace NRails.Macros.Migration
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
           mutable pkAction = [<[]>];
+          mutable size = -1;
+          mutable scale = -1;
+          mutable precision = -1;
           
           def Add(p)   { body = p :: body;}
           def AddPk(p) { pkAction = p :: pkAction;}
@@ -201,19 +204,24 @@ namespace NRails.Macros.Migration
               {
                   | <[ Scale = $(number : int)]>
                   | <[ scale = $(number : int)]> 
-                    => Add(<[ $c.DecimalScale = $(number : int); ]>)
+                    => 
+                    when (size > 0) Message.Error(parm.loc, "Can not define scale with size.");
+                    scale = number;
                     
                   | <[ Precision = $(number : int)]>
                   | <[ precision = $(number : int)]> 
-                    => Add(<[ $c.DecimalPrecision = $(number : int); ]>)
+                    => 
+                    when (size > 0) Message.Error(parm.loc, "Can not define precision with size.");
+                    precision = number;
                   
                   | <[ Size = $(number : int)]> 
                   | <[ len = $(number : int)]> 
                   | <[ length = $(number : int)]> 
                   | <[ size = $(number : int)]> 
                   | <[ $(number : int)]> 
-                    => Add(<[ $c.Size = $(number : long); ]>)
-                  
+                    =>
+                    when (precision > 0 || scale > 0) Message.Error(parm.loc, "Can not define size with precision and scale.");
+                    size = number;
 
                   | <[ pk ]> 
                     => AddPk(<[ $t.AddPk($(name.ToString() : string)); ]>);
@@ -239,11 +247,24 @@ namespace NRails.Macros.Migration
                 
                 def columnType = MigrationUtils.ColumnTypeFromString(strType);
                 
+                def sqlDbType = <[System.Data.SqlDbType.$(columnType.Value.DbType.ToString() : usesite)]>;
+                
+                when (size <= 0 && columnType.Value.Length > 0)
+                    size = columnType.Value.Length;
+                
                 if (columnType.HasValue)
                 {
                     parms.Iter(compileParm);
-                    Add(<[ $c.Type = NRails.Database.Schema.ColumnType.$(columnType.Value.ToString() : usesite); ]>);
-                    
+                    def typeExpr = match (size, precision, scale)
+                    {
+                        | (size, precision, _) when (size <= 0 && precision <= 0) =>
+                             <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType); ]>;
+                        | (size, _, _) when (size > 0) =>
+                             <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType, $(size : int)); ]>;
+                        | (_, precision, scale) =>
+                             <[ $c.Type = BLToolkit.Data.Sql.SqlDataType( $sqlDbType, $(precision : int), $(scale : int)); ]>;
+                    }
+                    Add(typeExpr);
                     Add(<[ $c.Nullable = $(isNullable : bool); ]>);
                 }
                 else

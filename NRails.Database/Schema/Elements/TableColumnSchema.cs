@@ -1,25 +1,20 @@
+using System;
 using System.ComponentModel;
+using System.Data;
 using System.Xml.Serialization;
+using BLToolkit.Data.Sql;
 
 namespace NRails.Database.Schema
 {
-	public class TableColumnSchema : SchemaNamedElement
-	{
+    public class TableColumnSchema : SchemaNamedElement, IEquatable<TableColumnSchema>
+    {
 		private const bool _defaultAutoIncrement = false;
 		private const int _defaultDecimalPrecision = 0;
 		private const int _defaultDecimalScale = 0;
 		private const int _defaultIncrement = 0;
 		private const int _defaultSeed = 0;
-		private const ColumnType _defaultType = ColumnType.Unknown;
-		private ColumnType _type = _defaultType;
 
-		[XmlAttribute("type")]
-		[DefaultValue(_defaultType)]
-		public ColumnType Type
-		{
-			get { return _type; }
-			set { _type = value; }
-		}
+        public SqlDataType Type { get; set;}
 
 		[XmlAttribute("auto-increment")]
 		[DefaultValue(_defaultAutoIncrement)]
@@ -36,93 +31,96 @@ namespace NRails.Database.Schema
 		[XmlAttribute("nullable")]
 		public bool Nullable { get; set; }
 
-		[XmlAttribute("size")]
-		public long Size { get; set; }
+        [XmlAttribute("size")]
+        public int Size
+        {
+            get
+            {
+                return Type.Length;
+            }
+            set
+            {
+                if (Type == null)
+                    Type = new SqlDataType(SqlDbType.Structured, value);
+                else
+                    Type = new SqlDataType(Type.DbType, value);
+            }
+        }
 
 		[XmlAttribute("decimal-scale")]
 		[DefaultValue(_defaultDecimalScale)]
-		public int DecimalScale { get; set; }
+		public int DecimalScale
+        {
+            get
+            {
+                return Type.Scale;
+            }
+            set
+            {
+                if (Type == null)
+                    Type = new SqlDataType(SqlDbType.Structured, value, 0);
+                else
+                    Type = new SqlDataType(Type.DbType, Type.Precision, value);
+            }
+        }
 
-		[XmlAttribute("decimal-precision")]
-		[DefaultValue(_defaultDecimalPrecision)]
-		public int DecimalPrecision { get; set; }
+        [XmlAttribute("decimal-precision")]
+        [DefaultValue(_defaultDecimalPrecision)]
+        public int DecimalPrecision
+        {
+            get
+            {
+                return Type.Scale;
+            }
+            set
+            {
+                if (Type == null)
+                    Type = new SqlDataType(SqlDbType.Structured, 0, value);
+                else
+                    Type = new SqlDataType(Type.DbType, Type.Precision, value);
+            }
+        }
 
 		[XmlAttribute("default-value")]
 		public string DefaultValue { get; set; }
 
 		#region Methods
-		public override bool Equals(object obj)
+
+        public bool Equals(TableColumnSchema other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return base.Equals(other) && Equals(other.Type, Type) && other.AutoIncrement.Equals(AutoIncrement) && other.Seed == Seed && other.Increment == Increment && other.Nullable.Equals(Nullable) && other.Size == Size && other.DecimalScale == DecimalScale && other.DecimalPrecision == DecimalPrecision && Equals(other.DefaultValue, DefaultValue);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return Equals(obj as TableColumnSchema);
+        }
+
+        public override int GetHashCode()
 		{
-			if (obj == null)
-				return false;
-			if (!(obj is TableColumnSchema))
-				return false;
-
-			var column = (TableColumnSchema)obj;
-			if (!
-			    (column.Name == Name &&
-			     //column.ComputedBy == ComputedBy &&
-			     //column.DecimalPrecision == DecimalPrecision &&
-			     //column.DecimalScale == DecimalScale && 
-			     column.DefaultValue == DefaultValue &&
-			     column.AutoIncrement == AutoIncrement && column.Increment == Increment && column.Seed == Seed &&
-			     column.Nullable == Nullable && column.Type == Type))
-				return false;
-
-			switch (Type)
-			{
-				case ColumnType.Character:
-				case ColumnType.CharacterVaring:
-				case ColumnType.NCharacter:
-				case ColumnType.NCharacterVaring:
-				case ColumnType.Binary:
-				case ColumnType.BinaryVaring:
-					if (column.Size != Size)
-						return false;
-					break;
-				case ColumnType.Float:
-				case ColumnType.Real:
-				case ColumnType.DoublePrecision:
-					if (column.DecimalPrecision != DecimalPrecision)
-						return false;
-					break;
-				case ColumnType.Decimal:
-				case ColumnType.Numeric:
-					if (column.DecimalPrecision != DecimalPrecision && column.DecimalScale != DecimalScale)
-						return false;
-					break;
-			}
-
-			return true;
-		}
-
-		public override int GetHashCode()
-		{
-			return
-				(string.IsNullOrEmpty(Name) ? 0 : Name.GetHashCode()) ^
-				(string.IsNullOrEmpty(DefaultValue) ? 0 : DefaultValue.GetHashCode()) ^
-				(AutoIncrement ? 1 : 0) ^
-				Increment ^
-				Seed ^
-				(Nullable ? 2 : 0) ^
-				(int)Type;
+            unchecked
+            {
+                int result = base.GetHashCode();
+                result = (result*397) ^ (Type != null ? Type.GetHashCode() : 0);
+                result = (result*397) ^ AutoIncrement.GetHashCode();
+                result = (result*397) ^ Seed;
+                result = (result*397) ^ Increment;
+                result = (result*397) ^ Nullable.GetHashCode();
+                result = (result*397) ^ Size.GetHashCode();
+                result = (result*397) ^ DecimalScale;
+                result = (result*397) ^ DecimalPrecision;
+                result = (result*397) ^ (DefaultValue != null ? DefaultValue.GetHashCode() : 0);
+                return result;
+            }
 		}
 
         public TableColumnSchema Clone()
         {
-            return new TableColumnSchema()
-            {
-                AutoIncrement = AutoIncrement,
-                DecimalPrecision = DecimalPrecision,
-                DecimalScale = DecimalScale,
-                DefaultValue = DefaultValue,
-                Increment = Increment,
-                Name = Name,
-                Nullable = Nullable,
-                Seed = Seed,
-                Size = Size,
-                Type = Type
-            };
+            return (TableColumnSchema) MemberwiseClone();
         }
 
 	    #endregion

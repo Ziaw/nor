@@ -54,7 +54,6 @@
     <Compile Include="IDBDriverManager.cs" />
     <Compile Include="ISqlFormatter.cs" />
     <Compile Include="Schema\DBSchemaException.cs" />
-    <Compile Include="Schema\Elements\ColumnType.cs" />
     <Compile Include="Schema\Elements\ConstraintType.cs" />
     <Compile Include="Schema\Elements\DBGenerator.cs" />
     <Compile Include="Schema\Elements\DBSchema.cs" />
@@ -75,7 +74,6 @@
     <Compile Include="Mssql\MssqlDriver.cs" />
     <Compile Include="Mssql\MssqlSchemaDriver.cs" />
     <Compile Include="Mssql\MssqlSchemaLoader.cs" />
-    <Compile Include="Mssql\MssqlSqlFormatter.cs" />
     <Compile Include="Mssql\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

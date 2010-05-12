@@ -44,7 +44,6 @@ namespace NRails.Database.Schema
 		IDbConnection CreateConnection(string connStr);
 		string MakeSelect(TableSchema table, bool orderedByPK);
 		string MakeInsert(TableSchema table);
-		IDbDataParameter ConvertToDbParameter(TableColumnSchema column, IDbDataParameter parameter);
 		void BeginTableLoad(IDbConnection connection, TableSchema table);
 		void EndTableLoad(IDbConnection connection, TableSchema table);
 	    string MakeDdlTableCreate(TableSchema table, bool withConstraint);
