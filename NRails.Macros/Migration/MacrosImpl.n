@@ -136,9 +136,9 @@ namespace NRails.Macros.Migration
           {
               match (f)
               {
+                  | <[ $(id : name)(asc) ]> 
                   | <[ $(id : name) ]> => id.ToString();
                   | <[ $(id : name)(desc) ]> => $"$(id.ToString()) desc";
-                  | <[ $(id : name)(asc) ]> => $"$(id.ToString()) desc";
                   | _ => Message.Error(f.loc, "Invalid field, syntax: FieldName[(desc)]"); String.Empty;
               }
           }
