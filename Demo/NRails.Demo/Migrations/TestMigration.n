@@ -41,7 +41,7 @@ namespace NRails.Demo.Migrations
              create Patient
              {
                  PersonID :> Person;
-                 Diagnosis : string(256); 
+                 Diagnosis : string(256);
              }
 
              

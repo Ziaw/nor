@@ -403,7 +403,7 @@ namespace NRails.Database.Mssql
 			}
 		}
 
-        class SqlTypeBuilder : MsSql2008SqlProvider
+        class SqlTypeBuilder : MsSql2005SqlProvider
         {
             public SqlTypeBuilder(DataProviderBase dataProvider) : base(dataProvider)
             {
@@ -413,7 +413,9 @@ namespace NRails.Database.Mssql
             {
                 var sb = new StringBuilder();
                 BuildDataType(sb, type);
-                return sb.ToString();
+                var buildType = sb.ToString();
+                Console.WriteLine("build type: {0}", buildType);
+                return buildType;
             }
         }
 

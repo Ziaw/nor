@@ -15,8 +15,6 @@ using System.Data;
 
 namespace NRails.Tests
 {
-  using ColumnType = BLToolkit.Data.Sql.SqlDataType;
-  
   public class MigrationTests: AssertionHelper
   {
       class CreateMigrationTest : MigrationBase

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using NRails.Migrations;
+using BLToolkit.Data.Sql;
 
 namespace NRails.Macros.Migration
 {
@@ -187,12 +188,49 @@ namespace NRails.Macros.Migration
                 <[]>
           }
       }
+      
+      mutable SqlDataTypeConsts : IDictionary[string, Reflection.FieldInfo];
+      ParseType(name : string) : SqlDataType
+      {
+          match (name.ToLowerInvariant())
+          {
+            | "bool" => SqlDataType.Boolean;
+            | "byte[]" => SqlDataType.ByteArray;
+            | name => 
+            {
+              when (SqlDataTypeConsts == null)
+              {
+                SqlDataTypeConsts = typeof(SqlDataType)
+                    .GetFields(BindingFlags.Static | BindingFlags.Public)
+                    .Filter(f => typeof(SqlDataType).Equals(f.FieldType))
+                    .ToDictionary(f => f.Name.ToLowerInvariant());
+              }
+              
+              def findField(name)
+              {
+                  if (SqlDataTypeConsts.ContainsKey(name))
+                      SqlDataTypeConsts[name];
+                  else
+                      null
+              }
+              
+              def fieldInfo = [name, $"db$name"].Map(n => findField(n)).Find(_ != null);
+              
+              match (fieldInfo)
+              {
+                  | Some(fi) => fi.GetValue(null) :> SqlDataType;
+                  | None => null
+              }
+            }
+          }
+      }
+      
       CompileColumn(t : PExpr.Ref, c : PExpr.Ref, name : PExpr, type_ : PExpr, defExpr : PExpr, isNullable : bool, action : ParsedAction) : PExpr
       {
           mutable body = [<[ $c.Name = $(name.ToString() : string);]>];
           mutable pkAction = [<[]>];
           mutable size = -1;
-          mutable scale = -1;
+          mutable scale = 0;
           mutable precision = -1;
           
           def Add(p)   { body = p :: body;}
@@ -245,16 +283,19 @@ namespace NRails.Macros.Migration
             | <[ $typeName ]> with parms = [] => 
                 def strType = typeName.ToString();
                 
-                def columnType = MigrationUtils.ColumnTypeFromString(strType);
+                def columnType = ParseType(strType);
                 
-                def sqlDbType = <[System.Data.SqlDbType.$(columnType.Value.DbType.ToString() : usesite)]>;
-                
-                when (size <= 0 && columnType.Value.Length > 0)
-                    size = columnType.Value.Length;
-                
-                if (columnType.HasValue)
+                if (columnType != null)
                 {
+                    def intType = columnType.DbType :> int;
+                    Message.Hint(typeName.loc, $"$(columnType.DbType.ToString()), $(intType)");
+                    
+                    when (size <= 0 && columnType.Length > 0)
+                        size = columnType.Length;
+                        
                     parms.Iter(compileParm);
+                    def sqlDbType = <[System.Data.SqlDbType.$(columnType.DbType.ToString() : usesite)]>;
+                
                     def typeExpr = match (size, precision, scale)
                     {
                         | (size, precision, _) when (size <= 0 && precision <= 0) =>

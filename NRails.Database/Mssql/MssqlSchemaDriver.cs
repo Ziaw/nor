@@ -121,12 +121,6 @@ namespace NRails.Database.Mssql
 						if (mTable.IsExactColumn(eColumn))
 							continue;
 						notexact = true;
-//						if (eColumn.Type == ColumnType.BlobSubtypeImage && eColumn.Type == ColumnType.BlobSubtypeText &&
-//						    eColumn.Type == ColumnType.BlobSubtypeNText)
-//						{}
-							//else if (mColumn.computedBy != null && eColumn.computedBy == null)
-							//{
-							//}
 						if (mColumn.DefaultValue != eColumn.DefaultValue)
 						{}
 						else if (mColumn.AutoIncrement != eColumn.AutoIncrement)

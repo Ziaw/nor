@@ -92,9 +92,6 @@
     <Compile Include="Migrations\MigrationBase.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Migrations\MigrationUtils.n">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Migrations\Migrator.n">
       <SubType>Code</SubType>
     </Compile>

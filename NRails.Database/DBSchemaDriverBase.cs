@@ -524,43 +524,8 @@ namespace NRails.Database
 		#endregion
 
 		#region Migration
-        /*
-		public virtual IDbDataParameter ConvertToDbParameter(TableColumnSchema column,
-			IDbDataParameter parameter)
-		{
-			parameter.ParameterName = MakeParameterName(column);
 
-			switch (column.Type)
-			{
-				case ColumnType.Integer:
-					parameter.DbType = DbType.Int32;
-					break;
-				case ColumnType.NCharacterVaring:
-				case ColumnType.BlobSubtypeNText:
-					parameter.DbType = DbType.String;
-					break;
-				case ColumnType.Timestamp:
-					parameter.DbType = DbType.DateTime;
-					break;
-				case ColumnType.Boolean:
-					parameter.DbType = DbType.Boolean;
-					break;
-				case ColumnType.TinyInt:
-					// Unsigned for some reason
-					//
-					parameter.DbType = DbType.Byte;
-					break;
-				case ColumnType.SmallInt:
-					parameter.DbType = DbType.Int16;
-					break;
-				default:
-					throw new NotSupportedException(@"Unsupported column type " + column.Type);
-			}
-
-			return parameter;
-		}
-        */
-		public abstract IDbConnection CreateConnection(string connStr);
+        public abstract IDbConnection CreateConnection(string connStr);
 
 		public virtual string MakeSelect(TableSchema table, bool orderedByPK)
 		{
