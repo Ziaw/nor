@@ -6,3 +6,5 @@ glob:*.user
 glob:*.suo
 glob:*.sln.cache
 glob:*.resharper
+glob:Demo/NRails.Demo/lib/nrails/*.dll
+glob:Demo/NRails.Demo/lib/nrails/*.exe
