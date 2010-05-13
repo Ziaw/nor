@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NRails.Migrations;
 using NRails.Macros.Migration;
+using BLToolkit.Data.Linq;
+using BLToolkit.Data.DataProvider;
 
 namespace NRails.Demo.Migrations
 {
@@ -16,8 +18,9 @@ namespace NRails.Demo.Migrations
           
           public class Person 
           { 
-            public mutable PersonID : int; 
+            public mutable FirstName : string;
             public mutable LastName : string;
+            public mutable Gender : char;
           }
           
           protected override Up() : void
@@ -38,6 +41,47 @@ namespace NRails.Demo.Migrations
                  Taxonomy : string(50);
              }
              
+             def tt = sql(db, "insert into Person (FirstName, LastName, Gender) values ('1', '2', 'M')");
+             Console.WriteLine($"inserted $tt records");
+
+             def p = Person();
+             p.FirstName = "2";
+             p.LastName = "3";
+             p.Gender = 'F';
+             _ = db.Insert(p);
+             
+             for (mutable i = 1; i < 10; i++)
+                insert into Person (FirstName, LastName, Gender) values (i.ToString(), "3", 'F');
+
+             for (mutable i = 1; i < 10; i++)
+                _ = sql(db, "insert into Person (FirstName, LastName, Gender) values (?, ?, ?)", $"f$i", $"l$i", 'M');
+/*             
+            sqlreader ("select $FirstName, $LastName, $(Gender : char) from Person where 1=?", 1)
+            {
+                Console.WriteLine($"$FirstName $LastName $Gender");
+            };
+*/            
+            
+            db.SetCommand("select FirstName, LastName, Gender from Person where 1=@p1", db.Parameter("p1", 1));
+            using (reader = db.ExecuteReader())
+            while (reader.Read())
+            {
+                def FirstName = reader.GetString(0);
+                def LastName = reader.GetString(1);
+                def Gender = reader.GetString(2)[0];
+                {
+                    Console.WriteLine($"$FirstName $LastName $Gender");
+                }
+            }
+            
+                
+             _ = db.SetCommand("insert into Person (FirstName, LastName, Gender) values (@p1, @p2, @p3)", 
+                db.Parameter("p1", "22"), 
+                db.Parameter("p2", "33"), 
+                db.Parameter("p3", "M"), 
+                );
+             _ = db.ExecuteNonQuery();
+
              create Patient
              {
                  PersonID :> Person;

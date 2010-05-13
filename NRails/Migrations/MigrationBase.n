@@ -8,12 +8,14 @@ using System.Linq;
 using Nemerle.Assertions;
 using Nemerle.Extensions;
 using NRails.Database.Schema;
+using BLToolkit.Data;
 
 namespace NRails.Migrations
 {
   public class MigrationBase : ActionHolder[MigrationAction], IMigration
   {
       mutable schema : DBSchema;
+      protected mutable db : DbManager;
       version : string;
       
       protected this([NotNull]version : string)
@@ -50,9 +52,10 @@ namespace NRails.Migrations
       #endregion
       
       #region IMigration
-      _AssignSchema([NotNull] schema : DBSchema) : void implements IMigration.AssignSchema
+      _AssignSchema([NotNull] schema : DBSchema, [NotNull]db : DbManager) : void implements IMigration.AssignSchema
       {
           this.schema = schema;
+          this.db = db;
       }
       
       _Up() : void implements IMigration.Up

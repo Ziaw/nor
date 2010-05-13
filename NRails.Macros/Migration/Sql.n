@@ -1,0 +1,129 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using BLToolkit.Data;
+
+using NRails.Migrations;
+
+namespace NRails.Macros.Migration
+{
+  public macro insert(table, values) : PExpr
+  syntax("insert", "into", table, "values",  values)
+  {
+      SqlImpl.Insert(Nemerle.Macros.ImplicitCTX(), table, values);
+  }
+
+  public macro sql(db, sqlStr : string, params args : array[expr]) : PExpr
+  {
+      SqlImpl.Sql(db, sqlStr, args);
+  }
+  
+  module SqlImpl
+  {
+      public Sql(db : PExpr, sqlStr : string, args : array[PExpr]) : PExpr
+      {
+          def sb = StringBuilder();
+          def paramNames = List();
+          mutable pos = 0;
+
+          def parse(str, skip = false)
+          {
+              match (str)
+              {
+                  | ch :: ss => 
+                    match (ch)
+                    {
+                        | '\'' => { _ = sb.Append(ch); parse(ss, !skip); };
+                        | '?' when skip => { _ = sb.Append(ch);  parse(ss, skip); }
+                        | '?' when !skip => 
+                            {
+                                _ = sb.Append($"{$pos}");
+                                if (args.Length <= pos)
+                                    Message.Error("Get enought args");
+                                else
+                                    paramNames.Add((pos, args[pos]));
+                                pos++;
+                                parse(ss, skip);
+                            };
+                            | _ => { _ = sb.Append(ch); parse(ss, skip); };
+                    }
+                    | _ => (sb, paramNames);
+              }
+          }
+          def (sql, paramNames) = parse(NList.ToList(sqlStr));
+          if (args.Length > paramNames.Count)
+          {
+              Message.Error(args.Last().loc, "Get enought parameters in query");
+              <[]>
+          }
+          else
+          {
+              def paramPositions = paramNames.Map((p, _) => p);
+              
+              def compilePositions(paramPositions)
+              {
+                  match (paramPositions)
+                  {
+                      | x :: tail => 
+                        def pName = $"p$x";
+                        <[$db.DataProvider.Convert($(pName : string), BLToolkit.Data.DataProvider.ConvertType.NameToCommandParameter)]> :: compilePositions(tail);
+                      | [] => []
+                  }
+              }
+              
+              def cc = <[$(sql.ToString() : string)]> :: compilePositions(paramPositions);
+              def parms = <[ $("sqlStr" : usesite) ]> :: paramNames.Map((pos, value) => 
+              {
+                 def pName = $"p$pos";
+                 <[ $db.Parameter($(pName : string), $value) ]> 
+              });
+
+              <[
+                 def $("sqlStr": usesite) = System.String.Format(..$cc);
+                 _ = $db.SetCommand(..$parms);
+                 $db.ExecuteNonQuery();
+              ]>
+          }
+      }
+
+      public Insert(_ : Typer, table : PExpr, values : PExpr) : PExpr
+      {
+          mutable nameSeq = 0;
+          def genParamName()
+          {
+              nameSeq++;
+              $"@p$nameSeq";
+          }
+          def valParse(values)
+          {
+              match (values)
+              {
+                  | PExpr.Tuple(paramList) => 
+                    paramList.Map(fun(p)
+                      {
+                        def name = genParamName();
+                        (<[ db.Parameter($(name : string), $p) ]>, name)
+                      });
+                  | _ => Message.Error(values.loc, "Invalid values syntax"); []
+              }
+          }
+          def parsedValues = valParse(values);
+          def paramNames = parsedValues.Map((_, n) => n);
+          def sql = $"insert into $(table.ToString()) values (..$paramNames)";
+          
+          def setCommandArgs = <[ $(sql : string) ]> :: parsedValues.Map((p, _) => p);
+          
+          <[
+             _ = db.SetCommand(..$setCommandArgs);
+             _ = db.ExecuteNonQuery();
+          ]>
+      }
+  }
+}

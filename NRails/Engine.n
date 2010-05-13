@@ -11,6 +11,7 @@ using System.Web;
 using NRails.Database;
 using NRails.Database.Schema;
 using NRails.Database.Mssql;
+using BLToolkit.Data;
 
 namespace NRails
 {
@@ -30,6 +31,11 @@ namespace NRails
       public GetSchema() : DBSchema
       {
           GetSchema(cfg.Env);
+      }
+      
+      public CreateDbManager() : DbManager
+      {
+          DbManager(cfg.ConnectionStringName);
       }
       
       public CreateDbDriver() : IDBDriver

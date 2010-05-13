@@ -71,6 +71,9 @@
     <Compile Include="Migration\MacrosImpl.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Migration\Sql.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\DatabaseManager.n">
       <SubType>Code</SubType>
     </Compile>

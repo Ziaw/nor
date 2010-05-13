@@ -105,7 +105,7 @@ namespace NRails.Tests
           def migr = CreateMigrationTest();
           
           def migrService = migr : IMigration;
-          migrService.AssignSchema(schema);
+          migrService.AssignSchema(schema, Engine.Instance.CreateDbManager());
           
           migrService.Up();
           

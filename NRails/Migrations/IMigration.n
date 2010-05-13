@@ -8,12 +8,13 @@ using System.Linq;
 using Nemerle.Assertions;
 using Nemerle.Extensions;
 using NRails.Database.Schema;
+using BLToolkit.Data;
 
 namespace NRails.Migrations
 {
   public interface IMigration : IActionHolder[MigrationAction]
   {
-      AssignSchema(schema : DBSchema) : void;
+      AssignSchema(schema : DBSchema, db : DbManager) : void;
       Version : string {get};
       Up() : void;
       Down() : void;

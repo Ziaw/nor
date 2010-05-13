@@ -102,20 +102,19 @@ namespace NRails.Migrations
           foreach (m in migrations)
           {
               log($"Start migration '$(m.Version)'");
-              m.AssignSchema(schema);
               try 
               {
                   using (tx = TransactionScope())
-                  using (conn = schemaDriver.CreateConnection(connString))
+                  using (conn = schemaDriver.CreateConnection(connString), db = DbManager(conn))
                   {
                       conn.Open();
                       using (m.HandlerScope(ExecuteAction(conn, schema, schemaDriver, _)))
                       {
+                          m.AssignSchema(schema, db);
                           m.Up();
                       }
                       
                       when (!m.Version.EndsWith("!"))
-                          using (db = DbManager(conn))
                           {
                               log($"insert migration info $(m.Version)");
                               def newVersion = SchemaMigrations();
