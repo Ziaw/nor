@@ -12,6 +12,7 @@ using System.Linq;
 using BLToolkit.Data;
 
 using NRails.Migrations;
+using Nemerle;
 
 namespace NRails.Macros.Migration
 {
@@ -22,14 +23,21 @@ namespace NRails.Macros.Migration
   }
 
   public macro @sqlreader(body, params args : array[expr]) : PExpr
-  syntax("sqlreader", "(", args, ")", body)
+  syntax("select", "(", args, ")", body)
   {
       SqlImpl.SqlReader(args, body);
   }
 
-  public macro sql(db, sqlStr : string, params args : array[expr]) : PExpr
+  public macro @sqlRet(params args : array[expr]) : PExpr
+  syntax("sql", "(", args, ")", "returning")
   {
-      SqlImpl.Sql(db, sqlStr, args);
+      SqlImpl.Sql(args, true);
+  }
+  
+  public macro @sql(params args : array[expr]) : PExpr
+  syntax("sql", "(", args, ")")
+  {
+      SqlImpl.Sql(args, false);
   }
   
   module SqlImpl
@@ -37,105 +45,118 @@ namespace NRails.Macros.Migration
       paramRegex : Regex = Regex(@"\$\(?([\w\d]+\s*:\s*[\w\d]+|[\w\d]+)\)?");
       public SqlReader(args : array[PExpr], body : PExpr) : PExpr
       {
-          if (args.Length < 2)
-            Message.FatalError("At least db manager and query are required");
-          else
+          def (db, sqlStr, args) = matchParams("select", args);
+          def rxMatch = paramRegex.Matches(sqlStr);
+          def parms = rxMatch.Cast.[Match]().Map(m => 
           {
-              def (db, sql, args) = match (args.ToNList())
+              regexp match (m.Groups[1].Value)
               {
-                  | db :: sql :: tail => (db, sql, tail)
+                | @"(?<name>\w[\w\d]*)" => (name, "string");
+                | @"(?<name>\w[\w\d]*)\s*:\s*(?<type_>\w[\w\d]*)" => (name, type_);
+                | _ => Message.FatalError($"Invalid var $(m.Groups[1].Value)");
               }
-              def sqlStr = match (sql)
-              {
-                  | PExpr.Literal(t) when t.RawString != null && t.RawString.StartsWith("\"") => t.ToString().Trim('"');
-                  | _ => Message.FatalError(sql.Location, $"Must be string, got $(sql.GetType())");
-              }
-              def rxMatch = paramRegex.Matches(sqlStr);
-              def parms = rxMatch.Cast.[Match]().Map(m => 
-              {
-                  regexp match (m.Groups[1].Value)
-                  {
-                    | @"(?<name>\w[\w\d]*)" => (name, "string");
-                    | @"(?<name>\w[\w\d]*)\s*:\s*(?<type_>\w[\w\d]*)" => (name, type_);
-                    | _ => Message.FatalError($"Invalid var $(m.Groups[1].Value)");
-                  }
-              });
-              def tempQuery = paramRegex.Replace(sqlStr, m => m.Groups[1].Value.Split(':')[0].Trim());
-              def (q, t) = parseSql(tempQuery, args.ToArray());
+          });
+          def tempQuery = paramRegex.Replace(sqlStr, m => m.Groups[1].Value.Split(':')[0].Trim());
+          def (q, t) = parseSql(tempQuery, args.ToArray());
 
-              def getReaderMethod(type_, number)
+          def getReaderMethod(type_, number)
+          {
+              match (type_)
               {
-                  match (type_)
-                  {
-                      | "string" => <[ reader.GetString($(number : int)) ]>
-                      | "char" => <[ reader.GetString($(number : int))[0] ]>
-                      | "bool"
-                      | "boolean" => <[ reader.GetBoolean($(number : int)) ]>
-                      | "guid" => <[ reader.GetGuid($(number : int)) ]>
-                      | "float" => <[ reader.GetFloat($(number : int)) ]>
-                      | "double" => <[ reader.GetDouble($(number : int)) ]>
-                      | "int16" => <[ reader.GetInt16($(number : int)) ]>
-                      | "int32" => <[ reader.GetInt32($(number : int)) ]>
-                      | "int64" => <[ reader.GetInt64($(number : int)) ]>
-                      | "datetime" => <[ reader.GetDateTime($(number : int)) ]>
-                      | _ => Message.FatalError($"Unknown type $type_");
-                  }
+                  | "string" => <[ reader.GetString($(number : int)) ]>
+                  | "char" => <[ reader.GetString($(number : int))[0] ]>
+                  | "bool"
+                  | "boolean" => <[ reader.GetBoolean($(number : int)) ]>
+                  | "guid" => <[ reader.GetGuid($(number : int)) ]>
+                  | "float" => <[ reader.GetFloat($(number : int)) ]>
+                  | "double" => <[ reader.GetDouble($(number : int)) ]>
+                  | "int16" => <[ reader.GetInt16($(number : int)) ]>
+                  | "int" | "int32" => <[ reader.GetInt32($(number : int)) ]>
+                  | "int64" => <[ reader.GetInt64($(number : int)) ]>
+                  | "datetime" => <[ reader.GetDateTime($(number : int)) ]>
+                  | _ => Message.FatalError($"Unknown type $type_");
               }
-
-              def cmd = prepareCmd(db, q, t);
-              mutable i = -1;
-              def vars = parms.Map((name, type_) => {
-                  i++;
-                  def readerMethod = getReaderMethod(type_, i);
-                  <[ def $(name : usesite) = $readerMethod; ]>
-              });
-              
-              def concat(vars, body)
-              {
-                match (vars)
-                {
-                   | x :: tail => x :: concat(tail, body);
-                   | [] => [body]
-                }
-              }
-              
-              def newBody = concat(vars, body);
-              <[
-                { $cmd }
-                def reader = $db.ExecuteReader();
-                try
-                {
-                    while (reader.Read())
-                    {
-                        ..$newBody
-                    }
-                }
-                finally
-                {
-                    reader.Dispose();
-                }
-              ]>
           }
+
+          def cmd = prepareCmd(db, q, t);
+          mutable i = -1;
+          def vars = parms.Map((name, type_) => {
+              i++;
+              def readerMethod = getReaderMethod(type_, i);
+              <[ def $(name : usesite) = $readerMethod; ]>
+          });
+          
+          def concat(vars, body)
+          {
+            match (vars)
+            {
+               | x :: tail => x :: concat(tail, body);
+               | [] => [body]
+            }
+          }
+          
+          def newBody = concat(vars, body);
+          <[
+            { $cmd }
+            def reader = $db.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                    ..$newBody
+                }
+            }
+            finally
+            {
+                reader.Dispose();
+            }
+          ]>
       }
 
-      public Sql(db : PExpr, sqlStr : string, args : array[PExpr]) : PExpr
+      public Sql(args : array[PExpr], withReturn : bool) : PExpr
       {
-          def (sql, paramNames) = parseSql(sqlStr, args);
+          def (db, sqlStr, args) = matchParams("sql", args);
+          def (sql, paramNames) = parseSql(sqlStr, args.ToArray());
           if (args.Length > paramNames.Count)
           {
-              Message.FatalError(args.Last().loc, "Get enought parameters in query");
+              Message.FatalError(args.Last().loc, "Get enough parameters in query");
           }
           else
           {
               def cmd = prepareCmd(db, sql, paramNames);
 
-              <[
-                 { $cmd }
-                 $db.ExecuteNonQuery();
-              ]>
+              match (withReturn)
+              {
+                  | true =>
+                      <[
+                         { $cmd }
+                         $db.ExecuteNonQuery();
+                      ]>
+                  | false =>
+                      <[
+                         { $cmd }
+                         _ = $db.ExecuteNonQuery();
+                      ]>
+
+              }
           }
       }
 
+      private matchParams(name : string, args : array[PExpr]) : (PExpr * string * list[PExpr])
+      {
+          def (db, sql, args) = match (args.ToNList())
+          {
+              | db :: sql :: tail => (db, sql, tail)
+              | _ => Message.FatalError($"syntax: $name(db : DbManager, \"select clause\" [, parameter list])");
+          }
+          def sqlStr = match (sql)
+          {
+              | PExpr.Literal(t) when t.ToString().StartsWith("\"") => t.ToString().Trim('"');
+              | _ => Message.FatalError(sql.Location, $"Must be string, got $(sql.GetType())");
+          }
+          (db, sqlStr, args)
+      }
+      
       private prepareCmd(db : PExpr, sql : StringBuilder, paramNames : List[(int * PExpr)]) : PExpr
       {
           def paramPositions = paramNames.Map((p, _) => p);
@@ -183,7 +204,7 @@ namespace NRails.Macros.Migration
                             {
                                 _ = sb.Append($"{$pos}");
                                 if (args.Length <= pos)
-                                    Message.Error("Get enought args");
+                                    Message.Error("Get enough args");
                                 else
                                     paramNames.Add((pos, args[pos]));
                                 pos++;

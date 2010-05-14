@@ -83,6 +83,9 @@
     <Compile Include="Migrations\TestMigration.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Migrations\TestMigration2.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Models\Db.n">
       <SubType>Code</SubType>
     </Compile>

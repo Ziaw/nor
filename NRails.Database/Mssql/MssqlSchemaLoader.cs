@@ -411,7 +411,13 @@ namespace NRails.Database.Mssql
 
             public string BuildType(SqlDataType type)
             {
+                // workaround toolkit bug, when money generates with precision and scale, as Money(19,4)
+                if (type.DbType == SqlDbType.Money || type.DbType == SqlDbType.SmallMoney)
+                {
+                    return type.DbType.ToString();
+                }
                 var sb = new StringBuilder();
+
                 BuildDataType(sb, type);
                 return sb.ToString();
             }

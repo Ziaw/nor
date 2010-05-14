@@ -23,7 +23,7 @@ namespace NRails.Migrations
       public static SchemaMigrations = "SchemaMigrations" : string;
       engine : Engine;
       
-      class InitialMigration : MigrationBase
+      class InitialMigration : Migration
       {
           public this () 
           {

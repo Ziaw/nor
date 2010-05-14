@@ -88,7 +88,7 @@ module Program
               throw ArgumentException();
       }
 
-      def migrationTypes = ma.GetTypes().Filter(t => t.IsSubclassOf(typeof(MigrationBase)));
+      def migrationTypes = ma.GetTypes().Filter(t => t.IsSubclassOf(typeof(Migration)));
       
       def migrator = Migrator(Engine.Instance);
       

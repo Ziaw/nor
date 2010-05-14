@@ -1,0 +1,95 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NRails.Migrations;
+using NRails.Macros.Migration;
+using BLToolkit.Data.Linq;
+using BLToolkit.Data.DataProvider;
+
+namespace NRails.Demo.Migrations
+{
+    public class TestMigration2 : Migration
+    {
+        public this () {base("000001")}
+
+        protected override Up() : void
+        {
+            insert into Person (FirstName, LastName, Gender) values ("John",   "Pupkin",    'M');
+            insert into Person (FirstName, LastName, Gender) values ("Tester", "Testerson", 'M');
+            insert into Doctor (PersonID, Taxonomy) values (1, "Psychiatry");
+            insert into Patient (PersonID, Diagnosis) values (2, "Hallucination with Paranoid Bugs Delirium of Persecution");
+
+            create DataTypeTest
+            {
+	            DataTypeID      :   int(pk, identity(1, 1));    //  NOT NULL IDENTITY(1,1) CONSTRAINT PK_DataType PRIMARY KEY CLUSTERED,
+	            Binary_         :   binary?(50); //NULL,
+	            Boolean_        :   bool?;       //NULL,
+	            Byte_           :   byte?;       //NULL,
+	            Bytes_          :   varbinary?(50);   //NULL,
+	            Char_           :   char?;       //NULL,
+	            DateTime_       :   DateTime?;   //NULL,
+	            Decimal_        :   decimal?;    //NULL,
+	            Double_         :   float?;      //NULL,
+	            Guid_           :   Guid?;       //NULL,
+	            Int16_          :   Int16?;      //NULL,
+	            Int32_          :   Int32?;      //NULL,
+	            Int64_          :   Int64?;      //NULL,
+	            Money_          :   money?;       //NULL,
+	            SByte_          :   SByte?;      //NULL,
+	            Single_         :   Single?;     //NULL,
+	            Stream_         :   varbinary?(50); //NULL,
+	            String_         :   String?(50); //NULL,
+	            UInt16_         :   UInt16?;     //NULL,
+	            UInt32_         :   UInt32?;     //NULL,
+	            UInt64_         :   UInt64?;     //NULL,
+	            Xml_            :   xml?;        //NULL
+	        }
+
+/* todo
+            insert into DataTypeTest
+	            (Binary_, Boolean_,   Byte_,  Bytes_,  Char_,  DateTime_, Decimal_,
+	             Double_,    Guid_,  Int16_,  Int32_,  Int64_,    Money_,   SByte_,
+	             Single_,  Stream_, String_, UInt16_, UInt32_,   UInt64_,     Xml_)
+            values
+	            (   null,     null,    null,    null,    null,      null,     null,
+	                null,     null,    null,    null,    null,      null,     null,
+	                null,     null,    null,    null,    null,      null,     null);
+*/
+
+            sql(db, <#INSERT INTO DataTypeTest
+	(Binary_, Boolean_,   Byte_,  Bytes_,  Char_,  DateTime_, Decimal_,
+	 Double_,    Guid_,  Int16_,  Int32_,  Int64_,    Money_,   SByte_,
+	 Single_,  Stream_, String_, UInt16_, UInt32_,   UInt64_,     Xml_)
+VALUES
+	(   NULL,     NULL,    NULL,    NULL,    NULL,      NULL,     NULL,
+	    NULL,     NULL,    NULL,    NULL,    NULL,      NULL,     NULL,
+	    NULL,     NULL,    NULL,    NULL,    NULL,      NULL,     NULL)
+#>);
+
+            sql(db, <#
+            insert into DataTypeTest
+	            (Binary_, Boolean_,   Byte_,  Bytes_,  Char_,  DateTime_, Decimal_,
+	             Double_,    Guid_,  Int16_,  Int32_,  Int64_,    Money_,   SByte_,
+	             Single_,  Stream_, String_, UInt16_, UInt32_,   UInt64_,
+	             Xml_)
+            values
+	            (NewID(),        ?,     ?, NewID(),     ?, GetDate(), ?,
+	            ?,  NewID(),     ?,     ?, ?,           ?,      ?,
+	            ?,  NewID(),     ?,     ?, ?,           ?,      
+	            ?);
+            #>, 1,     255, 'B', 12345.67,
+	            1234.567,  32767,   32768, 1000000,   12.3456,      127,
+	            1234.123,  "string", 32767,   32768, 200000000, 
+	            <#<root><element strattr="strvalue" intattr="12345"/></root>#>);
+	            
+	        select (db, "select count(1) as $(cnt : int) from DataTypeTest")
+	        {
+	            Console.WriteLine($"Sqlreader test ok, we have $cnt records in DataTypeTest");
+	        }
+        }
+    }
+}

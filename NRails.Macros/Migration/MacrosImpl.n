@@ -245,8 +245,8 @@ namespace NRails.Macros.Migration
                 if (columnType != null)
                 {
                     mutable size = columnType.Length;
-                    mutable scale = columnType.Scale;
-                    mutable precision = columnType.Precision;
+                    mutable scale = -1; //columnType.Scale;
+                    mutable precision = -1; //columnType.Precision;
                     
                     def compileParm(parm : PExpr)
                     {

@@ -17,7 +17,7 @@ namespace NRails.Tests
 {
   public class MigrationTests: AssertionHelper
   {
-      class CreateMigrationTest : MigrationBase
+      class CreateMigrationTest : Migration
       {
           public this () {base("1")}
           
@@ -99,7 +99,7 @@ namespace NRails.Tests
           });
       }
       
-      protected CreateTableTest[T](checkActions : list[MigrationAction] -> void) : void where T : MigrationBase
+      protected CreateTableTest[T](checkActions : list[MigrationAction] -> void) : void where T : Migration
       {
           def schema = DBSchema();
           def migr = CreateMigrationTest();

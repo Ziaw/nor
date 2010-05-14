@@ -86,10 +86,10 @@
     <Compile Include="Migrations\IMigration.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Migrations\MigrationAction.n">
+    <Compile Include="Migrations\Migration.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Migrations\MigrationBase.n">
+    <Compile Include="Migrations\MigrationAction.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Migrations\Migrator.n">

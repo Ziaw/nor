@@ -12,7 +12,7 @@ using BLToolkit.Data;
 
 namespace NRails.Migrations
 {
-  public class MigrationBase : ActionHolder[MigrationAction], IMigration
+  public class Migration : ActionHolder[MigrationAction], IMigration
   {
       mutable schema : DBSchema;
       protected mutable db : DbManager;
