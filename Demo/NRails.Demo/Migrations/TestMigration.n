@@ -55,14 +55,13 @@ namespace NRails.Demo.Migrations
 
              for (mutable i = 1; i < 10; i++)
                 _ = sql(db, "insert into Person (FirstName, LastName, Gender) values (?, ?, ?)", $"f$i", $"l$i", 'M');
-/*             
-            sqlreader ("select $FirstName, $LastName, $(Gender : char) from Person where 1=?", 1)
-            {
-                Console.WriteLine($"$FirstName $LastName $Gender");
-            };
-*/            
+             
+             sqlreader (db, "select $FirstName, $LastName, $(Gender : char) from Person where Gender=?", 'F')
+             {
+                 Console.WriteLine($"new sexy reader works!!! - $FirstName $LastName $Gender");
+             };
             
-            db.SetCommand("select FirstName, LastName, Gender from Person where 1=@p1", db.Parameter("p1", 1));
+            ignore(db.SetCommand("select FirstName, LastName, Gender from Person where 1=@p1", db.Parameter("p1", 1)));
             using (reader = db.ExecuteReader())
             while (reader.Read())
             {
