@@ -33,7 +33,7 @@ namespace NRails.Demo.Migrations
                  Taxonomy : string(50);
              }
              
-             def tt = sql (db, "insert into Person (FirstName, LastName, Gender) values ('1', '2', 'M')") returning;
+             sql (db, "insert into Person (FirstName, LastName, Gender) values ('1', '2', 'M')") returning tt;
              Console.WriteLine($"inserted $tt records");
              
              for (mutable i = 1; i < 10; i++)

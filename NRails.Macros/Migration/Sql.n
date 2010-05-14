@@ -27,17 +27,11 @@ namespace NRails.Macros.Migration
   {
       SqlImpl.SqlReader(args, body);
   }
-
-  public macro @sqlRet(params args : array[expr]) : PExpr
-  syntax("sql", "(", args, ")", "returning")
-  {
-      SqlImpl.Sql(args, true);
-  }
   
-  public macro @sql(params args : array[expr]) : PExpr
-  syntax("sql", "(", args, ")")
+  public macro @sql(var, params args : array[expr]) : PExpr
+  syntax("sql", "(", args, ")", Optional("returning", var))
   {
-      SqlImpl.Sql(args, false);
+      SqlImpl.Sql(args, var);
   }
   
   module SqlImpl
@@ -113,7 +107,7 @@ namespace NRails.Macros.Migration
           ]>
       }
 
-      public Sql(args : array[PExpr], withReturn : bool) : PExpr
+      public Sql(args : array[PExpr], returningVar : PExpr) : PExpr
       {
           def (db, sqlStr, args) = matchParams("sql", args);
           def (sql, paramNames) = parseSql(sqlStr, args.ToArray());
@@ -125,14 +119,16 @@ namespace NRails.Macros.Migration
           {
               def cmd = prepareCmd(db, sql, paramNames);
 
-              match (withReturn)
+              match (returningVar)
               {
-                  | true =>
+                  | PExpr.Ref(_) =>
                       <[
-                         { $cmd }
-                         $db.ExecuteNonQuery();
+                         def $returningVar = {
+                             { $cmd }
+                             $db.ExecuteNonQuery();
+                         }
                       ]>
-                  | false =>
+                  | _ =>
                       <[
                          { $cmd }
                          _ = $db.ExecuteNonQuery();
