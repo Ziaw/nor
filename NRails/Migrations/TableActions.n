@@ -142,6 +142,13 @@ namespace NRails.Migrations
           AddAction(TableAction.ChangeColumn(oldColumn, newColumn));
       }
 
+      public Rename([NotNull] name : string, [NotNull] newName : string) : void
+      {
+          def column = GetColumn(name);
+          
+          AddAction(TableAction.RenameColumn(column, name, newName));
+      }
+
       public Drop([NotNull] name : string) : void
       {
           def col = GetColumn(name);

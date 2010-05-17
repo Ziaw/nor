@@ -34,10 +34,10 @@ namespace NRails.Tests
               {
                   Street : string;
                   change Zip : string(len = 20);
+                  rename Zip Zap;
                   drop Id;
                   dropindex IDX_Test;
               }
-              
               drop Test;
           }
       }

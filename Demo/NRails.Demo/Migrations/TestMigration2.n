@@ -88,7 +88,7 @@ VALUES
 	            
 	        select (db, "select count(1) as $(cnt : int) from DataTypeTest")
 	        {
-	            Console.WriteLine($"Sqlreader test ok, we have $cnt records in DataTypeTest");
+	            Console.WriteLine($"select test ok, we have $cnt records in DataTypeTest");
 	        }
         }
     }

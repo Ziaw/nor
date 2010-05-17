@@ -33,7 +33,6 @@ namespace NRails.Macros.Migration
           // todo: поправить CompileColumn, для изменения существующего поля
           // возможность не указывать тип поля, например:
           // Id : same(len = 20)
-          // также нужно продумать ренейм и дроп колонок
           def c = <[ $("c" : usesite) ]>;
           def t = <[ $("t" : usesite) ]>;
           
@@ -91,6 +90,15 @@ namespace NRails.Macros.Migration
                         | ("change", [SyntaxElement.Expression(x)]) => 
                             checkChangesMode(s.loc, () => compile(x, ParsedAction.Change()));
 
+                        | ("rename", [SyntaxElement.Expression(oldName), SyntaxElement.Expression(newName)]) => 
+                            checkChangesMode(s.loc, () => 
+                                match (oldName, newName)
+                                {
+                                    | (PExpr.Ref(_), PExpr.Ref(_)) =>
+                                       <[ $t.Rename($(oldName.ToString() : string), $(newName.ToString() : string)) ]>
+                                    | _ => Message.Error(name.loc, "Invalid drop syntax"); <[]>
+                                });
+
                         | ("drop", [SyntaxElement.Expression(x)]) => 
                             checkChangesMode(s.loc, () => 
                                 match (x)
@@ -138,7 +146,7 @@ namespace NRails.Macros.Migration
               {
                   | <[ $(id : name)(asc) ]> 
                   | <[ $(id : name) ]> => id.ToString();
-                  | <[ $(id : name)(desc) ]> => $"$(id.ToString()) desc";
+                  | <[ $(id : name)(desc) ]> => $"$(id.ToString()) DESC";
                   | _ => Message.Error(f.loc, "Invalid field, syntax: FieldName[(desc)]"); String.Empty;
               }
           }

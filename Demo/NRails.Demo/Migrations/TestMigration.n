@@ -33,45 +33,33 @@ namespace NRails.Demo.Migrations
                  Taxonomy : string(50);
              }
              
-             sql (db, "insert into Person (FirstName, LastName, Gender) values ('1', '2', 'M')") returning tt;
-             Console.WriteLine($"inserted $tt records");
-             
-             for (mutable i = 1; i < 10; i++)
-                insert into Person (FirstName, LastName, Gender) values (i.ToString(), "3", 'F');
-
-             for (mutable i = 1; i < 10; i++)
-                sql(db, "insert into Person (FirstName, LastName, Gender) values (?, ?, ?)", $"f$i", $"l$i", 'M');
-             
-             select (db, "select $FirstName, $LastName, $(Gender : char) from Person where Gender=?", 'F')
-             {
-                 Console.WriteLine($"new sexy reader works!!! - $FirstName $LastName $Gender");
-             };
-            
-            ignore(db.SetCommand("select FirstName, LastName, Gender from Person where 1=@p1", db.Parameter("p1", 1)));
-            using (reader = db.ExecuteReader())
-            while (reader.Read())
-            {
-                def FirstName = reader.GetString(0);
-                def LastName = reader.GetString(1);
-                def Gender = reader.GetString(2)[0];
-                {
-                    Console.WriteLine($"$FirstName $LastName $Gender");
-                }
-            }
-                
-             _ = db.SetCommand("insert into Person (FirstName, LastName, Gender) values (@p1, @p2, @p3)", 
-                db.Parameter("p1", "22"), 
-                db.Parameter("p2", "33"), 
-                db.Parameter("p3", "M"), 
-                );
-             _ = db.ExecuteNonQuery();
-
              create Patient
              {
                  PersonID :> Person;
                  Diagnosis : string(256);
              }
 
+             // 1st insert way
+             sql (db, "insert into Person (FirstName, LastName, Gender) values ('1', '2', 'M')") returning tt;
+             Console.WriteLine($"inserted $tt records");
+             
+             // 2nd insert way
+             for (mutable i = 1; i < 10; i++)
+                insert into Person (FirstName, LastName, Gender) values (i.ToString(), "3", 'F');
+
+             // 3rd insert way, with parameters
+             for (mutable i = 1; i < 10; i++)
+                sql(db, "insert into Person (FirstName, LastName, Gender) values (?, ?, ?)", $"f$i", $"l$i", 'M');
+             
+             // select sample
+             select (db, "select $FirstName, $LastName, $(Gender : char) from Person where Gender=?", 'F')
+             {
+                 Console.WriteLine($"$FirstName\t$LastName\t$Gender");
+             };
+             
+             // remove dml sample data
+             sql(db, "delete from Person");
+            
 /*
 CREATE TABLE Person
 (
