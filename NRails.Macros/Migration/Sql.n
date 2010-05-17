@@ -133,7 +133,6 @@ namespace NRails.Macros.Migration
                          { $cmd }
                          _ = $db.ExecuteNonQuery();
                       ]>
-
               }
           }
       }
@@ -147,7 +146,7 @@ namespace NRails.Macros.Migration
           }
           def sqlStr = match (sql)
           {
-              | PExpr.Literal(t) when t.ToString().StartsWith("\"") => t.ToString().Trim('"');
+              | PExpr.Literal(Literal.String(t)) => t;
               | _ => Message.FatalError(sql.Location, $"Must be string, got $(sql.GetType())");
           }
           (db, sqlStr, args)
