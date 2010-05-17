@@ -1,0 +1,45 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Macros
+{
+    // Data structure to collect data about an area
+    public class AreaInfo 
+    {
+        mutable static IncludeAreasToken : bool = false;
+        
+        public this()
+        {
+            Controllers = HashSet.[ControllerInfo]();
+        }
+
+        public Name : string { get; set; }
+        public Controllers : HashSet[ControllerInfo] { get; set; }
+
+        public Namespace : string {
+            get {
+                // When *not* using an 'Areas' token, we need to disambiguate conflicts
+                // between Area names and controller names (from the default Area)
+                if (!IncludeAreasToken && Manager.DefaultArea.Controllers.Any(c => c.Name == Name))
+                    Name + "Area";
+                else
+                    Name;
+            }
+        }
+
+        public GetControllers() : IEnumerable[ControllerInfo] 
+        {
+            Controllers.Where(c => !c.IsAbstract);
+        }
+
+        public GetAbstractControllers() : IEnumerable[ControllerInfo] 
+        {
+            Controllers.Where(c => c.IsAbstract);
+        }
+    }
+}

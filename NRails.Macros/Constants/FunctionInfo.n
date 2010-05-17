@@ -1,0 +1,107 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+
+#define MYMACRO [mymacro] class TmpClass
+
+mymacro
+{
+}
+namespace NRails.Macros
+{
+    // Data structure to collect data about a method
+    class FunctionInfo {
+        protected _method : CodeFunction2;
+        private _signature : string;
+
+        public this(method : CodeFunction2) {
+            Parameters = List.[MethodParamInfo]();
+
+            // Can be null when an custom ActionResult has no ctor
+            unless (method == null)
+            {
+
+                _method = method;
+
+                // Build a unique signature for the method, used to avoid duplication
+                _signature = method.Name;
+
+                // Process all the parameters
+                foreach (p in method.Parameters.OfType.[CodeParameter2]()) {
+                    def routeNameExpression = "\"" + p.Name + "\"";
+
+                    // If there is a [Bind(Prefix = "someName")] attribute, use it
+                    if (p.InfoLocation != vsCMInfoLocation.vsCMInfoLocationExternal) {
+                        def attrib = GetAttribute(p.Attributes, "System.Web.Mvc.BindAttribute");
+                        when (attrib != null) {
+                            var arg = attrib.Arguments.OfType<CodeAttributeArgument>().FirstOrDefault(a => a.Name == "Prefix");
+                            if (arg != null)
+                                routeNameExpression = arg.Value;
+                        }
+                    }
+                    
+                    Parameters.Add(
+                        new MethodParamInfo() {
+                            Name = p.Name,
+                            RouteNameExpression = routeNameExpression,
+                            Type = p.Type.AsString
+                        });
+                    _signature += "," + p.Type.AsString;
+                }
+            }
+        }
+
+        public Name : string { get { _method.Name; } }
+        public ReturnType : string { get { _method.Type.CodeType.Name; } }
+        public ReturnTypeFullName : string { get { _method.Type.CodeType.FullName; } }
+        public IsPublic : bool { get { _method.Access == vsCMAccess.vsCMAccessPublic; } }
+        public Parameters : List[MethodParamInfo] { get; private set; }
+
+        // Write out all the parameters as part of a method declaration
+        public WriteFormalParameters(first : bool) : void {
+            mutable first = first;
+            foreach (p in Parameters) {
+                if (first)
+                    first = false;
+                else
+                    TT.Write(", ");
+
+                TT.Write(p.Type + " " + p.Name);
+            }
+        }
+
+        // Pass non-empty param values to make sure the ActionResult ctors don't complain
+        // REVIEW: this is a bit dirty
+        public WriteNonEmptyParameterValues(first : bool) : void {
+            mutable first = first;
+            foreach (p in Parameters) {
+                if (first)
+                    first = false;
+                else
+                    TT.Write(", ");
+
+                match (p.Type) {
+                    | "string" =>
+                        TT.Write("\" \"");
+                    | "byte[]" =>
+                        TT.Write("new byte[0]");
+                    | _ =>
+                        TT.Write("default(" + p.Type + ")");
+                }
+            }
+        }
+
+        public override Equals(obj : object) : bool {
+            return obj != null && _signature == ((FunctionInfo)obj)._signature;
+        }
+
+        public override int GetHashCode() {
+            return _signature.GetHashCode();
+        }
+    }
+}

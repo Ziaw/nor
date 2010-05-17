@@ -95,6 +95,9 @@
     <Compile Include="Models\Person.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="NRailsInit.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,44 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Macros
+{
+    enum Phase
+    {
+        | BeforeInheritance
+        | BeforeTypedMembers
+        | WithTypedMembers
+    }
+    
+    [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Assembly)]
+    macro NRailsInit()
+    {
+       NRailsInitsImpl.Init(Nemerle.Macros.ImplicitCTX(), Nemerle.Macros.Manager(), Phase.BeforeInheritance);
+    }
+    
+    [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeTypedMembers, Nemerle.MacroTargets.Assembly)]
+    macro NRailsInit()
+    {
+       NRailsInitsImpl.Init(Nemerle.Macros.ImplicitCTX(), Nemerle.Macros.Manager(), Phase.BeforeTypedMembers);
+    }
+    
+    [Nemerle.MacroUsage(Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Assembly)]
+    macro NRailsInit()
+    {
+       NRailsInitsImpl.Init(Nemerle.Macros.ImplicitCTX(), Nemerle.Macros.Manager(), Phase.WithTypedMembers);
+    }
+    
+    module NRailsInitsImpl
+    {
+        public Init(ctx : Typer, manager: ManagerClass, phase : Phase) : void
+        {
+           InitConstants.Init(ctx, manager, phase);
+        }
+    }
+}

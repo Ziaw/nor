@@ -9,7 +9,8 @@ namespace NRails.Demo.Controllers {
 
     [HandleError]
     public class HomeController : Controller {
-        public Index() : ActionResult {
+        public Index() : ActionResult 
+        {
             using (def db = Db())
             {
                 ViewData["Message"] = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
@@ -18,7 +19,8 @@ namespace NRails.Demo.Controllers {
             }
         }
 
-        public About() : ActionResult {
+        public About() : ActionResult 
+        {
             View()
         }
     }
