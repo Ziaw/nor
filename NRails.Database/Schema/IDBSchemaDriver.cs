@@ -46,17 +46,25 @@ namespace NRails.Database.Schema
 		string MakeInsert(TableSchema table);
 		void BeginTableLoad(IDbConnection connection, TableSchema table);
 		void EndTableLoad(IDbConnection connection, TableSchema table);
+
+
 	    string MakeDdlTableCreate(TableSchema table, bool withConstraint);
-	    void ExecuteDdlCommands(IEnumerable<string> commands, string connStr);
-	    string MakeDdlColumnCreate(TableColumnSchema column, TableSchema table);
 	    string MakeDdlTableDrop(TableSchema table);
 	    string MakeDdlTableRename(TableSchema table, string newName);
 
-	    string MakeDdlColumnAlter(TableColumnSchema mColumn, TableColumnSchema eColumn,
-	                                              TableSchema table);
+	    string MakeDdlColumnCreate(TableColumnSchema column, TableSchema table);
+        string MakeDdlColumnAlter(TableColumnSchema mColumn, TableColumnSchema eColumn,
+                                                  TableSchema table);
+        string MakeDdlColumnRename(TableColumnSchema column, string newName,
+                                          TableSchema table);
+        string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table);
 
-	    string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table);
-	    void ReloadTableSchema(IDbConnection conn, DBSchema schema, TableSchema table);
 	    string MakeDdlKeyDrop(KeySchema key, TableSchema table);
+
+        void ReloadTableSchema(IDbConnection conn, DBSchema schema, TableSchema table);
+        string MakeDdlKeyCreateByAlter(KeySchema key, TableSchema table);
+
+	    string MakeDdlIndexCreate(IndexSchema index, TableSchema table);
+	    string MakeDdlIndexDrop(IndexSchema index, TableSchema table);
 	}
 }

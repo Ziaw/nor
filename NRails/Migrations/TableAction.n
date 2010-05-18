@@ -15,6 +15,7 @@ namespace NRails.Migrations
   {
       | AddColumn { col : TableColumnSchema }
       | ChangeColumn { col : TableColumnSchema; newCol : TableColumnSchema}
+      | RenameColumn { col : TableColumnSchema; name : string; newName : string}
       | DropColumn { col : TableColumnSchema }
       | CreateIndex { idx : IndexSchema }
       | DropIndex { idx : IndexSchema }

@@ -635,6 +635,8 @@ namespace NRails.Database
 				MakeDdlElementName(table.Name), ParseColumnAlter(mColumn, eColumn));
 		}
 
+	    public abstract string MakeDdlColumnRename(TableColumnSchema column, string newName, TableSchema table);
+
 	    public virtual string MakeDdlColumnDrop(TableColumnSchema column, TableSchema table)
 		{
             return String.Format(@"ALTER TABLE {0} DROP COLUMN {1}",
@@ -654,7 +656,7 @@ namespace NRails.Database
 				key.Source, key.Columns);
 		}
 
-		protected string MakeDdlKeyCreateByAlter(KeySchema key, TableSchema table)
+        public virtual string MakeDdlKeyCreateByAlter(KeySchema key, TableSchema table)
 		{
 			return string.Format(@"ALTER TABLE {0} ADD CONSTRAINT {1} {2}",
 				MakeDdlElementName(table.Name), MakeDdlElementName(key.Name),
@@ -667,9 +669,9 @@ namespace NRails.Database
 				MakeDdlElementName(table.Name), MakeDdlElementName(key.Name));
 		}
 
-		protected abstract string MakeDdlIndexCreate(IndexSchema index, TableSchema table);
+	    public abstract string MakeDdlIndexCreate(IndexSchema index, TableSchema table);
 
-		protected virtual string MakeDdlIndexDrop(IndexSchema index, TableSchema table)
+	    public virtual string MakeDdlIndexDrop(IndexSchema index, TableSchema table)
 		{
 			return string.Format(@"DROP INDEX {0} ON {1}",
 				MakeDdlElementName(index.Name), MakeDdlElementName(table.Name));

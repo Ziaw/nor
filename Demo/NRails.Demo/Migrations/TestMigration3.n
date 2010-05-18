@@ -1,0 +1,40 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NRails.Migrations;
+using NRails.Macros.Migration;
+using BLToolkit.Data.Linq;
+using BLToolkit.Data.DataProvider;
+
+namespace NRails.Demo.Migrations
+{
+    public class TestMigration3 : Migration
+    {
+        public this () {base("000002")}
+
+        protected override Up() : void
+        {
+              create Test
+              {
+                  Id : Guid(pk);
+                  Zip : string?(len = 10) = "zzzz";
+                  createindex IDX_Test(Zip, Id(desc));
+              }
+              
+              change Test
+              {
+                  Street : string;
+                  change Zip : string(len = 20);
+                  rename Zip Zap;
+                  dropindex IDX_Test;
+                  drop Id;
+              }
+              
+              drop Test;
+        }
+    }
+}
