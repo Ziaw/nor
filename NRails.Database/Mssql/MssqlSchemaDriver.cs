@@ -388,7 +388,8 @@ namespace NRails.Database.Mssql
 		#endregion
 
 		#region  DDL Make Metods
-		protected override string MakeDdlIndexCreate(IndexSchema index, TableSchema table)
+
+	    public override string MakeDdlIndexCreate(IndexSchema index, TableSchema table)
 		{
 			return
 				@"CREATE {0} {1} INDEX {2} ON {3} ({4})"
@@ -399,6 +400,13 @@ namespace NRails.Database.Mssql
 						MakeDdlElementName(table.Name),
 						ParseColumnListIndex(index.Columns).JoinStrings(@", "));
 		}
+
+   	    public override string MakeDdlColumnRename(TableColumnSchema column, string newName, TableSchema table)
+	    {
+   	        return string.Format("sp_rename '{0}.{1}', '{2}', 'COLUMN'",
+                    MakeDdlElementName(table.Name), MakeDdlElementName(column.Name), newName);
+	    }
+
 
 		protected override string ParseColumn(TableColumnSchema column)
 		{
