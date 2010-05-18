@@ -9,19 +9,22 @@ using NRails.Mvc;
 namespace NRails.Demo.Controllers {
 
     [HandleError]
-    public class HomeController : Controller {
-        public Index() : ActionResult {
+    public class HomeController : Controller
+    {
+        public Index() : ActionResult
+        {
             using (def db = Db())
             {
                 def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
                 def taxonomies = db.Doctors.Select(d => d.Taxonomy).ToList();
                 
-                model ( message  = message , taxonomies = taxonomies )
+                model ( message = message , taxonomies = taxonomies )
             }
         }
 
-        public About() : ActionResult {
-            View()
+        public About() : ActionResult
+        {
+            model ( description = "NRails demo project", time = DateTime.Now )
         }
     }
 }

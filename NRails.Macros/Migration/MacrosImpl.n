@@ -314,8 +314,7 @@ namespace NRails.Macros.Migration
                     }
                     Add(typeExpr);
                     
-                    when (isNullable)
-                        Add(<[ $c.Nullable = $(isNullable : bool); ]>);
+                    Add(<[ $c.Nullable = $(isNullable : bool); ]>);
                 }
                 else
                 {
