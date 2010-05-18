@@ -15,7 +15,7 @@ using System.Web.Mvc.Ajax;
 namespace System.Web.Mvc
 {
     /* this code ported from C# T4MVC */
-    
+
     public interface INRActionResult 
     {
         Action : string { get; set; }
@@ -69,18 +69,17 @@ namespace System.Web.Mvc
 
         public BeginForm(this htmlHelper : HtmlHelper, result : INRActionResult, formMethod : FormMethod, htmlAttributes : IDictionary[string, object]) : MvcForm
         {
-            def callInfo = result.GetNRMVCResult();
+            def callInfo = result;
             htmlHelper.BeginForm(callInfo.Action, callInfo.Controller, callInfo.RouteValueDictionary, formMethod, htmlAttributes);
         }
 
         public RenderAction(this htmlHelper : HtmlHelper, result : INRActionResult) : void {
-            def callInfo = result.GetNRMVCResult();
+            def callInfo = result;
             htmlHelper.RenderAction(callInfo.Action, callInfo.Controller, callInfo.RouteValueDictionary);
         }
 
         public Action(this htmlHelper : HtmlHelper, result : INRActionResult) : MvcHtmlString {
-            def callInfo = result.GetNRMVCResult();
-            htmlHelper.Action(callInfo.Action, callInfo.Controller, callInfo.RouteValueDictionary);
+            htmlHelper.Action(result.Action, result.Controller, result.RouteValueDictionary);
         }
         public Action(this urlHelper : UrlHelper, result : INRActionResult) : string {
             urlHelper.RouteUrl(result.GetRouteValueDictionary());
@@ -130,12 +129,12 @@ namespace System.Web.Mvc
 
         public GetNRMVCResult(this result : INRActionResult) : INRActionResult 
         {
-            | r is INRActionResult => r
+            | r : INRActionResult => r
             | _ => throw InvalidOperationException("methods can only be passed pseudo-action calls (e.g. MVC.Home.About()), and not real action calls.");
         }
 
         public GetRouteValueDictionary(this result : INRActionResult) : RouteValueDictionary {
-            result.GetNRMVCResult().RouteValueDictionary;
+            result.RouteValueDictionary;
         }
 
         public AddRouteValues(this result : INRActionResult, routeValues : object) : INRActionResult {
@@ -165,10 +164,6 @@ namespace System.Web.Mvc
             result;
         }
         
-        public InitMVCT4Result(this result : INRActionResult, area : string, controller : string, action : string) : void 
-        {
-        }
-
         public FileExists(virtualPath : string) : bool {
             if (!HostingEnvironment.IsHosted) 
                 false;
