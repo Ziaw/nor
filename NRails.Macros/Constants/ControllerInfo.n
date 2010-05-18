@@ -1,0 +1,130 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Macros
+{
+    // Data structure to collect data about a controller class
+    class ControllerInfo {
+        public this() {
+            ActionMethods = HashSet.[ActionMethodInfo]();
+            ViewsFolder = ViewsFolderInfo();
+        }
+
+        public Area : AreaInfo { get; set; }
+
+        public AreaName : string 
+        {
+            get { Area.Name ?? ""; }
+        }
+
+        public NRControllerFullName : string {
+            get {
+                mutable name = Manager.HelpersPrefix;
+                if (!String.IsNullOrEmpty(AreaName))
+                    name += "." + EscapeID(Area.Namespace);
+                name + "." + Name; ;
+            }
+        }
+
+        public ViewPath : string 
+        {
+            get {
+                if (string.IsNullOrEmpty(Area.Name))
+                    String.Format("~/{0}/{1}/", ViewsRootFolder, Name);
+                else
+                    String.Format("~/{0}/{1}/{2}/", AreasFolder, ViewsRootFolder, Name);
+            }
+        }
+
+        // True when this is not a real controller, but a placeholder for views folders that don't match a controller
+        public NotRealController : bool { get; set; }
+
+        public HasExplicitConstructor  : bool { get; set; }
+        public HasExplicitDefaultConstructor : bool { get; set; }
+        public HasDefaultConstructor : bool { get { !HasExplicitConstructor || HasExplicitDefaultConstructor; } }
+        public IsAbstract : bool { get; set; }
+
+        public GeneratedCodeIsUpToDate : bool { get; set; }
+
+        public ClassName : string { get; set; }
+        public Name : string {
+            get {
+                // Trim the Controller suffix
+                ClassName.Substring(0, ClassName.Length - ControllerSuffix.Length);
+            }
+        }
+
+        public Namespace : string { get; set; }
+
+        public FullClassName : string {
+            get {
+                MakeClassName(Namespace, ClassName);
+            }
+        }
+
+        public DerivedClassName : string 
+        {
+            get { $"NRails_$ClassName"; }
+        }
+
+        public FullDerivedClassName : string 
+        {
+            get {
+                if (NotRealController)
+                    FullClassName;
+                else
+                    MakeClassName(Namespace, DerivedClassName);
+            }
+        }
+
+        public ActionMethods : HashSet[ActionMethodInfo] { get; set; }
+
+        ActionMethodsWithNoParameters : IEnumerable[ActionMethodInfo] {
+            get { ActionMethods.Where(m => m.Parameters.Count == 0);}
+        }
+
+        public ActionMethodsUniqueWithoutParameterlessOverload : IEnumerable[ActionMethodInfo] 
+        {
+            get { ActionMethodsWithUniqueNames.Except(ActionMethodsWithNoParameters, ActionComparer());}
+        }
+
+        // Return a list of actions without duplicate names (even with multiple overloads)
+        ActionMethodsWithUniqueNames : IEnumerable[ActionMethodInfo] {
+            get 
+            {
+                ActionMethods.Distinct(ActionComparer());
+            }
+        }
+
+        class ActionComparer : IEqualityComparer[ActionMethodInfo] {
+            
+            public Equals(x : ActionMethodInfo, y : ActionMethodInfo) : bool 
+            {
+                x.ActionName == y.ActionName;
+            }
+
+            public GetHashCode(obj : ActionMethodInfo) : int {
+                obj.ActionName.GetHashCode();
+            }
+        }
+
+        public ViewsFolder : ViewsFolderInfo { get; private set; }
+
+        public override ToString() : string {
+            Name;
+        }
+
+        public override Equals(obj : object) : bool {
+            obj != null && FullClassName == (obj :> ControllerInfo).FullClassName;
+        }
+
+        public override GetHashCode() : int {
+            FullClassName.GetHashCode();
+        }
+    }
+}
