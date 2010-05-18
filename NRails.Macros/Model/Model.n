@@ -68,14 +68,13 @@ namespace NRails.Macros.Model
                 // а не по именам свойств
                 unless (existingProperties.Any(p => p == col.Name))
                 {
-                    def clrType = col.Type.SystemType;
+                    def clrType = col.Type.Type;
                     def propType = PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
                     def fieldMemberName = $"_$(col.Name)";
                    
                     t.Define(<[decl: 
                         private mutable $(fieldMemberName : dyn) : $propType; 
                     ]>);
-                    
                     
                     t.Define(<[decl: 
                         [BLToolkit.Mapping.MapField($(col.Name : string))] 
