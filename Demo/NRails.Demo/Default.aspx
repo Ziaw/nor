@@ -1,14 +1,16 @@
-﻿<%@ Page Language="C#" %>
+﻿<%@ Page Language="Nemerle" %>
 
 <script runat="server">
 
-    protected override void OnLoad(EventArgs e) {
+    protected override OnLoad(e : EventArgs) : void {
         base.OnLoad(e);
 
-        string originalPath = Request.Path;
+        def originalPath = Request.Path;
         HttpContext.Current.RewritePath(Request.ApplicationPath, false);
-        IHttpHandler httpHandler = new MvcHttpHandler();
+
+        def httpHandler : IHttpHandler = MvcHttpHandler();
         httpHandler.ProcessRequest(HttpContext.Current);
+
         HttpContext.Current.RewritePath(originalPath, false);
     }
 

@@ -84,6 +84,12 @@ Sys.Mvc.AjaxContext.prototype = {
         return this._loadingElement;
     },
     
+    get_object: function Sys_Mvc_AjaxContext$get_object() {
+        /// <value type="Object"></value>
+        var executor = this.get_response();
+        return (executor) ? executor.get_object() : null;
+    },
+    
     get_response: function Sys_Mvc_AjaxContext$get_response() {
         /// <value type="Sys.Net.WebRequestExecutor"></value>
         return this._response;
@@ -128,6 +134,37 @@ Sys.Mvc.AsyncHyperlink.handleClick = function Sys_Mvc_AsyncHyperlink$handleClick
 
 Sys.Mvc.MvcHelpers = function Sys_Mvc_MvcHelpers() {
 }
+Sys.Mvc.MvcHelpers._serializeSubmitButton = function Sys_Mvc_MvcHelpers$_serializeSubmitButton(element, offsetX, offsetY) {
+    /// <param name="element" type="Object" domElement="true">
+    /// </param>
+    /// <param name="offsetX" type="Number" integer="true">
+    /// </param>
+    /// <param name="offsetY" type="Number" integer="true">
+    /// </param>
+    /// <returns type="String"></returns>
+    if (element.disabled) {
+        return null;
+    }
+    var name = element.name;
+    if (name) {
+        var tagName = element.tagName.toUpperCase();
+        var encodedName = encodeURIComponent(name);
+        var inputElement = element;
+        if (tagName === 'INPUT') {
+            var type = inputElement.type;
+            if (type === 'submit') {
+                return encodedName + '=' + encodeURIComponent(inputElement.value);
+            }
+            else if (type === 'image') {
+                return encodedName + '.x=' + offsetX + '&' + encodedName + '.y=' + offsetY;
+            }
+        }
+        else if ((tagName === 'BUTTON') && (name.length) && (inputElement.type === 'submit')) {
+            return encodedName + '=' + encodeURIComponent(inputElement.value);
+        }
+    }
+    return null;
+}
 Sys.Mvc.MvcHelpers._serializeForm = function Sys_Mvc_MvcHelpers$_serializeForm(form) {
     /// <param name="form" type="Object" domElement="true">
     /// </param>
@@ -171,6 +208,11 @@ Sys.Mvc.MvcHelpers._serializeForm = function Sys_Mvc_MvcHelpers$_serializeForm(f
             formBody.append(encodeURIComponent((element.value)));
             formBody.append('&');
         }
+    }
+    var additionalInput = form._additionalInput;
+    if (additionalInput) {
+        formBody.append(additionalInput);
+        formBody.append('&');
     }
     return formBody.toString();
 }
@@ -313,6 +355,14 @@ Sys.Mvc.MvcHelpers.updateDomElement = function Sys_Mvc_MvcHelpers$updateDomEleme
 // Sys.Mvc.AsyncForm
 
 Sys.Mvc.AsyncForm = function Sys_Mvc_AsyncForm() {
+}
+Sys.Mvc.AsyncForm.handleClick = function Sys_Mvc_AsyncForm$handleClick(form, evt) {
+    /// <param name="form" type="Object" domElement="true">
+    /// </param>
+    /// <param name="evt" type="Sys.UI.DomEvent">
+    /// </param>
+    var additionalInput = Sys.Mvc.MvcHelpers._serializeSubmitButton(evt.target, evt.offsetX, evt.offsetY);
+    form._additionalInput = additionalInput;
 }
 Sys.Mvc.AsyncForm.handleSubmit = function Sys_Mvc_AsyncForm$handleSubmit(form, evt, ajaxOptions) {
     /// <param name="form" type="Object" domElement="true">
