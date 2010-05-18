@@ -117,16 +117,15 @@ namespace NRails.Macros
                 ]>);
                 
                 def actionType = controllerBilder.DefineNestedType(<[decl:
-                    private module Actions
+                    public module Actions
                     {
                     }
                 ]>);
                 
-                injectMethods(helperType);
-                injectMethods(actionType);
-               
-                helperType.Compile();
-                actionType.Compile();
+                [helperType, actionType].Iter(t => {
+                    injectMethods(t);
+                    t.Compile()
+                })
             | _ => ()
         }
 
