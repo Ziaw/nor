@@ -1,4 +1,5 @@
-﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <NoStdLib>true</NoStdLib>
     <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
@@ -167,7 +168,11 @@
       <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\NRails.Macros\NRails.Macros.nproj" />
+    <MacroProjectReference Include="..\..\NRails.Macros\NRails.Macros.nproj">
+      <Name>NRails.Macros</Name>
+      <Project>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</Project>
+      <Private>True</Private>
+    </MacroProjectReference>
     <ProjectReference Include="..\..\NRails\NRails.nproj">
       <Name>NRails</Name>
       <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
@@ -227,4 +232,8 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PreBuildEvent>xcopy /D /Y $(SolutionDir)\NRails.Macros\bin\$(Configuration)\NRails.Macros.dll $(TargetDir)
+    </PreBuildEvent>
+  </PropertyGroup>
 </Project>
