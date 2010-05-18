@@ -1,2 +1,9 @@
 ﻿
+
+
+
+
+
+
+
 [assembly: NRails.Macros.NRailsInit]

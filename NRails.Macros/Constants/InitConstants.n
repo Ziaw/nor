@@ -16,32 +16,69 @@ namespace NRails.Macros
 {
   module InitConstants
   {
-    public Init(_ : Typer, manager: ManagerClass, phase : Phase) : void
+    mutable nrHost : TypeBuilder;
+    
+    public Init(t : Typer, manager: ManagerClass, phase : Phase) : void
     {
        def nss = manager.CoreEnv.NameTree.NamespaceTree;
 
+       nrHost = match(phase, nrHost) 
+       {
+           | (_, null)
+           | (Phase.BeforeInheritance, _) => 
+               manager.CoreEnv.Define(<[decl:
+                public module NC
+                {
+                }
+               ]>)
+           | _ => nrHost;
+       }
+       
        foreach (tb in nss.GetTypeBuilders())
        {
            when (tb.FullName.EndsWith("Controller"))
-              ProcessController(phase, tb, manager);
+              ProcessController(phase, tb, nrHost);
+       }
+       
+       when (phase == Phase.WithTypedMembers)
+       {
+         nrHost.Compile();
+         nrHost = null
        }
     }
-    
-    ProcessController(phase : Phase, tb : TypeBuilder, manager : ManagerClass) : void
+
+    ProcessController(phase : Phase, tb : TypeBuilder, nr : TypeBuilder) : void
     {
-        def name = tb.Name + "_test";
         match (phase)
         {
-            | Phase.BeforeInheritance => 
-                def tb = manager.CoreEnv.Define(<[
-                    decl: public class $(name : dyn) {
-                        public static Test = "1" : string;
+            | Phase.WithTypedMembers => 
+                def name = tb.Name;
+                
+                def myType = nr.DefineNestedType(<[decl: 
+                    public module $(name : dyn) 
+                    {
                     }
                 ]>);
-                tb.Compile();
+                
+                
+                def methods = tb.GetMethods()
+                    .Filter(m => m.ReturnType.GetSystemType().Name == "ActionResult")
+                    .Map(m => 
+                    {
+                        def name = m.Name;
+                        <[decl:
+                            public static $(name : dyn)() : string 
+                            {
+                                $(name : string)
+                            }
+                        ]>
+                    });
+                foreach (method in methods)
+                    myType.Define(method);
+               
+                myType.Compile();
             | _ => ()
         }
     }
-
   }
 }

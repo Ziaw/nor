@@ -23,16 +23,18 @@ namespace System.Web.Mvc
         RouteValueDictionary : RouteValueDictionary { get; set; }
     }
     
-    public class NRActionResult : System.Web.Mvc.ActionResult, INRActionResult 
+    public class NRActionResult : INRActionResult 
     {
         public this(area : string, controller : string, action : string)  
         {
-            base();
-            this.InitMVCT4Result(area, controller, action);
+            Controller = controller;
+            Action = action;
+            RouteValueDictionary = RouteValueDictionary();
+             
+            RouteValueDictionary.Add("Controller", controller);
+            RouteValueDictionary.Add("Action", action);
         }
          
-        public override ExecuteResult(context : System.Web.Mvc.ControllerContext) : void { }
-        
         public Controller : string { get; set; }
         public Action : string { get; set; }
         public RouteValueDictionary : RouteValueDictionary { get; set; }
@@ -40,76 +42,76 @@ namespace System.Web.Mvc
     
     public module NRExtensions 
     {
-        public ActionLink(this htmlHelper : HtmlHelper, linkText : string, result : ActionResult) : MvcHtmlString 
+        public ActionLink(this htmlHelper : HtmlHelper, linkText : string, result : INRActionResult) : MvcHtmlString 
         {
             htmlHelper.RouteLink(linkText, result.GetRouteValueDictionary());
         }
 
-        public ActionLink(this htmlHelper : HtmlHelper, linkText : string, result : ActionResult, htmlAttributes : object) : MvcHtmlString 
+        public ActionLink(this htmlHelper : HtmlHelper, linkText : string, result : INRActionResult, htmlAttributes : object) : MvcHtmlString 
         {
             ActionLink(htmlHelper, linkText, result, RouteValueDictionary(htmlAttributes));
         }
 
-        public ActionLink(this htmlHelper : HtmlHelper, linkText :  string, result : ActionResult, htmlAttributes : IDictionary[string, object]) : MvcHtmlString
+        public ActionLink(this htmlHelper : HtmlHelper, linkText :  string, result : INRActionResult, htmlAttributes : IDictionary[string, object]) : MvcHtmlString
         {
             htmlHelper.RouteLink(linkText, result.GetRouteValueDictionary(), htmlAttributes);
         }
 
-        public BeginForm(this htmlHelper : HtmlHelper, result : ActionResult, formMethod :  FormMethod) : MvcForm 
+        public BeginForm(this htmlHelper : HtmlHelper, result : INRActionResult, formMethod :  FormMethod) : MvcForm 
         {
             htmlHelper.BeginForm(result, formMethod, null);
         }
 
-        public BeginForm(this htmlHelper : HtmlHelper, result : ActionResult, formMethod : FormMethod, htmlAttributes : object) : MvcForm
+        public BeginForm(this htmlHelper : HtmlHelper, result : INRActionResult, formMethod : FormMethod, htmlAttributes : object) : MvcForm
         {
             BeginForm(htmlHelper, result, formMethod, RouteValueDictionary(htmlAttributes));
         }
 
-        public BeginForm(this htmlHelper : HtmlHelper, result : ActionResult, formMethod : FormMethod, htmlAttributes : IDictionary[string, object]) : MvcForm
+        public BeginForm(this htmlHelper : HtmlHelper, result : INRActionResult, formMethod : FormMethod, htmlAttributes : IDictionary[string, object]) : MvcForm
         {
-            def callInfo = result.GetT4MVCResult();
+            def callInfo = result.GetNRMVCResult();
             htmlHelper.BeginForm(callInfo.Action, callInfo.Controller, callInfo.RouteValueDictionary, formMethod, htmlAttributes);
         }
 
-        public RenderAction(this htmlHelper : HtmlHelper, result : ActionResult) : void {
-            def callInfo = result.GetT4MVCResult();
+        public RenderAction(this htmlHelper : HtmlHelper, result : INRActionResult) : void {
+            def callInfo = result.GetNRMVCResult();
             htmlHelper.RenderAction(callInfo.Action, callInfo.Controller, callInfo.RouteValueDictionary);
         }
 
-        public Action(this htmlHelper : HtmlHelper, result : ActionResult) : MvcHtmlString {
-            def callInfo = result.GetT4MVCResult();
+        public Action(this htmlHelper : HtmlHelper, result : INRActionResult) : MvcHtmlString {
+            def callInfo = result.GetNRMVCResult();
             htmlHelper.Action(callInfo.Action, callInfo.Controller, callInfo.RouteValueDictionary);
         }
-        public Action(this urlHelper : UrlHelper, result : ActionResult) : string {
+        public Action(this urlHelper : UrlHelper, result : INRActionResult) : string {
             urlHelper.RouteUrl(result.GetRouteValueDictionary());
         }
 
-        public ActionAbsolute(this urlHelper : UrlHelper, result : ActionResult) : string {
+        public ActionAbsolute(this urlHelper : UrlHelper, result : INRActionResult) : string {
             string.Format("{0}{1}",urlHelper.RequestContext.HttpContext.Request.Url.GetLeftPart(UriPartial.Authority),
                 urlHelper.RouteUrl(result.GetRouteValueDictionary()));
         }
 
-        public ActionLink(this ajaxHelper : AjaxHelper, linkText : string, result : ActionResult, ajaxOptions : AjaxOptions) : MvcHtmlString {
+        public ActionLink(this ajaxHelper : AjaxHelper, linkText : string, result : INRActionResult, ajaxOptions : AjaxOptions) : MvcHtmlString {
             ajaxHelper.RouteLink(linkText, result.GetRouteValueDictionary(), ajaxOptions);
         }
 
-        public ActionLink(this ajaxHelper : AjaxHelper, linkText : string, result : ActionResult, ajaxOptions : AjaxOptions, htmlAttributes : object) : MvcHtmlString {
+        public ActionLink(this ajaxHelper : AjaxHelper, linkText : string, result : INRActionResult, ajaxOptions : AjaxOptions, htmlAttributes : object) : MvcHtmlString {
             ajaxHelper.RouteLink(linkText, result.GetRouteValueDictionary(), ajaxOptions, RouteValueDictionary(htmlAttributes));
         }
 
-        public ActionLink(this ajaxHelper : AjaxHelper, linkText : string, result : ActionResult, ajaxOptions : AjaxOptions, htmlAttributes : IDictionary[string, object]) : MvcHtmlString {
+        public ActionLink(this ajaxHelper : AjaxHelper, linkText : string, result : INRActionResult, ajaxOptions : AjaxOptions, htmlAttributes : IDictionary[string, object]) : MvcHtmlString {
             ajaxHelper.RouteLink(linkText, result.GetRouteValueDictionary(), ajaxOptions, htmlAttributes);
         }
 
-        public MapRoute(this routes : RouteCollection, name : string, url : string, result : ActionResult) : Route {
-            routes.MapRoute(name, url, result, null : ActionResult);
+        public MapRoute(this routes : RouteCollection, name : string, url : string, result : INRActionResult) : Route {
+            routes.MapRoute(name, url, result, null : INRActionResult);
         }
 
-        public MapRoute(this routes : RouteCollection, name : string, url : string, result : ActionResult, defaults : object) : Route {
+        public MapRoute(this routes : RouteCollection, name : string, url : string, result : INRActionResult, defaults : object) : Route {
             MapRoute(routes, name, url, result, defaults, null);
         }
 
-        public MapRoute(this routes : RouteCollection, name : string, url : string, result : ActionResult, defaults : object, constraints : object) : Route {
+        public MapRoute(this routes : RouteCollection, name : string, url : string, result : INRActionResult, defaults : object, constraints : object) : Route {
             // Start by adding the default values from the anonymous object (if any)
             def routeValues = RouteValueDictionary(defaults);
 
@@ -126,23 +128,21 @@ namespace System.Web.Mvc
             route;
         }
 
-        public GetT4MVCResult(this result : ActionResult) : INRActionResult {
-            def t4MVCResult = result :> INRActionResult;
-            when (t4MVCResult == null) {
-                throw InvalidOperationException("methods can only be passed pseudo-action calls (e.g. MVC.Home.About()), and not real action calls.");
-            }
-            t4MVCResult;
+        public GetNRMVCResult(this result : INRActionResult) : INRActionResult 
+        {
+            | r is INRActionResult => r
+            | _ => throw InvalidOperationException("methods can only be passed pseudo-action calls (e.g. MVC.Home.About()), and not real action calls.");
         }
 
-        public GetRouteValueDictionary(this result : ActionResult) : RouteValueDictionary {
-            result.GetT4MVCResult().RouteValueDictionary;
+        public GetRouteValueDictionary(this result : INRActionResult) : RouteValueDictionary {
+            result.GetNRMVCResult().RouteValueDictionary;
         }
 
-        public AddRouteValues(this result : ActionResult, routeValues : object) : ActionResult {
+        public AddRouteValues(this result : INRActionResult, routeValues : object) : INRActionResult {
             result.AddRouteValues(RouteValueDictionary(routeValues));
         }
 
-        public AddRouteValues(this result : ActionResult, routeValues : RouteValueDictionary) : ActionResult {
+        public AddRouteValues(this result : INRActionResult, routeValues : RouteValueDictionary) : INRActionResult {
             def currentRouteValues = result.GetRouteValueDictionary();
 
             // Add all the extra values
@@ -153,13 +153,13 @@ namespace System.Web.Mvc
             result;
         }
 
-        public AddRouteValues(this result : ActionResult, nameValueCollection : System.Collections.Specialized.NameValueCollection) : ActionResult {
+        public AddRouteValues(this result : INRActionResult, nameValueCollection : System.Collections.Specialized.NameValueCollection) : INRActionResult {
             // Copy all the values from the NameValueCollection into the route dictionary
             nameValueCollection.CopyTo(result.GetRouteValueDictionary());
             result;
         }
 
-        public AddRouteValue(this result : ActionResult, name : string, value : object) : ActionResult {
+        public AddRouteValue(this result : INRActionResult, name : string, value : object) : INRActionResult {
             def routeValues = result.GetRouteValueDictionary();
             routeValues.Add(name, value);
             result;
@@ -167,12 +167,6 @@ namespace System.Web.Mvc
         
         public InitMVCT4Result(this result : INRActionResult, area : string, controller : string, action : string) : void 
         {
-            result.Controller = controller;
-            result.Action = action;
-            result.RouteValueDictionary = RouteValueDictionary();
-             
-            result.RouteValueDictionary.Add("Controller", controller);
-            result.RouteValueDictionary.Add("Action", action);
         }
 
         public FileExists(virtualPath : string) : bool {
@@ -215,13 +209,6 @@ namespace System.Web.Mvc
 
         // Calling ProcessVirtualPath through delegate to allow it to be replaced for unit testing
         public ProcessVirtualPath : string -> string = ProcessVirtualPathDefault;
-
-
-        // Logic to determine if the app is running in production or dev environment
-        public IsProduction() : bool
-        { 
-            (HttpContext.Current != null && !HttpContext.Current.IsDebuggingEnabled); 
-        }
     }
 
     
