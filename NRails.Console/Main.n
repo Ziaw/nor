@@ -22,8 +22,7 @@ module Program
   }
 
   mutable migrationMode : MigrationMode = MigrationMode.NotSet();
-  
-  
+
   Main() : void
   {
       mutable command : string;
@@ -34,7 +33,7 @@ module Program
         def files = Directory.GetFiles(c, "*.n").ToNList();
         migrationMode = MigrationMode.RawFiles(files);
       }
-      
+
       def options = [
         Getopt.CliOption.String(name = "--migration-assembly",
             aliases = ["-ma"],
@@ -97,6 +96,17 @@ module Program
           Activator.CreateInstance(migrationType) :> IMigration;
       }
       
-      migrator.Migrate(migrationTypes.Map(makeMigration));
+      def migrationDirection = match (_args.Length)
+      {
+        | 0 => MigrationDirection.All();
+        | _ => match (_args.First().ToLower())
+               {
+                  | "up" => MigrationDirection.Up();
+                  | "down" => MigrationDirection.Down();
+                  | _ => MigrationDirection.Version(_args.First());
+              }
+      }
+
+      migrator.Migrate(migrationDirection, migrationTypes.Map(makeMigration));
   }
 }

@@ -91,5 +91,12 @@ CREATE TABLE Patient
 )
 */              
           }
+
+          protected override Down() : void
+          {
+              drop Patient;
+              drop Doctor;
+              drop Person;
+          }
   }
 }

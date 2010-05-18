@@ -91,5 +91,15 @@ VALUES
 	            Console.WriteLine($"select test ok, we have $cnt records in DataTypeTest");
 	        }
         }
+        
+        protected override Down() : void
+        {
+            drop DataTypeTest;
+
+            sql(db, "delete from Patient where PersonID=? and Diagnosis=?", 2, "Hallucination with Paranoid Bugs Delirium of Persecution");
+            sql(db, "delete from Doctor where PersonID=? and Taxonomy=?", 1, "Psychiatry");
+            sql(db, "delete from Person where FirstName=? and LastName=? and Gender=?", "Tester", "Testerson", 'M');
+            sql(db, "delete from Person where FirstName=? and LastName=? and Gender=?", "John", "Pupkin", 'M');
+        }
     }
 }

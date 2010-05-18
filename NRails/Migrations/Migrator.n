@@ -18,6 +18,14 @@ using BLToolkit.DataAccess;
 
 namespace NRails.Migrations
 {
+  public variant MigrationDirection
+  {
+      | All
+      | Up
+      | Down
+      | Version { version : string }
+  }
+
   public class Migrator
   {
       public static SchemaMigrations = "SchemaMigrations" : string;
@@ -50,7 +58,7 @@ namespace NRails.Migrations
           this.engine = engine;
       }
       
-      public Migrate(migrs : list[IMigration]) : void
+      public Migrate(migrationDirection : MigrationDirection, migrs : list[IMigration]) : void
       {
           log("begin migrations");
           def dbDriver = engine.CreateDbDriver();
@@ -65,10 +73,22 @@ namespace NRails.Migrations
           
           def schema = schemaDriver.LoadExistingSchema(connString);
           log("schema loaded");
-          
-          def absentMigrations = if (!schema.Tables.Any(t => t.Name == SchemaMigrations))
+
+          def sort(ms : list[IMigration]) : list[IMigration]
           {
-              InitialMigration() :: migrs.Sort((m, m2) => m.Version.CompareTo(m2.Version))
+              ms.Sort((m, m2) => m.Version.CompareTo(m2.Version))
+          }
+
+          mutable exactMigrationDirection = MigrationDirection.Up();
+          def migrations = if (!schema.Tables.Any(t => t.Name == SchemaMigrations))
+          {
+              InitialMigration() :: match (migrationDirection)
+              {
+                  | MigrationDirection.All => sort(migrs)
+                  | MigrationDirection.Up => sort(migrs).First() :: []
+                  | MigrationDirection.Version(version) => sort(migrs.Filter(m => m.Version.CompareTo(version) <= 0))
+                  | MigrationDirection.Down => log("Can't go down - no migrations in database"); []
+              }
           }
           else
           {
@@ -77,13 +97,58 @@ namespace NRails.Migrations
                   conn.Open();
                   using (db = DbManager(conn))
                   {
-                      db.GetTable.[SchemaMigrations]().Select(sm => sm.Version).ToArray();
+                      db.GetTable.[SchemaMigrations]().Select(sm => sm.Version).ToArray()
                   }
               }
-              migrs.Filter(m => !existing.Contains(m.Version)).Sort((m, m2) => m.Version.CompareTo(m2.Version));
+
+              def toMigr(version : string) : IMigration
+              {
+                  migrs.First(m => m.Version == version)
+              }
+              
+              def nonExisting() : list[IMigration]
+              {
+                  migrs.Filter(m => !existing.Contains(m.Version))
+              }
+              
+              match (migrationDirection)
+              {
+                  | MigrationDirection.All => sort(nonExisting())
+                  | MigrationDirection.Up =>
+                    def sortedFiltered = sort(nonExisting());
+                    match (sortedFiltered.Any())
+                    {
+                        | true => sortedFiltered.First() :: []
+                        | false => log("Can't go up - all migrations done"); []
+                    }
+                  | MigrationDirection.Down =>
+                    exactMigrationDirection = MigrationDirection.Down();
+                    match (existing.Any())
+                    {
+                        | true => toMigr(existing.Max()) :: []
+                        | false => log("Can't go down - no migrations in database"); []
+                    }
+                  | MigrationDirection.Version(version) => 
+                    match (existing.Contains(version))
+                    {
+                        | true => exactMigrationDirection = MigrationDirection.Down();
+                                  sort(existing.Filter(v => v.CompareTo(version) > 0).Map(v => toMigr(v))).Rev()
+                        | false => sort(nonExisting().Filter(m => m.Version.CompareTo(version) <= 0))
+                    }
+              }
           }
 
-          RunMigrationsUp(absentMigrations, schema, schemaDriver, connString);
+          match (exactMigrationDirection)
+          {
+              | MigrationDirection.Up => log("going up")
+              | MigrationDirection.Down => log("going down")
+              | _ => throw InvalidOperationException($"Expected Up/Down, not $(exactMigrationDirection)");
+          }
+
+          log($"$(migrations.Length) migration(s) to do");
+          when (migrations.Length > 0)
+            RunMigrations(exactMigrationDirection, migrations, schema, schemaDriver, connString);
+
           log("end migrations");
       }
       
@@ -97,7 +162,7 @@ namespace NRails.Migrations
           Console.WriteLine($"$(ts()) $str");
       }
       
-      RunMigrationsUp(migrations : list[IMigration], schema : DBSchema, schemaDriver : IDBSchemaDriver, connString : string) : void
+      RunMigrations(exactMigrationDirection : MigrationDirection, migrations : list[IMigration], schema : DBSchema, schemaDriver : IDBSchemaDriver, connString : string) : void
       {
           foreach (m in migrations)
           {
@@ -111,16 +176,30 @@ namespace NRails.Migrations
                       using (m.HandlerScope(ExecuteAction(conn, schema, schemaDriver, _)))
                       {
                           m.AssignSchema(schema, db);
-                          m.Up();
+          
+                          match (exactMigrationDirection)
+                          {
+                              | MigrationDirection.Up => m.Up()
+                              | MigrationDirection.Down => m.Down()
+                          }
                       }
                       
                       when (!m.Version.EndsWith("!"))
                           {
-                              log($"insert migration info $(m.Version)");
-                              def newVersion = SchemaMigrations();
-                              newVersion.Version = m.Version;
-                              _ = db.Insert(newVersion);
-                              log("migration info inserted");
+                              def dir = match (exactMigrationDirection)
+                              {
+                                  | MigrationDirection.Up => "insert"
+                                  | MigrationDirection.Down => "delete"
+                              }
+                              log($"$(dir) migration info $(m.Version)");
+                              def version = SchemaMigrations();
+                              version.Version = m.Version;
+                              _ = match (exactMigrationDirection)
+                              {
+                                  | MigrationDirection.Up => db.Insert(version)
+                                  | MigrationDirection.Down => db.Delete(version)
+                              }
+                              log($"migration info $(dir) finished");
                           }
                       tx.Complete();
                   }

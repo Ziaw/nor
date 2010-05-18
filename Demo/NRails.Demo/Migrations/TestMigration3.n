@@ -33,7 +33,10 @@ namespace NRails.Demo.Migrations
                   dropindex IDX_Test;
                   drop Id;
               }
-              
+        }
+
+        protected override Down() : void
+        {
               drop Test;
         }
     }
