@@ -73,6 +73,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\InitConstants.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NRailsInit.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Migration\Macros.n">
       <SubType>Code</SubType>
     </Compile>
@@ -100,6 +106,7 @@
     <Folder Include="Migration" />
     <Folder Include="Model" />
     <Folder Include="Mvc" />
+    <Folder Include="Constants" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

@@ -65,6 +65,10 @@
       <Name>System.Web</Name>
       <AssemblyName>System.Web.dll</AssemblyName>
     </Reference>
+    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <Name>System.Web.Mvc</Name>
+      <AssemblyName>System.Web.Mvc.dll</AssemblyName>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -80,6 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.n" />
+    <Compile Include="Constants\NRailsExtensions.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Engine.n">
       <SubType>Code</SubType>
     </Compile>
@@ -121,6 +128,7 @@
   <ItemGroup>
     <Folder Include="Migrations" />
     <Folder Include="Migrations\Model" />
+    <Folder Include="Constants" />
     <Folder Include="Schema" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
