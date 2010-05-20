@@ -42,6 +42,12 @@
       <HintPath>..\lib\BLToolkit.3.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
+      <Name>log4net</Name>
+      <AssemblyName>log4net.dll</AssemblyName>
+      <HintPath>..\lib\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -106,6 +112,9 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
     <Compile Include="Utils\Exts.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\getopt.n">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

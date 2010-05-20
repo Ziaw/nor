@@ -1,6 +1,5 @@
 ﻿using Nemerle.Collections;
 using Nemerle.Text;
-using Nemerle.Utility;
 
 using System;
 using System.IO;
@@ -10,7 +9,9 @@ using System.Linq;
 using System.Reflection;
 using NRails;
 using NRails.Migrations;
+using NRails.Utils;
 using NRails.Console;
+using log4net.Config;
 
 module Program
 {
@@ -21,19 +22,66 @@ module Program
       | NotSet
   }
 
-  mutable migrationMode : MigrationMode = MigrationMode.NotSet();
-
   Main() : void
   {
-      mutable command : string;
       mutable args = [];
+      mutable unhandled = [];
+
+      def app = log4net.Appender.ConsoleAppender();
+      app.Layout = log4net.Layout.PatternLayout("%m %n");
+      app.Threshold = log4net.Core.Level.Info;
+
+      BasicConfigurator.Configure(app);
+
+      def options = [
+        Getopt.CliOption.NonOption(name = "command",
+            aliases = [],
+            handler = (c) => args = c :: args
+        ),
+        
+        Getopt.CliOption.Unhandled(name = "", handler = (c) => unhandled = c :: unhandled),
+        
+        Getopt.CliOption.Flag(name = "--verbose",
+            aliases = ["-v"],
+            handler = () =>
+            {
+                app.Threshold = log4net.Core.Level.Debug;
+                app.Layout = log4net.Layout.PatternLayout("%d - %m %n");
+            },
+        ),
+        Getopt.CliOption.Flag(name = "--vverbose",
+            aliases = ["-vv"],
+            handler = () =>
+            {
+                app.Threshold = log4net.Core.Level.Debug;
+                app.Layout = log4net.Layout.PatternLayout("%d %l - %m %n");
+            },
+        ),
+      ];
+
+      Getopt.Parse(options);
+      args = args.Rev();
+      unhandled = unhandled.Rev();
       
+      match (args)
+      {
+          | "migrate" :: args => Migrate(args, unhandled);
+          | _ => Console.WriteLine("Valid commands: migrate.");
+      }
+  }
+  
+  Migrate(args : list[string], opts : list[string]) : void
+  {
+      mutable migrationMode = MigrationMode.NotSet();
+
       def migrationPathHandler(c)
       {
         def files = Directory.GetFiles(c, "*.n").ToNList();
         migrationMode = MigrationMode.RawFiles(files);
       }
 
+      mutable allowMissing = false;
+      
       def options = [
         Getopt.CliOption.String(name = "--migration-assembly",
             aliases = ["-ma"],
@@ -46,37 +94,19 @@ module Program
             aliases = ["-mp"],
             handler = migrationPathHandler,
         ),
-        Getopt.CliOption.NonOption(name = "command",
-            aliases = [],
-            handler = (c) =>
-            {
-                if (command == null)
-                    command = c;
-                else
-                    args = c :: args;
-            }
-        )
+        Getopt.CliOption.Flag(name = "--allow-missing",
+            aliases = ["-am"],
+            handler = () => allowMissing = true
+        ),
+        Getopt.CliOption.NonOption(name = "command args",  handler = _ => ())
       ];
-
-      Getopt.Parse(options);
-      args = args.Rev();
       
-      match (command)
+      Getopt.Parse(Getopt.Error, options, NList.Flatten([args, opts]));
+      when (migrationMode is MigrationMode.NotSet)
       {
-          | "migrate" => 
-          {
-              when (migrationMode is MigrationMode.NotSet)
-              {
-                  migrationPathHandler("Migrations")
-              }
-              Migrate(args);
-          }
-          | _ => Console.WriteLine("Valid commands: migrate.");
+          migrationPathHandler("Migrations")
       }
-  }
-  
-  Migrate(_args : list[string]) : void
-  {
+      
       def ma = match (migrationMode)
       {
           | MigrationMode.CompiledAssembly(migrationAssmbly) =>
@@ -87,7 +117,7 @@ module Program
               throw ArgumentException();
       }
 
-      def migrationTypes = ma.GetTypes().Filter(t => t.IsSubclassOf(typeof(Migration)));
+      def migrationTypes = ma.GetTypes().Filter(t => t.IsSubclassOf(typeof(Migration)) && !t.IsAbstract);
       
       def migrator = Migrator(Engine.Instance);
       
@@ -96,17 +126,15 @@ module Program
           Activator.CreateInstance(migrationType) :> IMigration;
       }
       
-      def migrationDirection = match (_args.Length)
+      def migrationDirection = match (args)
       {
-        | 0 => MigrationDirection.All();
-        | _ => match (_args.First().ToLower())
-               {
-                  | "up" => MigrationDirection.Up();
-                  | "down" => MigrationDirection.Down();
-                  | _ => MigrationDirection.Version(_args.First());
-              }
+        | [] => MigrationDirection.All();
+        | ["up"] => MigrationDirection.Up();
+        | ["down"] => MigrationDirection.Down();
+        | [x] => MigrationDirection.Version(x);
+        | _ => throw ArgumentException($"..$args");
       }
 
-      migrator.Migrate(migrationDirection, migrationTypes.Map(makeMigration));
+      migrator.Migrate(migrationDirection, migrationTypes.Map(makeMigration), allowMissing);
   }
 }

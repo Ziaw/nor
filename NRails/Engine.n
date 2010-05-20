@@ -12,14 +12,23 @@ using NRails.Database;
 using NRails.Database.Schema;
 using NRails.Database.Mssql;
 using BLToolkit.Data;
+using log4net;
+using Nemerle.Logging;
 
+[assembly: LogFunction (Debug => Engine.Logger.Debug, 
+                        Info => Engine.Logger.Info, 
+                        Warn => Engine.Logger.Warn, 
+                        Error => Engine.Logger.Error, 
+                        Fatal => Engine.Logger.Fatal)]
+[assembly: LogFlag(Debug, true)]
+[assembly: LogFlag(Info, true)]
 namespace NRails
 {
-  /// <summary>
-  /// Description of Engine.
-  /// </summary>
   public class Engine
   {
+      [Accessor]
+      static logger : ILog = LogManager.GetLogger("NRails");
+
       [Accessor]
       cfg : Configuration;
       

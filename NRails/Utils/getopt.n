@@ -1,0 +1,282 @@
+/*
+ * Copyright (c) 2003-2008 The University of Wroclaw.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *    1. Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *    3. The name of the University may not be used to endorse or promote
+ *       products derived from this software without specific prior
+ *       written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+ * NO EVENT SHALL THE UNIVERSITY BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using Nemerle.Collections;
+
+namespace NRails.Utils
+{
+  /**
+   * Command line options handling.
+   */
+  public module Getopt
+  {
+    public variant CliOption
+    {
+      | Flag { handler : void -> void; }
+      | Boolean { handler : bool -> void; }
+      | String { handler : string -> void; }
+      | Int { handler : int -> void; }
+      | NonOption { handler : string -> void; }
+      | Unhandled { handler : string -> void; }
+      | SubstitutionString { substitute : string -> list [string]; } 
+      | PreHelp {}
+      | PostHelp {}
+
+      public name : string;
+      public aliases : list [string];
+      public help : string;
+
+      public this (name : string)
+      {
+        this.name = name; 
+        this.aliases = [];
+        this.help = "" 
+      }
+      
+      public this (name : string, aliases : list [string])
+      {
+        this.name = name; 
+        this.aliases = aliases; 
+        this.help = "" 
+      }
+      
+      public this (name : string, help : string)
+      { 
+        this.name = name; 
+        this.aliases = [];
+        this.help = help 
+      }
+      
+      public this (name : string, aliases : list [string], help : string)
+      { 
+        this.name = name; 
+        this.aliases = aliases;
+        this.help = help 
+      }
+    }
+
+    public Usage (args : list [CliOption]) : string
+    {
+      def concat (sep : string, lst) {
+        match (lst) {
+          | [] => ""
+          | x :: xs => x + sep + concat (sep, xs)
+        }
+      }
+      
+      def describe (opt : CliOption, acc)
+      {
+        def stdpref () {
+          "    " + concat (", ", opt.aliases) + opt.name
+        }
+
+        def stdsuff () {
+          opt.help + "\n"
+        }
+
+        def desc =
+          match (opt) {
+            | CliOption.PreHelp | CliOption.PostHelp => stdsuff ()
+            | CliOption.Flag  => stdpref () + "  " + stdsuff ()
+            | CliOption.Boolean => stdpref () + "+/-  " + stdsuff ()
+            | CliOption.String | CliOption.SubstitutionString =>
+              stdpref () + ":STRING  " + stdsuff ()
+            | CliOption.Int => stdpref () + ":INT  " + stdsuff ()
+            | CliOption.NonOption => 
+              if (opt.help != "")
+                "    STRING  " + stdsuff ()
+              else
+                ""
+            | CliOption.Unhandled => ""
+          }
+
+        if (opt.help == "NOHELP")
+          acc
+        else
+          acc + desc
+      }
+
+      args.FoldLeft("", describe)
+    }
+
+    /**
+     * Parses the command line options.
+     */
+    public Parse (error_fn : string -> void, 
+                  desc : list [CliOption], 
+                  args : list [string]) : void 
+    {
+      def stdunhandled (s) {
+        error_fn ("unhandled command line argument: " + s + "\n" + Usage (desc))
+      }
+      
+      mutable unhandled = stdunhandled;
+      mutable non_option = stdunhandled;
+
+      def options = Nemerle.Collections.Hashtable ();
+      
+      // prepare
+      foreach (opt in desc) 
+        match (opt) {
+          | CliOption.Unhandled (h) => unhandled = h
+          | CliOption.NonOption (h) => non_option = h
+          | CliOption.PreHelp | CliOption.PostHelp => ()
+          | CliOption.Flag | CliOption.String | CliOption.Int 
+          | CliOption.Boolean | CliOption.SubstitutionString =>
+            foreach (a in opt.name :: opt.aliases) options.Add (a, opt)
+        }
+
+      mutable do_parse_options = true;
+
+      def option_name (mutable s : string)
+      {
+        when (s [0] == '/') 
+          s = "-" + s.Substring (1);
+
+        if (s.IndexOf ('@') != -1) s.Substring (0, s.IndexOf ('@') + 1)
+        else if (s.IndexOf (':') != -1) s.Substring (0, s.IndexOf (':'))
+        else if (s.EndsWith ("+") || s.EndsWith ("-")) s.Substring (0, s.Length - 1)
+        else s
+      }
+
+      def argument_name (opt : string) {
+        if (opt.IndexOf ('@') != -1)
+          Some (opt.Substring (opt.IndexOf ('@') + 1))
+        else if (opt.IndexOf (':') != -1)
+          Some (opt.Substring (opt.IndexOf (':') + 1))
+        else if (opt.EndsWith ("+")) Some ("+")
+        else if (opt.EndsWith ("-")) Some ("-")
+        else
+          None ();
+      }
+
+      def is_option (s : string)
+      {
+        do_parse_options && 
+        match (s[0]) { 
+          | '-' | '@' => true
+          | '/' => options.Contains (option_name (s))
+          | _ => false 
+        }
+      }
+     
+      def need_following_arg (s)
+      {
+        if (is_option (s))
+          match (options.Get (option_name (s))) {
+            | Some (CliOption.String) | Some (CliOption.Int)
+            | Some (CliOption.SubstitutionString) =>
+              s.IndexOf (':') == -1 && s.IndexOf ('@') == -1
+            | _ => false
+          }
+        else
+          false
+      }
+
+      def parse_opt (name, arg)
+      {
+        match (options.Get(name)) {
+          | Some (opt) =>
+            match ((opt, arg)) {
+              | (CliOption.Flag (h), None) => h ()
+              | (CliOption.SubstitutionString (s), Some (a)) =>
+                parse_opts (s (a))
+                
+              | (CliOption.Boolean (h), None)
+              | (CliOption.Boolean (h), Some ("+")) => h (true)
+              | (CliOption.Boolean (h), Some ("-")) => h (false)
+              | (CliOption.String (h), Some (a)) => h (a)
+              | (CliOption.Int (h), Some (a)) =>
+                def val =
+                  try { Some (System.Int32.Parse (a)) }
+                  catch { _ =>
+                    error_fn ("option " + opt.name + " requires an integer argument");
+                    None ()
+                  };
+                match (val) {
+                  | Some (x) => h (x)
+                  | None => ()
+                }
+                  
+              | (CliOption.Flag, Some) => 
+                error_fn ("option " + opt.name + " cannot accept an argument")
+              | (CliOption.String, None) | (CliOption.Int, None) 
+              | (CliOption.SubstitutionString, None) =>
+                error_fn ("option " + opt.name + " requires an argument")
+              | (CliOption.Boolean, _) =>
+                error_fn ("option " + opt.name + " requires `+' or `-'")
+              | _ => assert (false)
+            }
+          | _ when name == "--" =>
+            do_parse_options = false
+          | _ =>
+            unhandled (name + match (arg) {| Some(x) => ":" + x | _ => ""} )
+        }
+      }
+      and parse_opts (args)
+      {
+        match (args) {
+          | opt :: arg :: rest when need_following_arg (opt) =>
+            parse_opt (option_name (opt), Some (arg));
+            parse_opts (rest)
+
+          | opt :: rest when is_option (opt) =>
+/*            def opt =
+              if (opt.StartsWith ("--")) opt.Substring (1)
+              else opt;*/
+            parse_opt (option_name (opt), argument_name (opt));
+            parse_opts (rest)
+
+          | arg :: rest => 
+            non_option (arg); 
+            parse_opts (rest)
+
+          | [] => ()
+        }
+      }
+
+      parse_opts (args)
+    }
+
+    public Error (message : string) : void
+    {
+      def prog = System.Environment.GetCommandLineArgs () [0];
+      System.Console.Error.WriteLine (prog + ": " + message);
+      System.Environment.Exit (1)
+    }
+    
+    public Parse (desc : list [CliOption]) : void
+    {
+      def argv = NList.FromArray (System.Environment.GetCommandLineArgs ());
+      match (argv) {
+        | _ :: args => Parse (Error, desc, args)
+        | [] => ()
+      }
+    }
+  }
+}
