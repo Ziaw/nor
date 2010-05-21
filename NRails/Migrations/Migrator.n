@@ -15,7 +15,7 @@ using BLToolkit.Data;
 using BLToolkit.Data.Linq;
 using BLToolkit.Data.Sql;
 using BLToolkit.DataAccess;
-using Nemerle.Logging;
+using NRails.Logging;
 
 namespace NRails.Migrations
 {

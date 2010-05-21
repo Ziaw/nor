@@ -6,7 +6,6 @@ using Nemerle.Assertions;
 using Nemerle.Compiler;
 using Nemerle.Compiler.Parsetree;
 using Nemerle.Compiler.Typedtree;
-using Nemerle.Logging;
 using Nemerle.Imperative;
 using System.Web.Mvc;
 using System;
