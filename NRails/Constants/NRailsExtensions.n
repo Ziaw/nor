@@ -25,7 +25,7 @@ namespace System.Web.Mvc
     
     public class NRActionResult : INRActionResult 
     {
-        public this(area : string, controller : string, action : string)  
+        public this(_area : string, controller : string, action : string)  
         {
             Controller = controller;
             Action = action;

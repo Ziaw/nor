@@ -16,10 +16,12 @@ namespace NRails.Mvc
   internal class ViewEngineHost
   {
     view_engine : VirtualPathProviderViewEngine;
+    project_path : string;
 
     public this(project_path : string)
     {
         view_engine = ProjectViewEngine(project_path);
+        this.project_path = project_path;
     }
 
     public FindView(controller : string, view : string, master : string) : bool * string

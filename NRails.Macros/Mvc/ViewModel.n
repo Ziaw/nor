@@ -14,6 +14,9 @@ using System.Text.RegularExpressions;
 
 namespace NRails.Mvc
 {
+  // this macro developed by hardcase and taken from Nemerle snippets
+  // intellisense mode has been removed as far autocompletion didn't works
+    
   macro Model()
   {
     ViewModelImpl.GetViewModel(Macros.ImplicitCTX());
@@ -28,6 +31,20 @@ namespace NRails.Mvc
   module ViewModelImpl
   {
     model_key : string = "_N_Model";
+    
+    public GetViewEngineHost(manager : ManagerClass) : ViewEngineHost
+    {
+        def key = "ViewEngineHost";
+        match(manager.UserData[key]) {
+          | null =>
+            
+            def host = ViewEngineHost(System.IO.Path.GetDirectoryName(manager.Options.ProjectPath));
+            manager.UserData[key] = host;
+            host
+          
+          | host => host :> ViewEngineHost
+        }
+    }
 
     public BuildViewModel(typer : Typer, view_name : PT.PExpr, master_name : PT.PExpr, args : list[PT.PExpr]) : PT.PExpr
     {
@@ -37,7 +54,7 @@ namespace NRails.Mvc
       def controller = {
         def ty_name = typer.CurrentTypeBuilder.Name;
         regexp match(ty_name) {
-          | @"(?<name>.*?)Controller" => name
+          | @"(?<name>.*?)Controller$" => name
           | _ => ty_name
         }
       }
@@ -66,16 +83,7 @@ namespace NRails.Mvc
         }
       });
 
-      def view_engine_host = {
-        def key = "ViewEngineHost";
-        match(typer.Manager.UserData[key]) {
-          | null =>
-            def host = ViewEngineHost(System.IO.Path.GetDirectoryName(typer.Manager.Options.ProjectPath));
-            typer.Manager.UserData[key] = host;
-            host
-          | host => host :> ViewEngineHost
-        }
-      }
+      def view_engine_host = GetViewEngineHost(typer.Manager);
 
       def model = {
         def build_name(view_path) {
@@ -97,7 +105,7 @@ namespace NRails.Mvc
               this.View($(view : string), $(master : string))
             ]>
           | _ =>
-            def ctor_args = if(typer.Manager.IsIntelliSenseMode) [] else args.Map( ((name, value)) => <[ $(name : name) = $value ]> );
+            def ctor_args = args.Map( ((name, value)) => <[ $(name : name) = $value ]> );
             <[
               this.ViewData[$(model_key : string)] = $(model_ty.Name : usesite)( ..$ctor_args );
               this.View($(view : string), $(master : string))
@@ -160,12 +168,8 @@ namespace NRails.Mvc
           match(args) {
             | [] => compile_and_build()
             | _ =>
-              if(typer.Manager.IsIntelliSenseMode) {
-                compile_and_build()
-              } else {
                 def (names, values) = args.Split();
                 infer_args_and_build(names, typer.TypeExpr(<[ (..$values) ]>))
-              }
           }
       }
     }

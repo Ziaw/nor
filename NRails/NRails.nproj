@@ -129,7 +129,6 @@
     <Folder Include="Migrations" />
     <Folder Include="Migrations\Model" />
     <Folder Include="Constants" />
-    <Folder Include="Schema" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
   </ItemGroup>

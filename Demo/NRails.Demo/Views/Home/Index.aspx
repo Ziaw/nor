@@ -8,11 +8,9 @@
     <h2><%= Html.Encode(Model().message) %></h2>
     <p>Taxonomies list</p>
     <ul>
-    <%
-        foreach (tax in Model().taxonomies)
-        {%>
-        <li><%=tax%></li> 
-    <%  }%>
+    <% foreach (tax in Model().taxonomies) { %>
+        <li><%= Html.Encode(tax) %></li> 
+    <%  } %>
     </ul>
 
 </asp:Content>

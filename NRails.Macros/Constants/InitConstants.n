@@ -64,10 +64,10 @@ namespace NRails.Macros
             | Phase.WithTypedMembers => 
                 def name = controllerPredicate.Replace(controllerBilder.Name, String.Empty);
                 
-                def makeActionMethods(m : IMethod)
+                def makeActionMethods(actionMethod)
                 {
-                    def methodName = m.Name;
-                    def parms = m.GetParameters().Map(m => m.AsParsed());
+                    def methodName = actionMethod.Name;
+                    def parms = actionMethod.GetParameters().Map(m => m.AsParsed());
                     
                     def simpleMethod = <[decl:
                         public $(methodName : dyn)() : INRActionResult
@@ -80,7 +80,7 @@ namespace NRails.Macros
                     {
                         def parametrizedBody = 
                             <[def r = NRActionResult(String.Empty, $(name : string), $(methodName : string));]> 
-                            :: parms.Map(m => <[r.RouteValueDictionary.Add($(m.Name : string), $(m.Name : dyn));]>);
+                            :: parms.Map(m => <[r.RouteValueDictionary.Add($(actionMethod.Name : string), $(actionMethod.Name : dyn));]>);
                         
                         <[decl:
                             public $(methodName : dyn)(..$(parms)) : INRActionResult
@@ -131,6 +131,7 @@ namespace NRails.Macros
 
     }
 
+    // hiding unused methods from intellesense list
     hideEquals(t : TypeBuilder) : void
     {
         t.Define(<[decl: new private Equals(_ : object, _ : object) : bool { true } ]>);

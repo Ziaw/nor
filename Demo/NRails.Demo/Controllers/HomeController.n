@@ -18,7 +18,7 @@ namespace NRails.Demo.Controllers {
                 def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
                 def taxonomies = db.Doctors.Select(d => d.Taxonomy).ToList();
                 
-                model ( message = message , taxonomies = taxonomies )
+                model ( message , taxonomies )
             }
         }
 
