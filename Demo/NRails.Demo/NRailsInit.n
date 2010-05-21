@@ -1,1 +1,11 @@
 ﻿[assembly: NRails.Macros.NRailsInit]
+
+using System.Web.Mvc;
+
+module MvcInit
+{
+    public Init() : void
+    {
+      Spark.Nemerle.SparkNemerleEngineStarter.RegisterViewEngine(ViewEngines.Engines);
+    }
+}

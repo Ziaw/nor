@@ -55,9 +55,9 @@ namespace Spark.Nemerle.ChunkVisitors
         }
 
         private void CodeHidden()
-        {
+        {/*
             if (_source.AdjustDebugSymbols)
-                _source.WriteDirective("#line hidden");
+                _source.WriteDirective("#line hidden");*/
         }
 
         private void CodeDefault()
@@ -147,8 +147,9 @@ namespace Spark.Nemerle.ChunkVisitors
 
             if (_nullBehaviour == NullBehaviour.Lenient)
             {
-                _source.WriteLine("catch(System.NullReferenceException)");
+                _source.WriteLine("catch");
                 AppendOpenBrace();
+                _source.WriteLine(" | ex is System.NullReferenceException => ");
                 if (!chunk.SilentNulls)
                 {
                     _source.Write("Output.Write(\"${")
@@ -159,7 +160,7 @@ namespace Spark.Nemerle.ChunkVisitors
             }
             else
             {
-                _source.WriteLine("catch()");
+                _source.WriteLine("catch");
                 AppendOpenBrace();
                 _source.Write("| ex : System.NullReferenceException => throw System.ArgumentNullException(\"${")
                     .Write(EscapeStringContents(chunk.Code))
@@ -188,7 +189,7 @@ namespace Spark.Nemerle.ChunkVisitors
         {
             DeclareVariable(chunk.Name);
 
-            CodeIndent(chunk).WriteCode(chunk.Type).Write(" ").WriteCode(chunk.Name);
+            CodeIndent(chunk).WriteCode(TypeHelper.CorrectType(chunk.Type)).Write(" ").WriteCode(chunk.Name);
             if (!Snippets.IsNullOrEmpty(chunk.Value))
             {
                 _source.Write(" = ").WriteCode(chunk.Value);
@@ -208,7 +209,7 @@ namespace Spark.Nemerle.ChunkVisitors
                 return;
 
             DeclareVariable(chunk.Name);
-            CodeIndent(chunk).WriteCode(chunk.Type).Write(" ").Write(chunk.Name);
+            CodeIndent(chunk).WriteCode(TypeHelper.CorrectType(chunk.Type)).Write(" ").Write(chunk.Name);
             if (!Snippets.IsNullOrEmpty(chunk.Value))
             {
                 _source.Write(" = ").WriteCode(chunk.Value);

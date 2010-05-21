@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // 
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Spark.Compiler;
@@ -25,15 +26,15 @@ namespace Spark.Nemerle.ChunkVisitors
     {
         private readonly SourceWriter _source;
         private readonly Dictionary<string, object> _globalSymbols;
-    	private readonly NullBehaviour _nullBehaviour;
-    	readonly Dictionary<string, string> _viewDataAdded = new Dictionary<string, string>();
+        private readonly NullBehaviour _nullBehaviour;
+        readonly Dictionary<string, string> _viewDataAdded = new Dictionary<string, string>();
         readonly Dictionary<string, GlobalVariableChunk> _globalAdded = new Dictionary<string, GlobalVariableChunk>();
-       
+
         public GlobalMembersVisitor(SourceWriter output, Dictionary<string, object> globalSymbols, NullBehaviour nullBehaviour)
         {
             _source = output;
             _globalSymbols = globalSymbols;
-			_nullBehaviour = nullBehaviour;
+            _nullBehaviour = nullBehaviour;
         }
 
 
@@ -59,8 +60,8 @@ namespace Spark.Nemerle.ChunkVisitors
 
         private void CodeHidden()
         {
-            if (_source.AdjustDebugSymbols)
-                _source.WriteDirective("#line hidden");
+            /*if (_source.AdjustDebugSymbols)
+                _source.WriteDirective("#line hidden");*/
         }
 
         private void CodeDefault()
@@ -76,7 +77,7 @@ namespace Spark.Nemerle.ChunkVisitors
 
             if (_globalAdded.ContainsKey(chunk.Name))
             {
-                if (_globalAdded[chunk.Name].Type != chunk.Type ||
+                if (_globalAdded[chunk.Name].Type != TypeHelper.CorrectType(chunk.Type) ||
                     _globalAdded[chunk.Name].Value != chunk.Value)
                 {
                     throw new CompilerException(string.Format("The global named {0} cannot be declared repeatedly with different types or values",
@@ -85,11 +86,11 @@ namespace Spark.Nemerle.ChunkVisitors
                 return;
             }
 
-            var type = chunk.Type ?? "object";
+            var type = TypeHelper.CorrectType(chunk.Type) ?? "object";
             var typeParts = type.ToString().Split(' ', '\t');
             if (typeParts.Contains("readonly"))
             {
-                _source.WriteFormat("\r\n    {0} {1} = {2};",
+                _source.WriteFormat("\r\n    mutable {1} : {0} = {2};",
                                      type, chunk.Name, chunk.Value);
             }
             else
@@ -120,7 +121,7 @@ namespace Spark.Nemerle.ChunkVisitors
         {
             var key = chunk.Key;
             var name = chunk.Name;
-            var type = chunk.Type ?? "object";
+            var type = TypeHelper.CorrectType(chunk.Type) ?? "object";
 
             if (!_globalSymbols.ContainsKey(name))
                 _globalSymbols.Add(name, null);
@@ -137,7 +138,7 @@ namespace Spark.Nemerle.ChunkVisitors
             }
 
             _viewDataAdded.Add(name, key + ":" + type);
-            _source.WriteCode(type).Write(" ").WriteLine(name);
+            _source.Write(String.Format("{0} : {1}", name, type));
             if (Snippets.IsNullOrEmpty(chunk.Default))
             {
                 CodeIndent(chunk)
@@ -183,7 +184,7 @@ namespace Spark.Nemerle.ChunkVisitors
             _source.WriteLine("        using(OutputScope(new System.IO.StringWriter()))");
             _source.WriteLine("        {");
             CodeDefault();
-            
+
             var variables = new Dictionary<string, object>();
             foreach (var param in chunk.Parameters)
             {
@@ -198,4 +199,5 @@ namespace Spark.Nemerle.ChunkVisitors
             _source.WriteLine("    }");
             CodeDefault();
         }
+    }
 }

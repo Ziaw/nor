@@ -85,7 +85,7 @@ namespace Spark.Nemerle
                 source.WriteLine("[global::Spark.SparkViewAttribute(");
                 if (TargetNamespace != null)
                     source.WriteFormat("    TargetNamespace=\"{0}\",", TargetNamespace).WriteLine();
-                source.WriteLine("    Templates = array [");
+                source.WriteLine("    Templates = [");
                 source.Write("      ").WriteLine(string.Join(",\r\n      ",
                                                                Descriptor.Templates.Select(
                                                                    t => "\"" + t.Replace("\\", "\\\\") + "\"").ToArray()));

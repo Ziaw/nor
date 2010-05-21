@@ -49,6 +49,18 @@
       <HintPath>..\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Spark, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+      <Name>Spark</Name>
+      <AssemblyName>Spark.dll</AssemblyName>
+      <HintPath>..\lib\Spark.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Spark.Web.Mvc, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+      <Name>Spark.Web.Mvc</Name>
+      <AssemblyName>Spark.Web.Mvc.dll</AssemblyName>
+      <HintPath>..\lib\Spark.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -75,9 +87,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="Spark\CompilerTests.n">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations" />
+    <Folder Include="Spark" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +110,11 @@
     <ProjectReference Include="..\NRails\NRails.nproj">
       <Name>NRails</Name>
       <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Spark.Nemerle\Spark.Nemerle.csproj">
+      <Name>Spark.Nemerle</Name>
+      <Project>{06032677-5bad-427a-ad66-5a7b9b21a987}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

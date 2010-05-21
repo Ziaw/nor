@@ -4,7 +4,7 @@ using Spark.Web.Mvc;
 
 namespace Spark.Nemerle
 {
-    public static class SparkRubyEngineStarter
+    public static class SparkNemerleEngineStarter
     {
         public static void ConfigureContainer(ISparkServiceContainer container)
         {

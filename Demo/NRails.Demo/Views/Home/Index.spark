@@ -1,0 +1,14 @@
+﻿<content name="title">
+    Home Page
+</content>
+
+<viewdata message="string">
+<viewdata taxonomies="IEnumerable[[string]]">
+
+<h2>!{message}</h2>
+<p>Taxonomies list</p>
+<ul>
+    <li each="tax in taxonomies">!{tax}</li> 
+</ul>
+
+

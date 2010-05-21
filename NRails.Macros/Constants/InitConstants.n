@@ -79,7 +79,7 @@ namespace NRails.Macros
                     {
                         def parametrizedBody = 
                             <[def r = NRActionResult(String.Empty, $(name : string), $(methodName : string));]> 
-                            :: parms.Map(m => <[r.RouteValueDictionary.Add($(actionMethod.Name : string), $(actionMethod.Name : dyn));]>);
+                            :: parms.Map(m => <[r.RouteValueDictionary.Add($(m.Name : string), $(m.Name : dyn));]>);
                         
                         <[decl:
                             public $(methodName : dyn)(..$(parms)) : INRActionResult

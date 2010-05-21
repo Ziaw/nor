@@ -62,6 +62,7 @@
     <Compile Include="ChunkVisitors\FileReferenceVisitor.cs" />
     <Compile Include="ChunkVisitors\GeneratedCodeVisitor.cs" />
     <Compile Include="ChunkVisitors\GlobalMembersVisitor.cs" />
+    <Compile Include="ChunkVisitors\TypeHelper.cs" />
     <Compile Include="ChunkVisitors\UsingNamespaceVisitor.cs" />
     <Compile Include="NemerleLanguageFactory.cs" />
     <Compile Include="NemerleViewCompiler.cs" />

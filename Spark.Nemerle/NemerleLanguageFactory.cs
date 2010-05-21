@@ -18,7 +18,6 @@ namespace Spark.Nemerle
 
             switch (language)
             {
-                case LanguageType.Default:
                 case LanguageType.CSharp:
                 case LanguageType.VisualBasic:
                 case LanguageType.Javascript:
