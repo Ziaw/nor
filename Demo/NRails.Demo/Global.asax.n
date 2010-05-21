@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 
 using Nemerle.Extensions;
+using Spark.Nemerle;
 
 namespace MvcApplication
 {
@@ -23,7 +24,7 @@ namespace MvcApplication
           "{controller}/{action}/{id}", // URL with parameters
           new ( controller = "Home", action = "Index", id = "" ) // Parameter defaults
       );
-
+      
     }
 
     protected Application_Start() : void
@@ -31,6 +32,7 @@ namespace MvcApplication
       //AreaRegistration.RegisterAllAreas();
 
       RegisterRoutes(RouteTable.Routes);
+      SparkNemerleEngineStarter.RegisterViewEngine(engines);
     }
   }
 }
