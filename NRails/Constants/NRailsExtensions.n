@@ -129,8 +129,7 @@ namespace System.Web.Mvc
 
         public GetNRMVCResult(this result : INRActionResult) : INRActionResult 
         {
-            | r : INRActionResult => r
-            | _ => throw InvalidOperationException("methods can only be passed pseudo-action calls (e.g. MVC.Home.About()), and not real action calls.");
+            result
         }
 
         public GetRouteValueDictionary(this result : INRActionResult) : RouteValueDictionary {

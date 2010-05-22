@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using NRails;
-using Spark.Nemerle;
+using NRails.Spark;
 using Spark;
 using Spark.Compiler;
 

@@ -35,6 +35,7 @@ using NRails.Logging.Helper;
 
 namespace NRails.Logging
 {
+  // fix errors in intellisence mode
   internal module Helper
   {
     public Flags : Hashtable [string, PExpr] = Hashtable ();

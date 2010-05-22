@@ -149,7 +149,7 @@ namespace Spark.Nemerle.ChunkVisitors
             {
                 _source.WriteLine("catch");
                 AppendOpenBrace();
-                _source.WriteLine(" | ex is System.NullReferenceException => ");
+                _source.WriteLine(" | _ is System.NullReferenceException => ");
                 if (!chunk.SilentNulls)
                 {
                     _source.Write("Output.Write(\"${")
@@ -265,7 +265,7 @@ namespace Spark.Nemerle.ChunkVisitors
                 {
                     DeclareVariable(variableName + "Count");
                     var collectionCode = string.Join(" ", terms.ToArray(), inIndex + 1, terms.Count - inIndex - 1);
-                    _source.WriteLine("def {0}Count = global::Spark.Compiler.CollectionUtility.Count({1});", variableName, collectionCode);
+                    _source.WriteLine("def {0}Count = Spark.Compiler.CollectionUtility.Count({1});", variableName, collectionCode);
                 }
 
 
@@ -373,7 +373,7 @@ namespace Spark.Nemerle.ChunkVisitors
             CodeIndent(chunk).WriteLine(string.Format("when (Content.ContainsKey(\"{0}\"))", chunk.Name));
             CodeHidden();
             AppendOpenBrace();
-            _source.WriteFormat("global::Spark.Spool.TextWriterExtensions.WriteTo(Content[\"{0}\"], Output);", chunk.Name);
+            _source.WriteFormat("Spark.Spool.TextWriterExtensions.WriteTo(Content[\"{0}\"], Output);", chunk.Name);
             AppendCloseBrace();
 
             if (chunk.Default.Count != 0)
@@ -456,7 +456,7 @@ namespace Spark.Nemerle.ChunkVisitors
             CodeIndent(chunk)
                 .Write("when (BeginCachedContent(\"")
                 .Write(siteGuid.ToString("n"))
-                .Write("\", global::Spark.CacheExpires(")
+                .Write("\", Spark.CacheExpires(")
                 .WriteCode(chunk.Expires)
                 .Write("), ")
                 .WriteCode(chunk.Key)

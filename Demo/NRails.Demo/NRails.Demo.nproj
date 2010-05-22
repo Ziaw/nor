@@ -108,9 +108,9 @@
     <Compile Include="Global.asax.n">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\TestMigration.n">
+    <Content Include="Migrations\TestMigration.n">
       <SubType>Code</SubType>
-    </Compile>
+    </Content>
     <Compile Include="Migrations\TestMigration2.n">
       <SubType>Code</SubType>
     </Compile>
@@ -166,6 +166,9 @@
     <Content Include="Scripts\MicrosoftMvcAjax.js">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Views\Layouts\Application.spark">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Views\Shared\_global.spark">
       <SubType>Content</SubType>
     </Content>
@@ -187,6 +190,7 @@
     <Folder Include="Scripts\" />
     <Folder Include="Views\" />
     <Folder Include="Views\Home\" />
+    <Folder Include="Views\Layouts" />
     <Folder Include="Views\Shared\" />
   </ItemGroup>
   <ItemGroup>

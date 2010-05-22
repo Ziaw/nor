@@ -1,0 +1,40 @@
+using System;
+using Spark;
+using Spark.Compiler;
+
+namespace NRails.Spark
+{
+    public class NemerleLanguageFactory: DefaultLanguageFactory
+    {
+        public override CreateViewCompiler(engine : ISparkViewEngine , descriptor : SparkViewDescriptor) : ViewCompiler 
+        {
+            mutable pageBaseType = engine.Settings.PageBaseType;
+            when (string.IsNullOrEmpty(pageBaseType))
+                pageBaseType = engine.DefaultPageBaseType;
+
+
+            def language = if (descriptor.Language == LanguageType.Default)
+                engine.Settings.DefaultLanguage;
+            else
+                descriptor.Language;
+
+            match (language)
+            {
+                | LanguageType.CSharp
+                | LanguageType.VisualBasic
+                | LanguageType.Javascript =>
+                    base.CreateViewCompiler(engine, descriptor);
+                | _ =>
+                    def viewCompiler = NemerleViewCompiler();
+                    viewCompiler.BaseClass = pageBaseType;
+                    viewCompiler.Descriptor = descriptor;
+                    viewCompiler.Debug = engine.Settings.Debug;
+                    viewCompiler.NullBehaviour = engine.Settings.NullBehaviour;
+                    viewCompiler.UseAssemblies = engine.Settings.UseAssemblies;
+                    viewCompiler.UseNamespaces = engine.Settings.UseNamespaces;
+                    viewCompiler;
+            }
+
+        }
+    }
+}

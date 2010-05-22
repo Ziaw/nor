@@ -15,10 +15,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Spark.Compiler;
 using Spark.Compiler.ChunkVisitors;
 using Spark.Parser.Code;
 
-namespace Spark.Compiler.CSharp.ChunkVisitors
+namespace Spark.Nemerle.ChunkVisitors
 {
     public class UsingNamespaceVisitor : ChunkVisitor
     {

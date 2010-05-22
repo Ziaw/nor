@@ -1,0 +1,314 @@
+// Copyright 2008-2009 Louis DeJardin - http://whereslou.com
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using Nemerle.Compiler;
+using Nemerle.Extensions;
+using Nemerle.Imperative;
+using Spark.Compiler;
+using Spark.Nemerle.ChunkVisitors;
+using System.Configuration;
+using System.Reflection.Emit;
+using System.CodeDom.Compiler;
+
+
+namespace NRails.Spark
+{
+    
+    public class NemerleViewCompiler : ViewCompiler
+    {
+        CompileString(code : string) : Assembly
+        {
+            def options = CompilationOptions();
+            def manager = ManagerClass(options);
+            
+            def compilerOut = StringWriter();
+          
+            manager.InitOutput(compilerOut);
+          
+            options.CompileToMemory = true;
+            
+            options.MacrosToLoad = ["NRails.Macros"];
+            options.LibraryPaths = [@"C:\Program Files\Nemerle", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)];
+
+            def filename = Path.GetTempFileName();
+            File.WriteAllText(filename, code);
+            options.Sources = [filename];
+            try
+            {
+                manager.Run(); // crash !?!?
+            }
+            catch
+            {
+                _ => throw CompilerException(compilerOut.ToString())
+            }
+            finally
+            {
+                File.Delete(filename);
+            }
+          
+            manager.GeneratedAssembly
+        }
+        
+        // workaround version BatchCompiler, not throws exceptions on warnings
+        CompileStringCodeDom(code : string) : Assembly
+        {
+            def compilerInfo = CodeDomProvider.GetCompilerInfo("nemerle");
+            def codeProvider = compilerInfo.CreateProvider();
+            def compilerParameters = compilerInfo.CreateDefaultCompilerParameters();
+
+            def extension = codeProvider.FileExtension;
+
+            foreach (assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                when (assembly is AssemblyBuilder)
+                    continue;
+
+                try
+                {
+                    def location = assembly.Location;
+                    unless (string.IsNullOrEmpty(location))
+                        _ = compilerParameters.ReferencedAssemblies.Add(location);
+                }
+                catch
+                {
+                    | _ is NotSupportedException => continue;
+                }
+            }
+
+            def basePath = AppDomain.CurrentDomain.SetupInformation.DynamicBase ?? Path.GetTempPath();
+
+            def compilerResults = 
+            {
+                compilerParameters.IncludeDebugInformation = true;
+
+                def baseFile = Path.Combine(basePath, Guid.NewGuid().ToString("n"));
+
+                def codeFiles = List.[string]();
+                mutable fileCount = 0;
+                foreach (sourceCodeItem in [code])
+                {
+                    ++fileCount;
+                    def codeFile = $"$baseFile-$(fileCount).$extension";
+                    using (stream = FileStream(codeFile, FileMode.Create, FileAccess.Write))
+                    {
+                        using (writer = StreamWriter(stream))
+                        {
+                            writer.Write(sourceCodeItem);
+                        }
+                    }
+                    codeFiles.Add(codeFile);
+                }
+                
+                compilerParameters.OutputAssembly = baseFile + ".dll";
+                codeProvider.CompileAssemblyFromFile(compilerParameters, codeFiles.ToArray());
+            }
+            
+            when (compilerResults.Errors.Count != 0)
+            {
+                def sb = StringBuilder();
+                _ = sb.AppendLine("Dynamic view compilation failed.");
+                
+                mutable warningsOnly = true;
+
+                foreach (err :> CompilerError in compilerResults.Errors)
+                {
+                    def errorLevel = if (err.IsWarning) "warning" else { warningsOnly = false; "error"};
+                    _ = sb.AppendFormat("{4}({0},{1}): {2} {3}: ", err.Line, err.Column, errorLevel, err.ErrorNumber, err.FileName);
+                    _ = sb.AppendLine(err.ErrorText);
+                }
+
+                _ = sb.AppendLine();
+                foreach (sourceCodeItem in [code])
+                {
+                    using (reader = StringReader(sourceCodeItem))
+                    {
+                        for (mutable lineNumber = 1; ; ++lineNumber)
+                        {
+                            def line = reader.ReadLine();
+                            when (line == null)
+                                break;
+                            _ = sb.Append(lineNumber).Append(' ').AppendLine(line);
+                        }
+                    }
+                }
+                unless (warningsOnly)
+                    throw CompilerException(sb.ToString());
+            }
+
+            compilerResults.CompiledAssembly;
+        }
+        
+        public override CompileView(viewTemplates : IEnumerable[IList[Chunk]], allResources : IEnumerable[IList[Chunk]]) : void
+        {
+            GenerateSourceCode(viewTemplates, allResources);
+            
+            // uncomment this when avoid "assembly already loaded warning" but nemerle compiler stil crushing
+            //def batchCompiler = BatchCompiler();
+            //def assembly = batchCompiler.Compile(Debug, "nemerle", SourceCode);
+            
+            // uncomment this for crush compiler
+            //CompiledType = CompileString(SourceCode).GetType(ViewClassFullName);
+            
+            // workaround version BatchCompiler, not throws exceptions on warnings
+            CompiledType = CompileStringCodeDom(SourceCode).GetType(ViewClassFullName);
+        }
+
+
+        public override GenerateSourceCode(viewTemplates : IEnumerable[IList[Chunk]], allResources : IEnumerable[IList[Chunk]]) : void 
+        {
+            def globalSymbols = Dictionary.[string, object]();
+
+            def writer = StringWriter();
+            def source = SourceWriter(writer);
+
+            def usingGenerator = UsingNamespaceVisitor(source);
+            def baseClassGenerator = BaseClassVisitor();
+            
+            baseClassGenerator.BaseClass = BaseClass;
+            def globalsGenerator = GlobalMembersVisitor(source, globalSymbols, NullBehaviour);
+            
+
+
+            // using [namespaces];
+            foreach (ns in UseNamespaces ?? array(0))
+                usingGenerator.UsingNamespace(ns);
+
+            foreach (assembly in UseAssemblies ?? array(0))
+                usingGenerator.UsingAssembly(assembly);
+
+            foreach (resource in allResources)
+                usingGenerator.Accept(resource);
+
+            foreach (resource in allResources)
+                baseClassGenerator.Accept(resource);
+
+            def viewClassName = "View" + GeneratedViewId.ToString("n");
+
+            if (string.IsNullOrEmpty(TargetNamespace))
+            {
+                ViewClassFullName = viewClassName;
+            }
+            else
+            {
+                _ = source
+                    .WriteLine()
+                    .WriteLine(string.Format("namespace {0}", TargetNamespace))
+                    .WriteLine("{").AddIndent();
+                
+                ViewClassFullName = TargetNamespace + "." + viewClassName;
+            }
+
+            _ = source.WriteLine();
+
+            when (Descriptor != null)
+            {
+                // [SparkView] attribute
+                _ = source.WriteLine("[Spark.SparkViewAttribute(");
+                when (TargetNamespace != null)
+                    _ = source.WriteFormat("    TargetNamespace=\"{0}\",", TargetNamespace).WriteLine();
+                _ = source.WriteLine("    Templates = array[");
+                _ = source.Write("      ").WriteLine(string.Join(",\r\n      ",
+                   Descriptor.Templates.Select(t => "\"" + t.Replace("\\", "\\\\") + "\"").ToArray()));
+                _ = source.WriteLine("    ])]");
+            }
+
+            // public class ViewName : BasePageType 
+            _ = source
+                .Write("public class ")
+                .Write(viewClassName)
+                .Write(" : ")
+                .WriteCode(baseClassGenerator.BaseClassTypeName)
+                .WriteLine();
+            _ = source.WriteLine("{").AddIndent();
+
+            _ = source.WriteLine();
+            EditorBrowsableStateNever(source, 4);
+            _ = source.WriteLine("private static _generatedViewId : System.Guid = System.Guid(\"{0:n}\");", GeneratedViewId);
+            _ = source.WriteLine("public override GeneratedViewId : System.Guid ");
+            _ = source.WriteLine("{ get { _generatedViewId; } }");
+
+            when (Descriptor != null && Descriptor.Accessors != null)
+            {
+                foreach (accessor in Descriptor.Accessors)
+                {
+                    _ = source.WriteLine();
+                    _ = source.Write("public ").WriteLine(accessor.Property);
+                    _ = source.Write("{ get { ").Write(accessor.GetValue).WriteLine("; } }");
+                }
+            }
+
+            // properties and macros
+            foreach (resource in allResources)
+                globalsGenerator.Accept(resource);
+
+            // public void RenderViewLevelx()
+            mutable renderLevel = 0;
+            foreach (viewTemplate in viewTemplates)
+            {
+                _ = source.WriteLine();
+                EditorBrowsableStateNever(source, 4);
+                _ = source.WriteLine(string.Format("private RenderViewLevel{0}() : void", renderLevel));
+                _ = source.WriteLine("{").AddIndent();
+                def viewGenerator = GeneratedCodeVisitor(source, globalSymbols, NullBehaviour);
+                viewGenerator.Accept(viewTemplate);
+                _ = source.RemoveIndent().WriteLine("}");
+                ++renderLevel;
+            }
+
+            // public void RenderView()
+
+            _ = source.WriteLine();
+            EditorBrowsableStateNever(source, 4); 
+            _ = source.WriteLine("public override Render() : void");
+            _ = source.WriteLine("{").AddIndent();
+            for (mutable invokeLevel = 0; invokeLevel != renderLevel; ++invokeLevel)
+
+            {
+                if (invokeLevel != renderLevel - 1)
+                {
+                    _ = source.WriteLine("using (OutputScope()) {{RenderViewLevel{0}(); Content[\"view\"] = Output;}}", invokeLevel);
+                }
+                else
+                {
+                    _ = source.WriteLine("        RenderViewLevel{0}();", invokeLevel);
+                }
+            }
+            _ = source.RemoveIndent().WriteLine("}");
+
+            // end class
+            _ = source.RemoveIndent().WriteLine("}");
+
+            when (!string.IsNullOrEmpty(TargetNamespace))
+            {
+                _ = source.RemoveIndent().WriteLine("}");
+            }
+
+            SourceCode = source.ToString();
+            SourceMappings = source.Mappings;
+        }
+
+        private static EditorBrowsableStateNever(source : SourceWriter, indentation : int) : void 
+        {
+            _ = source
+                .Indent(indentation)
+                .WriteLine("[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]");
+        }
+    }
+}

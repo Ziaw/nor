@@ -23,6 +23,7 @@ using NRails.Logging;
                         Fatal => Engine.Logger.Fatal)]
 [assembly: LogFlag(Debug, true)]
 [assembly: LogFlag(Info, true)]
+
 namespace NRails
 {
   public class Engine

@@ -93,6 +93,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Nemerle)\Nemerle.dll</HintPath>
     </Reference>
+    <Reference Include="Nemerle.Compiler">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.Compiler.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.n" />
@@ -141,6 +145,7 @@
     <Folder Include="Migrations" />
     <Folder Include="Migrations\Model" />
     <Folder Include="Constants" />
+    <Folder Include="Spark" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -150,11 +155,27 @@
       <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Spark.Nemerle\Spark.Nemerle.csproj">
+      <Name>Spark.Nemerle</Name>
+      <Project>{06032677-5bad-427a-ad66-5a7b9b21a987}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <MacroProjectReference Include="..\NRails.Logging\NRails.Logging.nproj">
       <Name>NRails.Logging</Name>
       <Project>{9d6b4e3b-aecf-4202-bbb5-fbe8011dbea1}</Project>
       <Private>False</Private>
     </MacroProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Spark\NemerleLanguageFactory.n">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Spark\NemerleViewCompiler.n">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Spark\SparkNemerleEngineStarter.n">
+      <SubType>Content</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--
