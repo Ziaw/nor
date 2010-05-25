@@ -146,6 +146,7 @@
     <Folder Include="Migrations\Model" />
     <Folder Include="Constants" />
     <Folder Include="Spark" />
+    <Folder Include="Spark\ChunkVisitors\" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -167,6 +168,24 @@
     </MacroProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Spark\ChunkVisitors\BaseClassVisitor.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\ChunkVisitors\FileReferenceVisitor.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\ChunkVisitors\GeneratedCodeVisitor.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\ChunkVisitors\GlobalMembersVisitor.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\ChunkVisitors\TypeHelper.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\ChunkVisitors\UsingNamespaceVisitor.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Spark\NemerleLanguageFactory.n">
       <SubType>Content</SubType>
     </Compile>
