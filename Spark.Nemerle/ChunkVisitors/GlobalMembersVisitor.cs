@@ -138,7 +138,7 @@ namespace Spark.Nemerle.ChunkVisitors
             }
 
             _viewDataAdded.Add(name, key + ":" + type);
-            _source.Write(String.Format("{0} : {1}", name, type));
+            _source.Write(String.Format("{0} : {1}\n", name, type));
             if (Snippets.IsNullOrEmpty(chunk.Default))
             {
                 CodeIndent(chunk)

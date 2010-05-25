@@ -18,6 +18,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Nemerle;
+using Nemerle.Collections;
 using Nemerle.Compiler;
 using Nemerle.Extensions;
 using Nemerle.Imperative;
@@ -26,7 +28,6 @@ using Spark.Nemerle.ChunkVisitors;
 using System.Configuration;
 using System.Reflection.Emit;
 using System.CodeDom.Compiler;
-
 
 namespace NRails.Spark
 {
@@ -223,10 +224,15 @@ namespace NRails.Spark
                 _ = source.WriteLine("[Spark.SparkViewAttribute(");
                 when (TargetNamespace != null)
                     _ = source.WriteFormat("    TargetNamespace=\"{0}\",", TargetNamespace).WriteLine();
-                _ = source.WriteLine("    Templates = array[");
-                _ = source.Write("      ").WriteLine(string.Join(",\r\n      ",
-                   Descriptor.Templates.Select(t => "\"" + t.Replace("\\", "\\\\") + "\"").ToArray()));
-                _ = source.WriteLine("    ])]");
+                
+                when (Descriptor.Templates.Any())
+                {
+                    _ = source.WriteLine("    Templates = array[");
+                    _ = source.Write("      ").WriteLine(string.Join(",\r\n      ",
+                       Descriptor.Templates.Select(t => "\"" + t.Replace("\\", "\\\\") + "\"").ToArray()));
+                    _ = source.Write("    ]");
+                }
+                _ = source.WriteLine(")]")
             }
 
             // public class ViewName : BasePageType 
@@ -257,6 +263,17 @@ namespace NRails.Spark
             // properties and macros
             foreach (resource in allResources)
                 globalsGenerator.Accept(resource);
+                
+            def preprocessConditional(chunks : list[Chunk])
+            {
+                | [] => ()
+                | (x is ConditionalChunk) :: (y is ConditionalChunk) :: tail 
+                    when x.Type == ConditionalType.If && (y.Type == ConditionalType.Else || y.Type == ConditionalType.ElseIf) => 
+                    x.Type = ExtConditionalType.AlternativeIf :> ConditionalType;
+                    preprocessConditional(tail)
+                | _ :: tail =>
+                    preprocessConditional(tail)
+            }
 
             // public void RenderViewLevelx()
             mutable renderLevel = 0;
@@ -267,6 +284,7 @@ namespace NRails.Spark
                 _ = source.WriteLine(string.Format("private RenderViewLevel{0}() : void", renderLevel));
                 _ = source.WriteLine("{").AddIndent();
                 def viewGenerator = GeneratedCodeVisitor(source, globalSymbols, NullBehaviour);
+                preprocessConditional(viewTemplate.ToArray().ToNList());
                 viewGenerator.Accept(viewTemplate);
                 _ = source.RemoveIndent().WriteLine("}");
                 ++renderLevel;

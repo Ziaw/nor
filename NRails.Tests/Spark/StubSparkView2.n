@@ -1,0 +1,63 @@
+using System;
+using System.Web;
+using Spark;
+
+namespace NRails.Tests.Spark
+{
+    public abstract class StubSparkView2 : AbstractSparkView
+    {
+        protected this()
+        {
+            ViewData = StubViewData();
+        }
+
+        public ViewData  : StubViewData  { get; set; }
+
+        public SiteRoot : string 
+        {
+            get { "/TestApp"; }
+        }
+
+        public SiteResource(path : string ) : string 
+        {
+            SiteRoot + path.TrimStart('~');
+        }
+
+        public override TryGetViewData(name : string , mutable value : out object) : bool 
+        {
+            ViewData.TryGetValue(name, out value);
+        }
+
+        public  H(content : object ) : object
+        {
+            content;
+        }
+
+        public HTML(content : object) : object 
+        {
+            HttpUtility.HtmlEncode(Convert.ToString(content)) : object;
+        }
+
+        public Eval(expression : string) : object
+        {
+            ViewData.Eval(expression);
+        }
+    }
+
+    public abstract class StubSparkView2[TModel] : StubSparkView2
+    {
+        public new ViewData : StubViewData[TModel]
+        {
+            get { base.ViewData :> StubViewData[TModel]; }
+            set { base.ViewData = value; }
+        }
+    }
+
+    public abstract class StubSparkView3[TModel, TMore] : StubSparkView2[TModel]
+    {
+        public GetMore() : TMore 
+        {
+            default(TMore);
+        }
+    }
+}

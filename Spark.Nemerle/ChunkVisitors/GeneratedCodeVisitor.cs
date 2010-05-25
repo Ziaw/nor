@@ -21,6 +21,11 @@ using Spark.Parser.Code;
 
 namespace Spark.Nemerle.ChunkVisitors
 {
+    public static class ExtConditionalType
+    {
+        public const int AlternativeIf = 99;
+    }
+
     public class GeneratedCodeVisitor : GeneratedCodeVisitorBase
     {
         private readonly SourceWriter _source;
@@ -33,7 +38,6 @@ namespace Spark.Nemerle.ChunkVisitors
 
             _scope = new Scope(new Scope(null) { Variables = globalSymbols });
         }
-
 
         private SourceWriter CodeIndent(Chunk chunk)
         {
@@ -156,13 +160,17 @@ namespace Spark.Nemerle.ChunkVisitors
                         .Write(EscapeStringContents(chunk.Code))
                         .WriteLine("}\");");
                 }
+                else
+                {
+                    _source.WriteLine("{}");
+                }
                 AppendCloseBrace();
             }
             else
             {
                 _source.WriteLine("catch");
                 AppendOpenBrace();
-                _source.Write("| ex : System.NullReferenceException => throw System.ArgumentNullException(\"${")
+                _source.Write("| ex is System.NullReferenceException => throw System.ArgumentNullException(\"${")
                     .Write(EscapeStringContents(chunk.Code))
                     .WriteLine("}\", ex);");
                 AppendCloseBrace();
@@ -187,6 +195,9 @@ namespace Spark.Nemerle.ChunkVisitors
 
         protected override void Visit(LocalVariableChunk chunk)
         {
+            if (chunk.Type.ToString() == "var")
+                chunk.Type = "def";
+
             DeclareVariable(chunk.Name);
 
             CodeIndent(chunk).WriteCode(TypeHelper.CorrectType(chunk.Type)).Write(" ").WriteCode(chunk.Name);
@@ -205,6 +216,9 @@ namespace Spark.Nemerle.ChunkVisitors
 
         protected override void Visit(DefaultVariableChunk chunk)
         {
+            if (chunk.Type.ToString() == "var")
+                chunk.Type = "def";
+
             if (IsVariableDeclared(chunk.Name))
                 return;
 
@@ -411,10 +425,18 @@ namespace Spark.Nemerle.ChunkVisitors
         {
             switch (chunk.Type)
             {
-                case ConditionalType.If:
+                case (ConditionalType)ExtConditionalType.AlternativeIf:
                     {
                         CodeIndent(chunk)
                             .Write("if (")
+                            .WriteCode(chunk.Condition)
+                            .WriteLine(")");
+                    }
+                    break;
+                case ConditionalType.If:
+                    {
+                        CodeIndent(chunk)
+                            .Write("when (")
                             .WriteCode(chunk.Condition)
                             .WriteLine(")");
                     }

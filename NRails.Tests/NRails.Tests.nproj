@@ -65,6 +65,10 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Web, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Name>System.Web</Name>
+      <AssemblyName>System.Web.dll</AssemblyName>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -105,7 +109,7 @@
     <MacroProjectReference Include="..\NRails.Macros\NRails.Macros.nproj">
       <Name>NRails.Macros</Name>
       <Project>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</Project>
-      <Private>False</Private>
+      <Private>True</Private>
     </MacroProjectReference>
     <ProjectReference Include="..\NRails\NRails.nproj">
       <Name>NRails</Name>
@@ -125,6 +129,12 @@
     <Content Include="nrails.cfg">
       <SubType>Content</SubType>
     </Content>
+    <Compile Include="Spark\StubSparkView.n">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Spark\StubSparkView2.n">
+      <SubType>Content</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--

@@ -37,12 +37,16 @@ namespace Spark.Nemerle.ChunkVisitors
 
                 if (Snippets.IsNullOrEmpty(TModel))
                     return baseClass;
+                else
+                {
+                    baseClass.Add(new Snippet { Value = "[" });
+                    baseClass.AddRange(TModel);
+                    baseClass.Add(new Snippet { Value = "]" });
+                }                   
+
 
                 var s = new Snippets();
                 s.AddRange(baseClass);
-                s.Add(new Snippet { Value = "[" });
-                s.AddRange(TModel);
-                s.Add(new Snippet { Value = "]" });
                 return s;
             }
         }

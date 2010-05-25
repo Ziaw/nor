@@ -11,8 +11,9 @@ using NRails;
 using NRails.Spark;
 using Spark;
 using Spark.Compiler;
+using Spark.Parser.Code;
 
-namespace NRails.Tests
+namespace NRails.Tests.Spark
 {
     public static class SparkViewExtensions
     {
@@ -77,84 +78,116 @@ namespace NRails.Tests
 
             Assert.AreEqual(text, contents);
         }
-/*
+
         [Test]
         public SimpleOutput() : void 
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
-            DoCompileView(compiler, new[] { SendExpressionChunk { Code = "3 + 4" } });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
+            DoCompileView(compiler, array[ NewChunk.[SendExpressionChunk](c => c.Code = ("3 + 4" :> Snippets) ) ]);
             def instance = compiler.CreateInstance();
-            string contents = instance.RenderView();
+            def contents = instance.RenderView();
             Assert.AreEqual("7", contents);
         }
 
         [Test]
-        public void LocalVariableDecl()
+        public LocalVariableDecl() : void 
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        LocalVariableChunk { Name = "i", Value = "5" }, 
-                                        SendExpressionChunk { Code = "i" }
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
+            DoCompileView(compiler, array[
+                                        NewChunk.[LocalVariableChunk](c => { c.Name = ("i" :> Snippets); c.Value = ("5" :> Snippets) }), 
+                                        NewChunk.[SendExpressionChunk](c=> c.Code = ("i" :> Snippets))
+                                    ]);
             def instance = compiler.CreateInstance();
-            string contents = instance.RenderView();
+            def contents = instance.RenderView();
 
             Assert.AreEqual("5", contents);
         }
+        
+        LocalVariable(Name : string, Value : string) : LocalVariableChunk 
+        {
+            NewChunk.[LocalVariableChunk](c => {c.Type = "def" : Snippets; c.Name = Name :> Snippets;c.Value = Value :> Snippets})
+        }
+        GlobalVariable(Name : string, Value : string) : GlobalVariableChunk 
+        {
+            NewChunk.[GlobalVariableChunk](c => {c.Name = Name :> Snippets;c.Value = Value :> Snippets})
+        }
+        AssignVariable(Name : string, Value : string) : AssignVariableChunk 
+        {
+            NewChunk.[AssignVariableChunk](c => {c.Name = Name;c.Value = Value :> Snippets})
+        }
+        SendLiteral(Text : string) : SendLiteralChunk 
+        {
+            NewChunk.[SendLiteralChunk](c => {c.Text = Text})
+        }
+        SendExpression(Code : string) : SendExpressionChunk 
+        {
+            NewChunk.[SendExpressionChunk](c => {c.Code = Code :> Snippets})
+        }
+        ForEach(Code : string, Body : array[Chunk]) : ForEachChunk 
+        {
+            NewChunk.[ForEachChunk](c => {c.Code = Code :> Snippets; c.Body = Body})
+        }
+        Conditional(Type : ConditionalType, Condition : string, Body : array[Chunk]) : ConditionalChunk 
+        {
+            NewChunk.[ConditionalChunk](c => {c.Type = Type; c.Condition = Condition :> Snippets; c.Body = Body})
+        }
 
         [Test]
-        public void ForEachLoop()
+        public ForEachLoop() : void
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        LocalVariableChunk {Name = "data", Value = "new[]{3,4,5}"},
-                                        SendLiteralChunk {Text = "<ul>"},
-                                        ForEachChunk
-                                        {
-                                            Code = "def item in data",
-                                            Body = Chunk[]
-                                                   { 
-                                                       SendLiteralChunk {Text = "<li>"},
-                                                       SendExpressionChunk {Code = "item"},
-                                                       SendLiteralChunk {Text = "</li>"}
-                                                   }
-                                        },
-                                        SendLiteralChunk {Text = "</ul>"}
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
+            DoCompileView(compiler, array
+                                    [
+                                        LocalVariable(Name = "data", Value = "array[3,4,5]"),
+                                        SendLiteral(Text = "<ul>"),
+                                        ForEach
+                                        (
+                                            Code = "item in data",
+                                            Body = array
+                                                   [ 
+                                                       SendLiteral(Text = "<li>"),
+                                                       SendExpression(Code = "item"),
+                                                       SendLiteral(Text = "</li>")
+                                                   ]
+                                        ),
+                                        SendLiteral(Text = "</ul>")
+                                    ]);
             def instance = compiler.CreateInstance();
             def contents = instance.RenderView();
             Assert.AreEqual("<ul><li>3</li><li>4</li><li>5</li></ul>", contents);
         }
 
         [Test]
-        public void GlobalVariables()
+        public GlobalVariables() : void 
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        SendExpressionChunk{Code="title"},
-                                        AssignVariableChunk{ Name="item", Value="8"},
-                                        SendLiteralChunk{ Text=":"},
-                                        SendExpressionChunk{Code="item"},
-                                        GlobalVariableChunk{ Name="title", Value="\"hello world\""},
-                                        GlobalVariableChunk{ Name="item", Value="3"}
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
+            DoCompileView(compiler, array
+                                    [
+                                        SendExpression(Code="title"),
+                                        AssignVariable(Name="item", Value="8"),
+                                        SendLiteral(Text=":"),
+                                        SendExpression(Code="item"),
+                                        GlobalVariable(Name="title", Value="\"hello world\""),
+                                        GlobalVariable(Name="item", Value="3")
+                                    ]);
             def instance = compiler.CreateInstance();
             def contents = instance.RenderView();
             Assert.AreEqual("hello world:8", contents);
         }
 
         [Test]
-        public void TargetNamespace()
+        public TargetNamespace(): void 
         {
-            def compiler = NemerleViewCompiler
-                           {
-                               BaseClass = "Spark.SparkViewBase",
-                               Descriptor = SparkViewDescriptor { TargetNamespace = "Testing.Target.Namespace" }
-                           };
-            DoCompileView(compiler, Chunk[] { SendLiteralChunk { Text = "Hello" } });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
+            compiler.Descriptor = SparkViewDescriptor();
+            compiler.Descriptor.TargetNamespace = "Testing.Target.Namespace";
+
+            DoCompileView(compiler, array[SendLiteral(Text = "Hello") ]);
             def instance = compiler.CreateInstance();
             Assert.AreEqual("Testing.Target.Namespace", instance.GetType().Namespace);
 
@@ -162,181 +195,181 @@ namespace NRails.Tests
 
 
         [Test, ExpectedException(typeof(CompilerException))]
-        public void ProvideFullException()
+        public ProvideFullException() : void 
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        SendExpressionChunk {Code = "NoSuchVariable"}
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
+            DoCompileView(compiler, array[SendExpression(Code = "NoSuchVariable")]);
         }
 
         [Test]
-        public void IfTrueCondition()
+        public IfTrueCondition() : void
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
 
-            def trueChunks = Chunk[] { SendLiteralChunk { Text = "wastrue" } };
+            def trueChunks = array[SendLiteral(Text = "wastrue")];
 
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        SendLiteralChunk {Text = "<p>"},
-                                        LocalVariableChunk{Name="arg", Value="5"},
-                                        ConditionalChunk{Type=ConditionalType.If, Condition="arg==5", Body=trueChunks},
-                                        SendLiteralChunk {Text = "</p>"}
-                                    });
+            DoCompileView(compiler, array
+                                    [
+                                        SendLiteral(Text = "<p>"),
+                                        LocalVariable(Name="arg", Value="5"),
+                                        Conditional(Type=ConditionalType.If, Condition="arg==5", Body=trueChunks),
+                                        SendLiteral(Text = "</p>")
+                                    ]);
             def instance = compiler.CreateInstance();
             def contents = instance.RenderView();
             Assert.AreEqual("<p>wastrue</p>", contents);
         }
 
         [Test]
-        public void IfFalseCondition()
+        public IfFalseCondition() : void
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
 
-            def trueChunks = Chunk[] { SendLiteralChunk { Text = "wastrue" } };
+            def trueChunks = array[SendLiteral(Text = "wastrue")];
 
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        SendLiteralChunk {Text = "<p>"},
-                                        LocalVariableChunk{Name="arg", Value="5"},
-                                        ConditionalChunk{Type=ConditionalType.If, Condition="arg==6", Body=trueChunks},
-                                        SendLiteralChunk {Text = "</p>"}
-                                    });
+            DoCompileView(compiler, array
+                                    [
+                                        SendLiteral(Text = "<p>"),
+                                        LocalVariable(Name="arg", Value="5"),
+                                        Conditional(Type=ConditionalType.If, Condition="arg==6", Body=trueChunks),
+                                        SendLiteral(Text = "</p>")
+                                    ]);
             def instance = compiler.CreateInstance();
             def contents = instance.RenderView();
             Assert.AreEqual("<p></p>", contents);
         }
 
         [Test]
-        public void IfElseFalseCondition()
+        public IfElseFalseCondition() : void
         {
-            def compiler = NemerleViewCompiler { BaseClass = "Spark.SparkViewBase" };
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "Spark.SparkViewBase";
 
-            def trueChunks = Chunk[] { SendLiteralChunk { Text = "wastrue" } };
-            def falseChunks = Chunk[] { SendLiteralChunk { Text = "wasfalse" } };
+            def trueChunks = array[SendLiteral(Text = "wastrue")];
+            def falseChunks = array[SendLiteral(Text = "wasfalse")];
 
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        SendLiteralChunk {Text = "<p>"},
-                                        LocalVariableChunk{Name="arg", Value="5"},
-                                        ConditionalChunk{Type=ConditionalType.If, Condition="arg==6", Body=trueChunks},
-                                        ConditionalChunk{Type=ConditionalType.Else, Body=falseChunks},
-                                        SendLiteralChunk {Text = "</p>"}
-                                    });
+            DoCompileView(compiler, array
+                                    [
+                                        SendLiteral(Text = "<p>"),
+                                        LocalVariable(Name="arg", Value="5"),
+                                        Conditional(Type=ConditionalType.If, Condition="arg==6", Body=trueChunks),
+                                        Conditional(Type=ConditionalType.Else, Body=falseChunks, Condition=null),
+                                        SendLiteral(Text = "</p>")
+                                    ]);
             def instance = compiler.CreateInstance();
             def contents = instance.RenderView();
             Assert.AreEqual("<p>wasfalse</p>", contents);
         }
 
         [Test]
-        public void LenientSilentNullDoesNotCauseWarningCS0168()
+        public LenientSilentNullDoesNotCauseWarningCS0168() : void
         {
-            def compiler = NemerleViewCompiler()
-                           {
-                               BaseClass = "Spark.Tests.Stubs.StubSparkView",
-                               NullBehaviour = NullBehaviour.Lenient
-                           };
-            def chunks = Chunk[]
-                         {
-                             ViewDataChunk { Name="comment", Type="Spark.Tests.Models.Comment"},
-                             SendExpressionChunk {Code = "comment.Text", SilentNulls = true}
-                         };
-            compiler.CompileView(new[] { chunks }, new[] { chunks });
-            Assert.That(compiler.SourceCode.Contains("catch(System.NullReferenceException)"));
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "NRails.Tests.Spark.StubSparkView";
+            compiler.NullBehaviour = NullBehaviour.Lenient;
+
+            def chunks = array
+                         [
+                             NewChunk.[ViewDataChunk](c => { c.Name="comment" :> Snippets; c.Type="NRails.Tests.Spark.Comment" :> Snippets}),
+                             NewChunk.[SendExpressionChunk](c => {c.Code = "comment.Text" :> Snippets; c.SilentNulls = true})
+                         ];
+            compiler.CompileView([chunks], [chunks]);
+            Assert.That(compiler.SourceCode.Contains("catch"));
+            Assert.That(compiler.SourceCode.Contains("System.NullReferenceException"));
         }
 
         [Test]
-        public void LenientOutputNullDoesNotCauseWarningCS0168()
+        public LenientOutputNullDoesNotCauseWarningCS0168() : void
         {
-            def compiler = NemerleViewCompiler()
-                           {
-                               BaseClass = "Spark.Tests.Stubs.StubSparkView",
-                               NullBehaviour = NullBehaviour.Lenient
-                           };
-            def chunks = Chunk[]
-                         {
-                             ViewDataChunk { Name="comment", Type="Spark.Tests.Models.Comment"},
-                             SendExpressionChunk {Code = "comment.Text", SilentNulls = false}
-                         };
-            compiler.CompileView(new[] { chunks }, new[] { chunks });
-            Assert.That(compiler.SourceCode.Contains("catch(System.NullReferenceException)"));
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "NRails.Tests.Spark.StubSparkView";
+            compiler.NullBehaviour = NullBehaviour.Lenient;
+
+            def chunks = array
+                         [
+                             NewChunk.[ViewDataChunk](c => { c.Name="comment" :> Snippets; c.Type="NRails.Tests.Spark.Comment" :> Snippets}),
+                             NewChunk.[SendExpressionChunk](c => {c.Code = "comment.Text" :> Snippets; c.SilentNulls = false})
+                         ];
+            compiler.CompileView([chunks], [chunks]);
+            Assert.That(compiler.SourceCode.Contains("catch"));
+            Assert.That(compiler.SourceCode.Contains("System.NullReferenceException"));
         }
 
         [Test]
-        public void StrictNullUsesException()
+        public StrictNullUsesException() : void
         {
-            def compiler = NemerleViewCompiler()
-                           {
-                               BaseClass = "Spark.Tests.Stubs.StubSparkView",
-                               NullBehaviour = NullBehaviour.Strict
-                           };
-            def chunks = Chunk[]
-                         {
-                             ViewDataChunk { Name="comment", Type="Spark.Tests.Models.Comment"},
-                             SendExpressionChunk {Code = "comment.Text", SilentNulls = false}
-                         };
-            compiler.CompileView(new[] { chunks }, new[] { chunks });
-            Assert.That(compiler.SourceCode.Contains("catch(System.NullReferenceException ex)"));
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "NRails.Tests.Spark.StubSparkView";
+            compiler.NullBehaviour = NullBehaviour.Strict;
+            
+
+            def chunks = array
+                         [
+                             NewChunk.[ViewDataChunk](c => { c.Name="comment" :> Snippets; c.Type="NRails.Tests.Spark.Comment" :> Snippets}),
+                             NewChunk.[SendExpressionChunk](c => {c.Code = "comment.Text" :> Snippets; c.SilentNulls = false})
+                         ];
+                         
+            compiler.CompileView([chunks], [chunks]);
+            Assert.That(compiler.SourceCode.Contains("catch"));
+            Assert.That(compiler.SourceCode.Contains("ex is System.NullReferenceException"));
             Assert.That(compiler.SourceCode.Contains("ArgumentNullException("));
             Assert.That(compiler.SourceCode.Contains(", ex);"));
         }
 
         [Test]
-        public void PageBaseTypeOverridesBaseClass()
+        public PageBaseTypeOverridesBaseClass() : void
         {
-            def compiler = NemerleViewCompiler()
-                           {
-                               BaseClass = "Spark.Tests.Stubs.StubSparkView",
-                               NullBehaviour = NullBehaviour.Strict
-                           };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        PageBaseTypeChunk {  BaseClass="Spark.Tests.Stubs.StubSparkView2"},
-                                        SendLiteralChunk{ Text = "Hello world"}
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "NRails.Tests.Spark.StubSparkView";
+            compiler.NullBehaviour = NullBehaviour.Strict;
+            
+            DoCompileView(compiler, array
+                                    [
+                                        NewChunk.[PageBaseTypeChunk](c => c.BaseClass="NRails.Tests.Spark.StubSparkView2" : Snippets),
+                                        NewChunk.[SendLiteralChunk](c =>{ c.Text = "Hello world"})
+                                    ]);
             def instance = compiler.CreateInstance();
-            Assert.That(instance, Is.InstanceOfType(typeof(StubSparkView2)));
+            Assert.That(instance, Is.InstanceOf.[StubSparkView2]());
         }
 
 
         [Test]
-        public void PageBaseTypeWorksWithOptionalModel()
+        public PageBaseTypeWorksWithOptionalModel() : void
         {
-            def compiler = NemerleViewCompiler()
-                           {
-                               BaseClass = "Spark.Tests.Stubs.StubSparkView",
-                               NullBehaviour = NullBehaviour.Strict
-                           };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        PageBaseTypeChunk {BaseClass = "Spark.Tests.Stubs.StubSparkView2"},
-                                        ViewDataModelChunk {TModel = "Spark.Tests.Models.Comment"},
-                                        SendLiteralChunk {Text = "Hello world"}
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "NRails.Tests.Spark.StubSparkView";
+            compiler.NullBehaviour = NullBehaviour.Strict;
+
+            DoCompileView(compiler, array
+                                    [
+                                        NewChunk.[PageBaseTypeChunk](c => c.BaseClass="NRails.Tests.Spark.StubSparkView2" : Snippets),
+                                        NewChunk.[ViewDataModelChunk](c => {c.TModel = "NRails.Tests.Spark.Comment" : Snippets}),
+                                        NewChunk.[SendLiteralChunk](c =>{ c.Text = "Hello world"})
+                                    ]);
             def instance = compiler.CreateInstance();
-            Assert.That(instance, Is.InstanceOfType(typeof(StubSparkView2)));
-            Assert.That(instance, Is.InstanceOfType(typeof(StubSparkView2<Comment>)));
+            Assert.That(instance, Is.InstanceOf.[StubSparkView2]());
+            Assert.That(instance, Is.InstanceOf.[StubSparkView2[Comment]]());
         }
 
         [Test]
-        public void PageBaseTypeWorksWithGenericParametersIncluded()
+        public PageBaseTypeWorksWithGenericParametersIncluded() : void
         {
-            def compiler = NemerleViewCompiler()
-                           {
-                               BaseClass = "Spark.Tests.Stubs.StubSparkView",
-                               NullBehaviour = NullBehaviour.Strict
-                           };
-            DoCompileView(compiler, Chunk[]
-                                    {
-                                        PageBaseTypeChunk {BaseClass = "Spark.Tests.Stubs.StubSparkView3<Spark.Tests.Models.Comment, string>"},
-                                        SendLiteralChunk {Text = "Hello world"}
-                                    });
+            def compiler = NemerleViewCompiler();
+            compiler.BaseClass = "NRails.Tests.Spark.StubSparkView";
+            compiler.NullBehaviour = NullBehaviour.Strict;
+
+            DoCompileView(compiler, array
+                                    [
+                                        NewChunk.[PageBaseTypeChunk](c => c.BaseClass = "NRails.Tests.Spark.StubSparkView3[NRails.Tests.Spark.Comment, string]" : Snippets),
+                                        NewChunk.[SendLiteralChunk](c =>{ c.Text = "Hello world"})
+                                    ]);
             def instance = compiler.CreateInstance();
-            Assert.That(instance, Is.InstanceOfType(typeof(StubSparkView2)));
-            Assert.That(instance, Is.InstanceOfType(typeof(StubSparkView2<Comment>)));
-            Assert.That(instance, Is.InstanceOfType(typeof(StubSparkView3<Comment, string>)));
-        }*/
+            Assert.That(instance, Is.InstanceOf.[StubSparkView2]());
+            Assert.That(instance, Is.InstanceOf.[StubSparkView2[Comment]]());
+            Assert.That(instance, Is.InstanceOf.[StubSparkView3[Comment, string]]());
+        }
     }
 }
