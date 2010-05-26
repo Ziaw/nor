@@ -6,8 +6,8 @@ using System.Web.Mvc;
 using NRails.Demo.Models;
 using NRails.Mvc;
 
-namespace NRails.Demo.Controllers {
-
+namespace NRails.Demo.Controllers
+{
     [HandleError]
     public class HomeController : Controller
     {

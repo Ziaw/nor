@@ -1,0 +1,7 @@
+﻿namespace Test
+{
+  public variant GeneratorType 
+  {
+    | Migration { path : string }
+  }
+}

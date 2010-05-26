@@ -1,0 +1,129 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using System;
+using System.Collections.Generic;
+using System.Console;
+using System.Linq;
+using StringTemplate;
+
+[StringTemplateGroup]
+public class ClassGenerator
+{
+    public mutable usings : list[string];
+    public mutable namespaceName : string = "NRails.Demo";
+    public mutable className : string = "nameMigration";    
+    public this() {}
+
+    public Generate(nameMigration : string, usings : list[string], columnsAnswers : list[string * string]) : string
+    {<#..$(usings; "\n"; GenerateUsing)
+            
+namespace $namespaceName
+{
+    public class $(GetClassname(nameMigration))
+    {
+        public this () {base("$(GetClassname(nameMigration))")}
+
+        protected override Up() : void
+        {
+        $(CreateTable("Answers", columnsAnswers))
+        }
+    }        
+}
+#>}
+
+    public GenerateMigration(nameMigration : string, usings : list[string]) : string
+    {<#..$(usings; "\n"; GenerateUsing)
+            
+namespace $namespaceName
+{
+    public class $(GetClassname(nameMigration)) : Migration
+    {
+        public this () {base("$(GetClassname(nameMigration))")}
+
+        protected override Up() : void
+        {
+        }
+
+        protected override Down() : void
+        {
+        }
+    }        
+}
+#>}
+
+    public GenerateController(name : string, usings : list[string]) : string
+    {<#..$(usings; "\n"; GenerateUsing)
+            
+namespace $namespaceName.Controllers
+{
+    [HandleError]
+    public class $name : Controller
+    {
+        public Index() : ActionResult
+        {
+        }
+    }        
+}
+#>}
+
+    public GenerateView(name : string, usings : list[string]) : string
+    {<#<%@ Page Language="Nemerle" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage" %>
+
+<asp:Content ID="$(name)Title" ContentPlaceHolderID="TitleContent" runat="server">
+</asp:Content>
+
+<asp:Content ID="$(name)Content" ContentPlaceHolderID="MainContent" runat="server">
+</asp:Content>
+#>}
+
+    GenerateUsing(name : string) : string
+    {
+       $"using $name;"
+    }
+
+    CreateColumn(name : string, type_: string) : string
+    {
+       $"$name : $type_;"
+    }
+
+    CreateTable(name : string, columns : list[string * string]) : string
+    {<#
+    create $name
+    {
+      ..$(columns; "\n"; CreateColumn)
+    }
+#>
+    }
+
+    GetClassname(name : string) :string
+    {
+       name.Substring(0,name.Length-2)
+    }    
+}
+/*
+module Program
+{
+  Main() : void
+  {    
+    def usingsList = [
+    "using Nemerle.Text",
+    "using Nemerle.Utility",
+    "using System",
+    "using System.Collections.Generic",
+    "using System.Linq",    
+    "using NRails.Migrations",
+    "using NRails.Macros.Migration",
+]; 
+    def columnsAnswers = [ 
+        ("AnswersData", "byte[](len = 512)"),
+        ("Rating","int"),
+        ("RightCount","int")
+    ];
+    def date = DateTime.Now.ToString("yyyyMMddhhmmss");
+    def fileName = String.Format("M{0}.n",date);
+    WriteLine($"File: $fileName");    
+    WriteLine(ClassGenerator().GenerateMigration(fileName,usingsList, columnsAnswers));
+    _ = ReadLine();
+  }
+}*/

@@ -71,6 +71,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Generation\Generator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Generation\ClassGenerator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Generation\GeneratorType.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Main.n" />
     <Compile Include="MigrationCompiler.n">
       <SubType>Code</SubType>
@@ -78,6 +87,7 @@
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Generation\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

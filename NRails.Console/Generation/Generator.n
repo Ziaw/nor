@@ -1,0 +1,53 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Console
+{
+  class Generator
+  {
+    static migrationUsingsList : list[string] = [
+      "Nemerle.Text",
+      "Nemerle.Utility",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq",    
+      "NRails.Migrations",
+      "NRails.Macros.Migration",
+    ]; 
+    static controllerUsingsList : list[string] = [
+      "System",
+      "System.Collections.Generic",
+      "System.Linq",
+      "System.Web",
+      "System.Web.Mvc",
+      "NRails.Demo.Models",
+      "NRails.Mvc",
+    ]; 
+
+    public GenerateMigration(path : string) : void
+    {
+      def date = DateTime.Now.ToString("yyyyMMddhhmmss");
+      def migrationName = $"M$(date).n";
+      def text = ClassGenerator().GenerateMigration(migrationName, migrationUsingsList);
+      File.WriteAllText(Path.Combine(path, migrationName), text);
+    }
+
+    public GenerateView(path : string, name : string) : void
+    {
+      def text = ClassGenerator().GenerateView(name, controllerUsingsList);
+      File.WriteAllText(Path.Combine(path, $"$(name).aspx"), text);
+    }
+
+    public GenerateController(path : string, name : string) : void
+    {
+      def text = ClassGenerator().GenerateController(name, controllerUsingsList);
+      File.WriteAllText(Path.Combine(path, $"$(name).n"), text);
+    }
+  }
+}

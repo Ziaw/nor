@@ -66,7 +66,8 @@ module Program
       match (args)
       {
           | "migrate" :: args => Migrate(args, unhandled);
-          | _ => Console.WriteLine("Valid commands: migrate.");
+          | "generate" :: args => Generate(args, unhandled);
+          | _ => Console.WriteLine("Valid commands: migrate, generate.");
       }
   }
   
@@ -136,5 +137,35 @@ module Program
       }
 
       migrator.Migrate(migrationDirection, migrationTypes.Map(makeMigration), allowMissing);
+  }
+  
+  Generate(args : list[string], _ : list[string]) : void
+  {
+    match (args)
+    {
+      | ["migration"] with path = "Migrations"
+      | ["migration", path] =>
+          match (string.IsNullOrEmpty(path) || Directory.Exists(path))
+          {
+            | true => Generator().GenerateMigration(path)
+            | false => Console.WriteLine($"Not existing path '$(path)'")
+          }
+
+/* типа на будущее но все равно переделывать
+      | [obj, name] with path = "Controllers"
+      | [obj, name, path] =>
+          match (string.IsNullOrEmpty(path) || Directory.Exists(path))
+          {
+            | true =>
+                match (obj.ToLower())
+                {
+                  //| "view" => Generator().GenerateView(path, name)
+                  | "controller" => Generator().GenerateController(path, name)
+                }
+            | false => Console.WriteLine($"Not existing path '$(path)'")
+          }
+*/
+      | _ => throw ArgumentException($"..$args");
+    }
   }
 }
