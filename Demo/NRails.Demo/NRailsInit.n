@@ -7,6 +7,6 @@ module MvcInit
 {
     public Init() : void
     {
-        SparkNemerleEngineStarter.RegisterViewEngine(ViewEngines.Engines);
+        SparkNemerleEngineStarter.RegisterViewEngine();
     }
 }

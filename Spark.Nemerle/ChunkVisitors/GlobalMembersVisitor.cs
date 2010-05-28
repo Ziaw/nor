@@ -109,9 +109,9 @@ namespace Spark.Nemerle.ChunkVisitors
                 return;
 
             _source
-                .WriteCode(chunk.TModel)
-                .Write(" ")
                 .WriteCode(chunk.TModelAlias)
+                .Write(" : ")
+                .WriteCode(chunk.TModel)
                 .WriteLine();
             CodeIndent(chunk).WriteLine("{get {ViewData.Model;}}");
             CodeDefault();

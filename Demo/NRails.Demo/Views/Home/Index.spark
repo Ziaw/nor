@@ -2,13 +2,10 @@
     Home Page
 </content>
 
-<viewdata message="string">
-<viewdata taxonomies="IEnumerable[[string]]">
-
-<h2>!{message}</h2>
+<h2>!{model.message}</h2>
 <p>Taxonomies list</p>
 <ul>
-    <li each="tax in taxonomies">!{tax}</li> 
+    <li each="tax in model.taxonomies">!{tax}</li> 
 </ul>
 
 

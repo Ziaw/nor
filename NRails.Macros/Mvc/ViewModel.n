@@ -87,11 +87,10 @@ namespace NRails.Mvc
 
       def model = {
         def build_name(view_path) {
-          "_N_" + view_path.ToLower().Replace("~/", "").Replace("/", "_").Replace(".", "_")
+          "_N_" + view_path.ToLower().Replace("~/", "").Replace("/", "_").Replace(".", "_").Replace("\\", "_").Trim();
         }
         match(view_engine_host.FindView(controller, view, master)) {
           | (false, _) =>
-            Message.Warning(view_name.Location, $"View `$view_name' not found.");
             build_name(view)
           | (true, view_path) =>
             build_name(view_path)

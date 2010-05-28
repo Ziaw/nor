@@ -15,10 +15,10 @@ namespace NRails.Demo.Controllers
         {
             using (def db = Db())
             {
-                ViewData["Message"] = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
-                ViewData["Taxonomies"] = db.Doctors.Select(d => d.Taxonomy).ToList();
+                def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
+                def taxonomies =  db.Doctors.Select(d => d.Taxonomy).ToList();
                 
-                View()
+                model ( message = message, taxonomies = taxonomies )
             }
         }
 

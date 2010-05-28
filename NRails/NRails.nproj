@@ -173,6 +173,9 @@
     <Compile Include="Spark\NemerleViewCompiler.n">
       <SubType>Content</SubType>
     </Compile>
+    <Compile Include="Spark\NRailsExtensionFactory.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Spark\SparkNemerleEngineStarter.n">
       <SubType>Content</SubType>
     </Compile>

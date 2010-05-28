@@ -129,6 +129,9 @@
     <Content Include="nrails.cfg">
       <SubType>Content</SubType>
     </Content>
+    <Compile Include="Spark\NewSyntaxTests.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Spark\StubSparkView.n">
       <SubType>Content</SubType>
     </Compile>

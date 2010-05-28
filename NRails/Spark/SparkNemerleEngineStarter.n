@@ -12,6 +12,7 @@ namespace NRails.Spark
         {
             container.SetServiceBuilder.[IViewEngine](c => SparkViewFactory(c.GetService.[ISparkSettings]()));
             container.SetServiceBuilder.[ISparkLanguageFactory](_ => NemerleLanguageFactory());
+            container.SetServiceBuilder.[ISparkExtensionFactory](_ => NRailsExtensionFactory());
         }
 
         public static CreateContainer() : ISparkServiceContainer 

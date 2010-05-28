@@ -1,5 +1,4 @@
-﻿
-<use namespace="System"/>
+﻿<use namespace="System"/>
 <use namespace="System.Linq"/>
 <use namespace="System.Collections"/>
 <use namespace="System.Collections.Generic"/>

@@ -21,10 +21,12 @@ using System.Text;
 using Nemerle;
 using Nemerle.Collections;
 using Nemerle.Compiler;
+using Nemerle.Text;
 using Nemerle.Extensions;
 using Nemerle.Imperative;
 using Spark.Compiler;
 using Spark.Nemerle.ChunkVisitors;
+using Spark.Parser.Code;
 using System.Configuration;
 using System.Reflection.Emit;
 using System.CodeDom.Compiler;
@@ -185,8 +187,6 @@ namespace NRails.Spark
             baseClassGenerator.BaseClass = BaseClass;
             def globalsGenerator = GlobalMembersVisitor(source, globalSymbols, NullBehaviour);
             
-
-
             // using [namespaces];
             foreach (ns in UseNamespaces ?? array(0))
                 usingGenerator.UsingNamespace(ns);
@@ -200,6 +200,27 @@ namespace NRails.Spark
             foreach (resource in allResources)
                 baseClassGenerator.Accept(resource);
 
+            def autoModel = if (Descriptor != null && baseClassGenerator.TModel == null)
+            {
+                def findAutoModel(templates): string
+                {
+                    | x :: tail =>
+                        regexp match (x)
+                        {
+                            | @"^(?<folder>[\w\d]+)[\\\/](?<view>[\w\d]+)\.spark$" => 
+                                def viewPath = $"views_$(folder)_$(view)_spark";
+                                $"_N_$(viewPath.ToLower())";
+                                
+                            | _ => findAutoModel(tail);
+                        }
+                    | [] => null;
+                }
+                findAutoModel(Descriptor.Templates.ToArray().ToNList()) : Snippets;
+            }
+            else
+                null;
+            
+            
             def viewClassName = "View" + GeneratedViewId.ToString("n");
 
             if (string.IsNullOrEmpty(TargetNamespace))
@@ -263,6 +284,15 @@ namespace NRails.Spark
             // properties and macros
             foreach (resource in allResources)
                 globalsGenerator.Accept(resource);
+                
+            when (autoModel != null)
+            {
+                def vdm = ViewDataChunk();
+                vdm.Type = autoModel;
+                vdm.Key = "_N_Model";
+                vdm.Name = "model";
+                globalsGenerator.Accept(vdm);
+            }
                 
             def preprocessConditional(chunks : list[Chunk])
             {

@@ -15,7 +15,7 @@ namespace NRails.Mvc
 {
   internal class ViewEngineHost
   {
-    view_engine : VirtualPathProviderViewEngine;
+    view_engine : ProjectViewEngine;
     project_path : string;
 
     public this(project_path : string)
@@ -24,7 +24,7 @@ namespace NRails.Mvc
         this.project_path = project_path;
     }
 
-    public FindView(controller : string, view : string, master : string) : bool * string
+    public FindView(controller : string, view : string, _master : string) : bool * string
     {
       def ctx = ControllerContext();
       ctx.RouteData = {
@@ -33,33 +33,55 @@ namespace NRails.Mvc
         route_data
       };
 
-      def result = view_engine.FindView(ctx, view, master, false);
-      match(result.View) {
+      def result = view_engine.FindView(ctx, view);
+      match(result) {
         | null => (false, "")
-        | view is WebFormView => (true, view.ViewPath)
-        | _ => (true, view)
+        | view => (true, view)
       }
     }
   }
   
-  internal class ProjectViewEngine : WebFormViewEngine
+  internal class ProjectViewEngine
   {
     project_path : string;
     
     public this(project_path : string)
     {
-      this.project_path = project_path;
-      ViewLocationCache = DefaultViewLocationCache.Null;
+      this.project_path = Path.GetFullPath(project_path);
+    }
+    
+    public FindView(ctx : ControllerContext, view : string) : string
+    {
+        def controller = ctx.RouteData.Values["controller"];
+        def searchPatterns = [
+            $"~/Views/$controller/$view",
+            $"~/Views/Shared/$view",
+        ];
+        
+        match (searchPatterns.Map(AnyFile(_)).Find(_ != null))
+        {
+            | Some(x) => x
+            | None => null
+        }
     }
 
-    protected override FileExists(_controllerContext : ControllerContext, virtualPath : string) : bool
+    protected AnyFile(virtualPath : string) : string
     {
       def path = regexp match(virtualPath) {
         | @"~/(?<path>.*)" => path
         | _ => virtualPath
       }
       def full_path = Path.Combine(project_path, path);
-      File.Exists(full_path)
+      def dir = Path.GetDirectoryName(full_path);
+      def file = Path.GetFileName(full_path);
+      
+      match (Directory.GetFiles(dir, file + ".*"))
+      {
+          | null 
+          | a when a.Length == 0 => null
+          | a => 
+              a[0].Substring(project_path.Length + 1); // remove absolute path part
+      }
     }
   }
 }

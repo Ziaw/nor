@@ -8,9 +8,10 @@ namespace NRails.Spark
     {
         public override CreateViewCompiler(engine : ISparkViewEngine , descriptor : SparkViewDescriptor) : ViewCompiler 
         {
-            mutable pageBaseType = engine.Settings.PageBaseType;
-            when (string.IsNullOrEmpty(pageBaseType))
-                pageBaseType = engine.DefaultPageBaseType;
+            def pageBaseType = if (string.IsNullOrEmpty(engine.Settings.PageBaseType))
+                engine.DefaultPageBaseType;
+            else
+                engine.Settings.PageBaseType;
 
 
             def language = if (descriptor.Language == LanguageType.Default)
