@@ -99,7 +99,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.n" />
     <Compile Include="Constants\NRailsExtensions.n">
       <SubType>Code</SubType>
     </Compile>
@@ -145,6 +144,7 @@
     <Folder Include="Migrations" />
     <Folder Include="Migrations\Model" />
     <Folder Include="Constants" />
+    <Folder Include="Configuration" />
     <Folder Include="Spark" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
@@ -167,6 +167,21 @@
     </MacroProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\CompileTimeConfigLocator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\ConfigLocator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\ConfigReader.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\Configuration.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\RunTimeConfigLocator.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Spark\NemerleLanguageFactory.n">
       <SubType>Content</SubType>
     </Compile>

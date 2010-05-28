@@ -19,7 +19,7 @@ namespace NRails.Tests
           {
               when (testConfigurationInstance == null)
               {
-                 testConfigurationInstance = Configuration("../../nrails.cfg");
+                 testConfigurationInstance = ConfigReader(RunTimeConfigLocator()).Read();
               }
               testConfigurationInstance;
           }
@@ -28,7 +28,7 @@ namespace NRails.Tests
       [Test]
       public ConfigReadTest() : void
       {
-          def cfg = Configuration("../../nrails.cfg");
+          def cfg = ConfigReader(RunTimeConfigLocator()).Read();
           Expect(cfg.Env, EqualTo("Test"));
           Expect(cfg.ConnectionStringName, EqualTo("NRails.Test"));
           Expect(cfg.ConnectionStrings, Is.Not.Null);

@@ -1,0 +1,26 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails
+{
+  public abstract class ConfigLocator
+  {
+    public abstract GetLocation() : string;
+
+    protected getConfigLocation(locations : list[string]) : string
+    {
+       def defaultConfigSearch = ["../../nrails.cfg", "nrails.cfg"];
+       
+       locations
+          .SelectMany(_ => defaultConfigSearch, (l, f) => (l, f))
+          .Map((path, file) => Path.Combine(path, file))
+          .FirstOrDefault(f => File.Exists(f));
+    }
+  }
+}

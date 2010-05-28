@@ -93,64 +93,19 @@ namespace NRails
         { 
           when (instance == null)
           {
-            instance = MakeRunTimeInstance();
+            instance = Engine(ConfigReader(RunTimeConfigLocator()).Read())
           }
           instance;
         }
       }
       
-      // todo : в фабрику
       public static CompileTimeInstance(prjPath : string) : Engine 
       { 
         when (instance == null)
         {
-          instance = MakeCompileTimeInstance(FileInfo(prjPath).DirectoryName);
+          instance = Engine(ConfigReader(CompileTimeConfigLocator(prjPath)).Read())
         }
         instance;
-      }
-      
-      // todo : в фабрику
-      static compileTimeConfigLocation(locations : list[string]) : string
-      {
-         def defaultConfigSearch = ["../../nrails.cfg", "nrails.cfg"];
-         
-         locations
-            .SelectMany(_ => defaultConfigSearch, (l, f) => (l, f))
-            .Map((path, file) => Path.Combine(path, file))
-            .FirstOrDefault(f => File.Exists(f));
-      }
-      
-      // todo : в фабрику
-      static MakeRunTimeInstance() : Engine
-      {
-         def location = match (HttpContext.Current == null)
-         {
-           | true => compileTimeConfigLocation([
-              Environment.CurrentDirectory, 
-              Assembly.GetCallingAssembly().Location, 
-              Assembly.GetExecutingAssembly().Location].Distinct().ToList());
-           | false => HttpContext.Current.Server.MapPath("~/nrails.cfg");
-         } 
-
-         when (location == null)
-               throw FileNotFoundException("nrails.cfg not found");
-               
-         Engine(Configuration(location))
-      }
-
-      // todo : в фабрику
-      static MakeCompileTimeInstance(prjPath : string) : Engine
-      {
-         def location = match (HttpContext.Current == null)
-         {
-           | true => compileTimeConfigLocation([prjPath]);
-           | false => HttpContext.Current.Server.MapPath("~/nrails.cfg");
-         } 
-
-         when (location == null)
-               throw FileNotFoundException($"nrails.cfg not found in $prjPath");
-               
-         Engine(Configuration(location))
       }
   }
 }

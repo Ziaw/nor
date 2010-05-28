@@ -1,0 +1,33 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Web;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
+using System.Reflection;
+
+namespace NRails
+{
+  public class RunTimeConfigLocator : ConfigLocator
+  {
+    public override GetLocation() : string
+    {
+      def location = match (HttpContext.Current == null)
+      {
+        | true => getConfigLocation([
+          Environment.CurrentDirectory, 
+          Assembly.GetCallingAssembly().Location, 
+          Assembly.GetExecutingAssembly().Location].Distinct().ToList());
+        | false => HttpContext.Current.Server.MapPath("~/nrails.cfg");
+      } 
+
+      when (location == null)
+        throw FileNotFoundException("nrails.cfg not found");
+
+      location
+    }
+  }
+}

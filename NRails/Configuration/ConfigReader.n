@@ -1,0 +1,115 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.XPath;
+using System.Xml.Linq;
+using System.Configuration;
+
+namespace NRails
+{
+  public class ConfigReader
+  {
+    configLocator : ConfigLocator;
+    mutable env : string;
+
+    public this(configLocator : ConfigLocator)
+    {
+      this.configLocator = configLocator;
+    }
+
+    public Read() : NRails.Configuration
+    {
+      def location = configLocator.GetLocation();
+      readConfig(location);
+
+      def rootPath = FileInfo(location).Directory.FullName;
+      def config = findConfigFile(rootPath);
+      def connStrings = readConnectionStrings(config);
+
+      NRails.Configuration(env, connStrings);
+    }
+          
+    findConfigFile(rootPath : string) : string
+    {
+        def checkFile(f)
+        {
+            match (f)
+            {
+              | x :: tail =>
+                    if (File.Exists(x))
+                      x;
+                    else
+                      checkFile(tail);
+              | [] => null
+            }
+        }
+        def acceptedFiles = ["Web.config", "App.config"];
+        def configFile = checkFile(acceptedFiles.Map(x => Path.Combine(rootPath, x)));
+
+        when (String.IsNullOrEmpty(configFile))
+          throw FileNotFoundException($"$acceptedFiles in $rootPath");
+
+        configFile
+    }
+
+    readConnectionStrings(configFile : string) : Dictionary[string, ConnectionStringSettings]
+    {
+        def connectionStrings = Dictionary.[string, ConnectionStringSettings]();
+        // todo: отдельный ридер, надо читать все свойства
+        def xdoc = XDocument.Load(configFile);
+        def strings = xdoc.XPathSelectElements("//connectionStrings/add")
+              .Select(e => (
+                      e.Attribute("name").Value, 
+                      e.Attribute("connectionString").Value, 
+                      e.Attribute("providerName").Value
+                  ));
+        foreach ((name, str, prov) in strings)
+        {
+            def setting = ConnectionStringSettings();
+            setting.ConnectionString = str;
+            setting.ProviderName = prov;
+            connectionStrings.Add(name, setting)
+        }
+
+        connectionStrings
+    }
+    
+    readConfig(fileName : string) : void
+    {
+        // todo: JSON/Yaml reader
+        def lineEvaluator = fun (name, val)
+        {
+          match (name, val)
+          {
+            | ("env", val) => env = val;
+            | ("", _) => {};
+            | (x, _) => throw NotSupportedException($"'$x' configuration value is not suported");
+          }
+        }
+        def lineParser = fun (line : string)
+        {
+            if (line == null || line.Trim() == String.Empty)
+              ("", "")
+            else
+            {
+              def splitted = line.Split(':').Select(s => s.Trim()).ToArray();
+              (splitted[0], splitted[1])
+            }
+        }
+        using (def reader = StreamReader(fileName))
+        {
+            mutable line = reader.ReadLine();
+            while (line != null)
+            {
+                lineEvaluator(lineParser(line));
+                line = reader.ReadLine();
+            }
+        }
+    }
+  }
+}
