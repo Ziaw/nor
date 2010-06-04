@@ -100,8 +100,8 @@ namespace NRails.Macros.Model
             _ = hintBuilder.Append($"$propertyName : table of $(typeName)\n");
         }
       }
-      unless (hintBuilder.Length == 0)
-          Message.Hint("\n" + hintBuilder.ToString());
+//      unless (hintBuilder.Length == 0)
+//          Message.Hint("\n" + hintBuilder.ToString());
       modelTypes = Set.[MyTypeInfo]();
     }
   }

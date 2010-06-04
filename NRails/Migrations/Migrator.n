@@ -191,13 +191,13 @@ namespace NRails.Migrations
                       
                       when (!m.Version.EndsWith("!"))
                           {
-                              def dir = match (exactMigrationDirection)
+                              def _dir = match (exactMigrationDirection)
                               {
                                   | MigrationDirection.Up => "insert"
                                   | MigrationDirection.Down => "delete"
                                   | _ => throw NotSupportedException();
                               }
-                              log(Debug, $"$(dir) migration info $(m.Version)");
+                              log(Debug, $"$(_dir) migration info $(m.Version)");
                               def version = SchemaMigrations();
                               version.Version = m.Version;
                               _ = match (exactMigrationDirection)
@@ -206,7 +206,7 @@ namespace NRails.Migrations
                                   | MigrationDirection.Down => db.Delete(version)
                                   | _ => throw NotSupportedException();
                               }
-                              log(Debug, $"migration info $(dir) finished");
+                              log(Debug, $"migration info $(_dir) finished");
                           }
                       tx.Complete();
                   }

@@ -88,8 +88,8 @@ namespace NRails.Macros.Model
                 }
             }
             
-            unless (hintBuilder.Length == 0)
-                Message.Hint("\n" + hintBuilder.ToString())
+            //unless (hintBuilder.Length == 0)
+            //    Message.Hint("\n" + hintBuilder.ToString())
           }
           catch 
           {
