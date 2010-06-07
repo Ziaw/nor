@@ -1,6 +1,7 @@
 ﻿using Nemerle.Collections;
 using Nemerle.Text;
 using Nemerle.Utility;
+using Nemerle.Extensions;
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ using System.Web.Mvc.Ajax;
 
 namespace System.Web.Mvc
 {
-    /* this code ported from C# T4MVC */
+    /* this code ported from T4MVC */
 
     public interface INRActionResult 
     {
@@ -25,7 +26,7 @@ namespace System.Web.Mvc
     
     public class NRActionResult : INRActionResult 
     {
-        public this(_area : string, controller : string, action : string)  
+        public this(area : string, controller : string, action : string)  
         {
             Controller = controller;
             Action = action;
@@ -33,6 +34,7 @@ namespace System.Web.Mvc
              
             RouteValueDictionary.Add("Controller", controller);
             RouteValueDictionary.Add("Action", action);
+            RouteValueDictionary.Add("Area", area);
         }
          
         public Controller : string { get; set; }
@@ -127,11 +129,6 @@ namespace System.Web.Mvc
             route;
         }
 
-        public GetNRMVCResult(this result : INRActionResult) : INRActionResult 
-        {
-            result
-        }
-
         public GetRouteValueDictionary(this result : INRActionResult) : RouteValueDictionary {
             result.RouteValueDictionary;
         }
@@ -162,48 +159,15 @@ namespace System.Web.Mvc
             routeValues.Add(name, value);
             result;
         }
-        
-        public FileExists(virtualPath : string) : bool {
-            if (!HostingEnvironment.IsHosted) 
-                false;
-            else
-            {
-                def filePath = HostingEnvironment.MapPath(virtualPath);
-                System.IO.File.Exists(filePath);
-            }
-        }
 
-        static CenturyBegin : DateTime = DateTime(2001,1,1);
-        
-        public TimestampString(virtualPath : string) : string 
-        {
-            if (!HostingEnvironment.IsHosted) 
-                string.Empty;
-            else
+        public AddRouteValue(this result : INRActionResult, coll : IAnonymous) : INRActionResult {
+            def routeValues = result.GetRouteValueDictionary();
+    
+            foreach (field in coll.GetFields())
             {
-                def filePath = HostingEnvironment.MapPath(virtualPath);
-                Convert.ToString((System.IO.File.GetLastWriteTimeUtc(filePath).Ticks-CenturyBegin.Ticks)/1000000000,16);            
+                routeValues.Add(field, coll[field]);
             }
+            result;
         }
     }
-    
-    module NRHelpers 
-    {
-        // You can change the ProcessVirtualPath method to modify the path that gets returned to the client.
-        // e.g. you can prepend a domain, or append a query string:
-        //      return "http://localhost" + path + "?foo=bar";
-        ProcessVirtualPathDefault(virtualPath : string) : string  
-        {
-            // The path that comes in starts with ~/ and must first be made absolute
-            def path = VirtualPathUtility.ToAbsolute(virtualPath);
-            
-            // Add your own modifications here before returning the path
-            path;
-        }
-
-        // Calling ProcessVirtualPath through delegate to allow it to be replaced for unit testing
-        public ProcessVirtualPath : string -> string = ProcessVirtualPathDefault;
-    }
-
-    
 }

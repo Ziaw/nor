@@ -17,117 +17,154 @@ namespace NRails.Macros
 {
   module InitConstants
   {
-    mutable mvcBuilder : TypeBuilder;
-    
     public Init(_ : Typer, manager: ManagerClass, phase : Phase) : void
     {
-       def nss = manager.CoreEnv.NameTree.NamespaceTree;
+        def nss = manager.CoreEnv.NameTree.NamespaceTree;
+        
+        def getMvcBuilder()
+        {
+            def key = "NRails.Macros.InitConstants.MvcBuilder";
+            match (manager.UserData[key])
+            {
+                | null =>
+                   def mvcBuilder = match (nss.GetTypeBuilders(true).Find(t => t.Name == "MVC"))
+                   {
+                       | Some(t) => 
+                           t
+                       | None => 
+                           manager.CoreEnv.Define(<[decl:
+                                public module MVC
+                                {
+                                }
+                           ]>);
+                   }
+                   manager.UserData[key] = mvcBuilder;
+                   mvcBuilder;
+                | x => x :> TypeBuilder
+            }
+        }
+        
+        def mvcBuilder = getMvcBuilder();
 
-       mvcBuilder = match(phase, mvcBuilder) 
-       {
-           | (_, null)
-           | (Phase.BeforeInheritance, _) => 
-               manager.CoreEnv.Define(<[decl:
-                public module MVC
-                {
-                }
-               ]>)
-           | _ => mvcBuilder;
-       }
-       
-       foreach (tb in nss.GetTypeBuilders())
-       {
-           | tb when (isController(tb)) =>
-              ProcessController(phase, tb, mvcBuilder);
-           | _ => ()
-       }
-       
-       when (phase == Phase.WithTypedMembers)
-       {
-           hideEquals(mvcBuilder);
-           mvcBuilder.Compile();
-           mvcBuilder = null
-       }
-    }
-
-    controllerPredicate : Regex = Regex("Controller$");
-    isController(tb : TypeBuilder) : bool
-    {
-        controllerPredicate.IsMatch(tb.Name)
-    }
-    
-    ProcessController(phase : Phase, controllerBilder : TypeBuilder, mvcBuilder : TypeBuilder) : void
-    {
         match (phase)
         {
             | Phase.WithTypedMembers => 
-                def name = controllerPredicate.Replace(controllerBilder.Name, String.Empty);
-                
-                def makeActionMethods(actionMethod)
-                {
-                    def methodName = actionMethod.Name;
-                    def parms = actionMethod.GetParameters().Map(m => m.AsParsed());
-                    
-                    def simpleMethod = <[decl:
-                        public $(methodName : dyn)() : INRActionResult
-                        {
-                            NRActionResult(String.Empty, $(name : string), $(methodName : string))
-                        }
-                    ]>;
-                    
-                    def parametrizedMethod(parms)
-                    {
-                        def parametrizedBody = 
-                            <[def r = NRActionResult(String.Empty, $(name : string), $(methodName : string));]> 
-                            :: parms.Map(m => <[r.RouteValueDictionary.Add($(m.Name : string), $(m.Name : dyn));]>);
-                        
-                        <[decl:
-                            public $(methodName : dyn)(..$(parms)) : INRActionResult
-                            {
-                                ..$parametrizedBody;
-                            }
-                        ]>
-                    }
-                    
-                    match (parms)
-                    {
-                        | [] => [simpleMethod]
-                        | _  => [simpleMethod, parametrizedMethod(parms)]
-                    }
-                }
-                
-                def methods = controllerBilder.GetMethods()
-                    .Filter(m => m.ReturnType.GetSystemType().Name == "ActionResult")
-                    .Map(makeActionMethods)
-                    .Flatten();
-
-                def injectMethods(t)
-                {
-                    foreach (method in methods)
-                        t.Define(method);
-                    
-                    hideEquals(t);
-                }
-                
-                def helperType = mvcBuilder.DefineNestedType(<[decl: 
-                    public module $(name : dyn) 
-                    {
-                    }
-                ]>);
-                
-                def actionType = controllerBilder.DefineNestedType(<[decl:
-                    public module Actions
-                    {
-                    }
-                ]>);
-                
-                [helperType, actionType].Iter(t => {
-                    injectMethods(t);
-                    t.Compile()
-                })
+               foreach (tb in nss.GetTypeBuilders())
+               {
+                   | tb when (isController(tb)) =>
+                      ProcessController(tb, mvcBuilder);
+                   | _ => ()
+               }
+               hideEquals(mvcBuilder);
+               mvcBuilder.Compile();
             | _ => ()
         }
+    }
 
+    isController(tb : TypeInfo) : bool
+    {
+        tb != null 
+            && match (tb.BaseType)
+            {
+                | null => false
+                | x => x.FullName == "System.Web.Mvc.Controller" || isController(x.BaseType);
+            }
+    }
+    
+    controllerSuffix : Regex = Regex("Controller$");
+    ProcessController(controllerBilder : TypeBuilder, mvcBuilder : TypeBuilder) : void
+    {
+        def name = controllerSuffix.Replace(controllerBilder.Name, String.Empty);
+        
+        def makeActionMethods(actionMethod)
+        {
+            def methodName = actionMethod.Name;
+            def parms = actionMethod.GetParameters().Map(m => m.AsParsed());
+            
+            def simpleMethod = <[decl:
+                public $(methodName : dyn)() : INRActionResult
+                {
+                    NRActionResult(String.Empty, $(name : string), $(methodName : string))
+                }
+            ]>;
+            
+            def parametrizedMethod(parms)
+            {
+                def parametrizedBody = 
+                    <[def r = NRActionResult(String.Empty, $(name : string), $(methodName : string));]> 
+                    :: parms.Map(m => <[r.RouteValueDictionary.Add($(m.Name : string), $(m.Name : dyn));]>) 
+                    + [<[ r ]>];
+                
+                <[decl:
+                    public $(methodName : dyn)(..$(parms)) : INRActionResult
+                    {
+                        ..$parametrizedBody;
+                    }
+                ]>
+            }
+            
+            match (parms)
+            {
+                | [] => [simpleMethod]
+                | _  => [simpleMethod, parametrizedMethod(parms)]
+            }
+        }
+        
+        def methods = controllerBilder.GetMethods()
+            .Filter(m => m.ReturnType.GetSystemType().Name == "ActionResult")
+            .Map(makeActionMethods)
+            .Flatten();
+
+        def injectMethods(t)
+        {
+            def contains(meth)
+            {
+                def existing = t.GetMethods();
+                
+                def isSome(meth, func)
+                {
+                    def fp = func.header.ParsedParameters;
+                    def mp = meth.GetHeader().ParametersDeclarations;
+                    
+                    func.Name == meth.Name &&
+                        fp.Length == mp.Length &&
+                        fp.Zip(mp).All((a, b) => a.Equals(b))
+                        
+                }
+                
+                existing.Any(isSome(_, meth));
+            }
+            
+            foreach (method when (!contains(method)) in methods)
+            {
+                t.Define(method);
+            }
+        }
+        
+        def helperType = mvcBuilder.DefineNestedType(<[decl: 
+            public module $(name : dyn) 
+            {
+            }
+        ]>);
+        
+        def actionType = controllerBilder.DefineNestedType(<[decl:
+            public module Actions
+            {
+            }
+        ]>);
+        
+        controllerBilder.Define(<[decl:
+            private RedirectToAction(action: INRActionResult) : ActionResult
+            {
+                RedirectToAction(action.Action, action.Controller, action.RouteValueDictionary)
+            }
+        ]>);
+        
+        [helperType, actionType].Iter(t => {
+            injectMethods(t);
+            hideEquals(t);
+            t.Compile()
+        })
     }
 
     // hiding unused methods from intellesense list
