@@ -9,7 +9,7 @@ using Nemerle.Assertions;
 using Nemerle.Extensions;
 using NRails.Database.Schema;
 using BLToolkit.Data;
-using NRails.Logging;
+using Nemerle.Logging;
 
 namespace NRails.Migrations
 {

@@ -12,7 +12,7 @@ using System.Linq;
 using System.Web.Mvc;
 using System.Text.RegularExpressions;
 
-namespace NRails.Mvc
+namespace System.Web.Mvc
 {
   // this macro developed by hardcase and taken from Nemerle snippets
   // intellisense mode has been removed as far autocompletion didn't works
@@ -91,7 +91,7 @@ namespace NRails.Mvc
         }
         match(view_engine_host.FindView(controller, view, master)) {
           | (false, _) =>
-            build_name(view)
+          build_name(view) // todo: without view we can generate class with default path -> views/{controller}/{action}.{Engine.DefaultViewExtension}
           | (true, view_path) =>
             build_name(view_path)
         }

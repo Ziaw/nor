@@ -11,7 +11,7 @@ using SCG = System.Collections.Generic;
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace NRails.Mvc
+namespace System.Web.Mvc
 {
   internal class ViewEngineHost
   {
@@ -58,10 +58,17 @@ namespace NRails.Mvc
             $"~/Views/Shared/$view",
         ];
         
-        match (searchPatterns.Map(AnyFile(_)).Find(_ != null))
+        try
         {
-            | Some(x) => x
-            | None => null
+            match (searchPatterns.Map(AnyFile(_)).Find(_ != null))
+            {
+                | Some(x) => x
+                | None => null
+            }
+        }
+        catch
+        {
+            | _ is DirectoryNotFoundException => null
         }
     }
 

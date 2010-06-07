@@ -160,11 +160,6 @@
       <Project>{06032677-5bad-427a-ad66-5a7b9b21a987}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <MacroProjectReference Include="..\NRails.Logging\NRails.Logging.nproj">
-      <Name>NRails.Logging</Name>
-      <Project>{9d6b4e3b-aecf-4202-bbb5-fbe8011dbea1}</Project>
-      <Private>False</Private>
-    </MacroProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\CompileTimeConfigLocator.n">

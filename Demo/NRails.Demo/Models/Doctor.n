@@ -8,6 +8,7 @@ namespace NRails.Demo.Models
     [Model]
     public class Doctor	
     {
-        
+        [Association(ThisKey="PersonID", OtherKey="PersonID")]
+        public Person : Person {get;set;}
     }
 }

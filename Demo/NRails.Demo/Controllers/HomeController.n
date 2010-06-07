@@ -4,7 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using NRails.Demo.Models;
-using NRails.Mvc;
+using NRails.Macros;
+using Nemerle.Extensions;
 
 namespace NRails.Demo.Controllers
 {
@@ -16,9 +17,31 @@ namespace NRails.Demo.Controllers
             using (def db = Db())
             {
                 def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
-                def taxonomies =  db.Doctors.Select(d => d.Taxonomy).ToList();
+                def taxonomies =  db.Doctors.Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
                 
-                model ( message = message, taxonomies = taxonomies )
+                model ( message, taxonomies )
+            }
+        }
+        
+        public Doctor() : ActionResult
+        {
+            using (def db = Db())
+            {
+                def doctor =  db.Doctors.Where(d => d.PersonID == 1)
+                    .Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
+                
+                model (doctor);
+            }
+        }
+        
+        public Doctor(id : int) : ActionResult
+        {
+            using (def db = Db())
+            {
+                def doctor =  db.Doctors.Where(d => d.PersonID == id)
+                    .Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
+                
+                model (doctor);
             }
         }
 

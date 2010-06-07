@@ -13,7 +13,7 @@ using NRails.Database.Schema;
 using NRails.Database.Mssql;
 using BLToolkit.Data;
 using log4net;
-using NRails.Logging;
+using Nemerle.Logging;
 
 [assembly: LogCondition(Engine.Logger != null)]
 [assembly: LogFunction (Debug => Engine.Logger.Debug, 

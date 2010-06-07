@@ -5,7 +5,7 @@
 <h2>!{model.message}</h2>
 <p>Taxonomies list</p>
 <ul>
-    <li each="tax in model.taxonomies">!{tax}</li> 
+    <li each="tax in model.taxonomies">${Html.ActionLink(tax.text, MVC.Home.Doctor(tax.doctor))}</li> 
 </ul>
 
 
