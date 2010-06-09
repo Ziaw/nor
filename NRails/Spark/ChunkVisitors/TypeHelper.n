@@ -1,0 +1,16 @@
+using Spark.Parser.Code;
+using System.Linq;
+
+namespace NRails.Spark.ChunkVisitors
+{
+    public module TypeHelper
+    {
+        public CorrectType(@type : Snippets) : Snippets 
+        {
+            foreach (s in @type)
+                s.Value = s.Value.Replace('<', '[').Replace('>', ']');
+
+            @type
+        }
+    }
+}

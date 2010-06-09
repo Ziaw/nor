@@ -1,0 +1,87 @@
+// Copyright 2008-2009 Louis DeJardin - http://whereslou.com
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// 
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
+using Spark.Compiler;
+using Spark.Compiler.ChunkVisitors;
+using Spark.Parser.Code;
+using Spark;
+
+namespace NRails.Spark.ChunkVisitors
+{
+    public class UsingNamespaceVisitor : ChunkVisitor
+    {
+        private mutable _source :  SourceWriter ;
+
+        private _namespaceAdded : Dictionary[string, object] =  Dictionary.[string, object]();
+        private _assemblyAdded : Dictionary[string, Assembly] = Dictionary.[string, Assembly]();
+
+        _noncyclic : Stack[string] = Stack.[string]();
+
+
+        public this(output : SourceWriter)
+        {
+            _source = output;
+        }
+
+        public Assemblies : ICollection[Assembly] { get { _assemblyAdded.Values; } } 
+
+        protected override Visit(chunk : UseNamespaceChunk) : void
+        {
+            UsingNamespace(chunk.Namespace);
+        }
+        protected override  Visit(chunk : UseAssemblyChunk) : void
+        {
+            UsingAssembly(chunk.Assembly);
+        }
+
+
+        protected override Visit(chunk : ExtensionChunk) : void
+        {
+            chunk.Extension.VisitChunk(this, OutputLocation.UsingNamespace, chunk.Body, _source.GetStringBuilder());
+        }
+
+        protected override Visit(chunk : RenderPartialChunk) : void
+        {
+            unless (_noncyclic.Contains(chunk.FileContext.ViewSourcePath))
+            {
+                _noncyclic.Push(chunk.FileContext.ViewSourcePath);
+                Accept(chunk.FileContext.Contents);
+                _ = _noncyclic.Pop();
+            }
+        }
+
+        public UsingNamespace(ns : Snippets) : void
+        {
+            unless (_namespaceAdded.ContainsKey(ns))            
+            {
+                _namespaceAdded.Add(ns, null);
+                _ = _source.Write("using ").WriteCode(ns).WriteLine(";");
+            }
+        }
+
+        public  UsingAssembly(assemblyString : string) : void
+        {
+            if (_assemblyAdded.ContainsKey(assemblyString))
+            {}
+            else
+            {
+            def assembly = Assembly.Load(assemblyString);
+            _assemblyAdded.Add(assemblyString, assembly);
+            }
+        }
+    }
+}
