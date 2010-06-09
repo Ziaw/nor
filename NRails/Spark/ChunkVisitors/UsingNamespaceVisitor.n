@@ -18,67 +18,70 @@ using System.Text;
 using Spark.Compiler;
 using Spark.Compiler.ChunkVisitors;
 using Spark.Parser.Code;
+using Spark;
 
-namespace Spark.Nemerle.ChunkVisitors
+namespace NRails.Spark.ChunkVisitors
 {
     public class UsingNamespaceVisitor : ChunkVisitor
     {
-        private readonly SourceWriter _source;
+        private mutable _source :  SourceWriter ;
 
-        private readonly Dictionary<string, object> _namespaceAdded = new Dictionary<string, object>();
-        private readonly Dictionary<string, Assembly> _assemblyAdded = new Dictionary<string, Assembly>();
+        private _namespaceAdded : Dictionary[string, object] =  Dictionary.[string, object]();
+        private _assemblyAdded : Dictionary[string, Assembly] = Dictionary.[string, Assembly]();
 
-        readonly Stack<string> _noncyclic = new Stack<string>();
+        _noncyclic : Stack[string] = Stack.[string]();
 
 
-        public UsingNamespaceVisitor(SourceWriter output)
+        public this(output : SourceWriter)
         {
             _source = output;
         }
 
-        public ICollection<Assembly> Assemblies { get { return _assemblyAdded.Values; } }
+        public Assemblies : ICollection[Assembly] { get { _assemblyAdded.Values; } } 
 
-        protected override void Visit(UseNamespaceChunk chunk)
+        protected override Visit(chunk : UseNamespaceChunk) : void
         {
             UsingNamespace(chunk.Namespace);
         }
-        protected override void Visit(UseAssemblyChunk chunk)
+        protected override  Visit(chunk : UseAssemblyChunk) : void
         {
             UsingAssembly(chunk.Assembly);
         }
 
 
-        protected override void Visit(ExtensionChunk chunk)
+        protected override Visit(chunk : ExtensionChunk) : void
         {
             chunk.Extension.VisitChunk(this, OutputLocation.UsingNamespace, chunk.Body, _source.GetStringBuilder());
         }
 
-        protected override void Visit(RenderPartialChunk chunk)
+        protected override Visit(chunk : RenderPartialChunk) : void
         {
-            if (_noncyclic.Contains(chunk.FileContext.ViewSourcePath))
-                return;
-
-            _noncyclic.Push(chunk.FileContext.ViewSourcePath);
-            Accept(chunk.FileContext.Contents);
-            _noncyclic.Pop();
+            unless (_noncyclic.Contains(chunk.FileContext.ViewSourcePath))
+            {
+                _noncyclic.Push(chunk.FileContext.ViewSourcePath);
+                Accept(chunk.FileContext.Contents);
+                _ = _noncyclic.Pop();
+            }
         }
 
-        public void UsingNamespace(Snippets ns)
+        public UsingNamespace(ns : Snippets) : void
         {
-            if (_namespaceAdded.ContainsKey(ns))
-                return;
-
-            _namespaceAdded.Add(ns, null);
-            _source.Write("using ").WriteCode(ns).WriteLine(";");
+            unless (_namespaceAdded.ContainsKey(ns))            
+            {
+                _namespaceAdded.Add(ns, null);
+                _ = _source.Write("using ").WriteCode(ns).WriteLine(";");
+            }
         }
 
-        public void UsingAssembly(string assemblyString)
+        public  UsingAssembly(assemblyString : string) : void
         {
             if (_assemblyAdded.ContainsKey(assemblyString))
-                return;
-
-            var assembly = Assembly.Load(assemblyString);
+            {}
+            else
+            {
+            def assembly = Assembly.Load(assemblyString);
             _assemblyAdded.Add(assemblyString, assembly);
+            }
         }
     }
 }

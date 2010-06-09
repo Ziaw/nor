@@ -116,11 +116,6 @@
       <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Spark.Nemerle\Spark.Nemerle.csproj">
-      <Name>Spark.Nemerle</Name>
-      <Project>{06032677-5bad-427a-ad66-5a7b9b21a987}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="App.config">

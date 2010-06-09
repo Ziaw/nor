@@ -209,11 +209,6 @@
       <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Spark.Nemerle\Spark.Nemerle.csproj">
-      <Name>Spark.Nemerle</Name>
-      <Project>{06032677-5bad-427a-ad66-5a7b9b21a987}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -230,7 +225,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>2634</DevelopmentServerPort>
+          <DevelopmentServerPort>39385</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

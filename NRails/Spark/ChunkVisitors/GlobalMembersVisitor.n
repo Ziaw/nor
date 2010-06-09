@@ -15,99 +15,104 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Spark;
 using Spark.Compiler;
-using Spark.Compiler.ChunkVisitors;
-using Spark.Compiler.CSharp.ChunkVisitors;
+using NRails.Spark.ChunkVisitors;
 using Spark.Parser.Code;
 
-namespace Spark.Nemerle.ChunkVisitors
+namespace NRails.Spark.ChunkVisitors
 {
-    public class GlobalMembersVisitor : ChunkVisitor
+    
+    #pragma warning disable 10005 
+    
+    public class GlobalMembersVisitor : Spark.Compiler.ChunkVisitors.ChunkVisitor
     {
-        private readonly SourceWriter _source;
-        private readonly Dictionary<string, object> _globalSymbols;
-        private readonly NullBehaviour _nullBehaviour;
-        readonly Dictionary<string, string> _viewDataAdded = new Dictionary<string, string>();
-        readonly Dictionary<string, GlobalVariableChunk> _globalAdded = new Dictionary<string, GlobalVariableChunk>();
+        private _source : SourceWriter;
+        private _globalSymbols : Dictionary[string, object];
+        private _nullBehaviour : NullBehaviour;
+        _viewDataAdded : Dictionary[string, string] = Dictionary.[string, string]();
+        _globalAdded : Dictionary[string, GlobalVariableChunk] = Dictionary.[string, GlobalVariableChunk]();
 
-        public GlobalMembersVisitor(SourceWriter output, Dictionary<string, object> globalSymbols, NullBehaviour nullBehaviour)
+        public this(output : SourceWriter, globalSymbols : Dictionary[string, object], nullBehaviour : NullBehaviour)
         {
             _source = output;
             _globalSymbols = globalSymbols;
             _nullBehaviour = nullBehaviour;
         }
-
-
-
-        private SourceWriter CodeIndent(Chunk chunk)
+        
+        private CodeIndent(chunk : Chunk) : SourceWriter
         {
             if (_source.AdjustDebugSymbols)
             {
                 if (chunk != null && chunk.Position != null)
                 {
                     _source.StartOfLine = false;
-                    return _source
+                    _source
                         .WriteDirective("#line {0} \"{1}\"", chunk.Position.Line, chunk.Position.SourceContext.FileName)
                         .Indent(chunk.Position.Column - 1);
                 }
-
-                _source.StartOfLine = false;
-                return _source.WriteLine("#line default");
+                else
+                {
+                    _source.StartOfLine = false;
+                    _source.WriteLine("#line default");
+                }
             }
-
-            return _source;
+            else
+                _source;
         }
 
-        private void CodeHidden()
+        private CodeHidden() : void
         {
             /*if (_source.AdjustDebugSymbols)
                 _source.WriteDirective("#line hidden");*/
         }
 
-        private void CodeDefault()
+        private CodeDefault() : void 
         {
-            if (_source.AdjustDebugSymbols)
+            when (_source.AdjustDebugSymbols)
                 _source.WriteDirective("#line default");
         }
 
-        protected override void Visit(GlobalVariableChunk chunk)
+        protected override Visit(chunk : GlobalVariableChunk ) : void
         {
-            if (!_globalSymbols.ContainsKey(chunk.Name))
+            when (!_globalSymbols.ContainsKey(chunk.Name))
                 _globalSymbols.Add(chunk.Name, null);
 
             if (_globalAdded.ContainsKey(chunk.Name))
             {
-                if (_globalAdded[chunk.Name].Type != TypeHelper.CorrectType(chunk.Type) ||
-                    _globalAdded[chunk.Name].Value != chunk.Value)
+                when (_globalAdded[chunk.Name].Type != (TypeHelper.CorrectType(chunk.Type):object) ||
+                     _globalAdded[chunk.Name].Value != (chunk.Value:object))
                 {
-                    throw new CompilerException(string.Format("The global named {0} cannot be declared repeatedly with different types or values",
+                    throw CompilerException(string.Format("The global named {0} cannot be declared repeatedly with different types or values",
                                                               chunk.Name));
                 }
-                return;
-            }
-
-            var type = TypeHelper.CorrectType(chunk.Type) ?? "object";
-            var typeParts = type.ToString().Split(' ', '\t');
-            if (typeParts.Contains("readonly"))
-            {
-                _source.WriteFormat("\r\n    mutable {1} : {0} = {2};",
-                                     type, chunk.Name, chunk.Value);
             }
             else
             {
-                _source.WriteFormat(
-                    "\r\n    mutable _{1} : {0} = {2};\r\n    public {1} : {0}  {{ get {{_{1};}} set {{_{1} = value;}} }}",
-                    type, chunk.Name, chunk.Value);
+                def _type = TypeHelper.CorrectType(chunk.Type) ?? "object" : Snippets;
+                def typeParts = _type.ToString().Split(' ', '\t');
+                _ = if (typeParts.Contains("readonly"))
+                {
+                    _source.WriteFormat("\r\n    mutable {1} : {0} = {2};",
+                                         _type, chunk.Name, chunk.Value);
+                }
+                else
+                {
+                    _source.WriteFormat(
+                        "\r\n    mutable _{1} : {0} = {2};\r\n    public {1} : {0}  {{ get {{_{1};}} set {{_{1} = value;}} }}",
+                        _type, chunk.Name, chunk.Value);
+                }
+                _ = _source.WriteLine();
             }
-            _source.WriteLine();
         }
 
 
-        protected override void Visit(ViewDataModelChunk chunk)
+        protected override Visit(chunk : ViewDataModelChunk) : void
         {
             if (Snippets.IsNullOrEmpty(chunk.TModelAlias))
-                return;
-
+            {}              
+            else
+            {    
             _source
                 .WriteCode(chunk.TModel)
                 .Write(" ")
@@ -115,65 +120,69 @@ namespace Spark.Nemerle.ChunkVisitors
                 .WriteLine();
             CodeIndent(chunk).WriteLine("{get {ViewData.Model;}}");
             CodeDefault();
+            }
         }
 
-        protected override void Visit(ViewDataChunk chunk)
+        protected override Visit(chunk : ViewDataChunk) : void 
         {
-            var key = chunk.Key;
-            var name = chunk.Name;
-            var type = TypeHelper.CorrectType(chunk.Type) ?? "object";
+            def key = chunk.Key;
+            def name = chunk.Name;
+            def _type = TypeHelper.CorrectType(chunk.Type) ?? "object" : Snippets;
 
-            if (!_globalSymbols.ContainsKey(name))
+            when (!_globalSymbols.ContainsKey(name))
                 _globalSymbols.Add(name, null);
 
             if (_viewDataAdded.ContainsKey(name))
             {
-                if (_viewDataAdded[name] != key + ":" + type)
+                def s = String.Format("{0}:{1}",key, _type);
+                when (_viewDataAdded[name] != s)
                 {
-                    throw new CompilerException(
+                    throw  CompilerException(
                         string.Format("The view data named {0} cannot be declared with different types '{1}' and '{2}'",
-                                      name, type, _viewDataAdded[name]));
-                }
-                return;
-            }
-
-            _viewDataAdded.Add(name, key + ":" + type);
-            _source.Write(String.Format("{0} : {1}\n", name, type));
-            if (Snippets.IsNullOrEmpty(chunk.Default))
-            {
-                CodeIndent(chunk)
-                    .Write("{get { ")
-                    .Write("ViewData.Eval(\"")
-                    .Write(key)
-                    .WriteLine("\") :> ")
-                    .WriteCode(type)
-                    .WriteLine(" }}");
+                                      name, _type, _viewDataAdded[name]));
+                }             
             }
             else
             {
+                def s = String.Format("{0}:{1}",key, _type);
+                _viewDataAdded.Add(name, s);
+                _source.Write(String.Format("{0} : {1}\n", name, _type));
+                if (Snippets.IsNullOrEmpty(chunk.Default))
+                {
+                    CodeIndent(chunk)
+                    .Write("{get { ")
+                    .Write("ViewData.Eval(\"")
+                    .Write(key)
+                    .WriteLine("\") :> ")
+                    .WriteCode(_type)
+                    .WriteLine(" }}");
+                }
+                else
+                {
                 CodeIndent(chunk)
                     .Write("{get { ")
                     .Write("ViewData.Eval(\"")
                     .Write(key)
                     .WriteLine("\") :> ")
-                    .WriteCode(type)
+                    .WriteCode(_type)
                     .WriteLine(" ?? ")
                     .WriteCode(chunk.Default)
                     .WriteLine(");}}");
+                }
+                CodeDefault();
             }
-            CodeDefault();
         }
 
-        protected override void Visit(ExtensionChunk chunk)
+        protected override Visit(chunk : ExtensionChunk) : void
         {
             chunk.Extension.VisitChunk(this, OutputLocation.ClassMembers, chunk.Body, _source.GetStringBuilder());
         }
 
-        protected override void Visit(MacroChunk chunk)
+        protected override Visit(chunk : MacroChunk) : void
         {
-            _source.Write(string.Format("\r\n    {0}(", chunk.Name));
-            string delimiter = "";
-            foreach (var parameter in chunk.Parameters)
+            _source.Write(string.Format("\r\n    {0}(", chunk.Name));            
+            mutable delimiter = "";
+            foreach (parameter in chunk.Parameters)
             {
                 _source.Write(delimiter).WriteCode(parameter.Type).Write(" ").Write(parameter.Name);
                 delimiter = ", ";
@@ -185,12 +194,12 @@ namespace Spark.Nemerle.ChunkVisitors
             _source.WriteLine("        {");
             CodeDefault();
 
-            var variables = new Dictionary<string, object>();
-            foreach (var param in chunk.Parameters)
+            def variables = Dictionary.[string, object]();
+            foreach (param in chunk.Parameters)
             {
                 variables.Add(param.Name, null);
             }
-            var generator = new GeneratedCodeVisitor(_source, variables, _nullBehaviour);
+            def generator = GeneratedCodeVisitor(_source, variables, _nullBehaviour);
             generator.Accept(chunk.Body);
 
             CodeHidden();
@@ -200,4 +209,5 @@ namespace Spark.Nemerle.ChunkVisitors
             CodeDefault();
         }
     }
+    #pragma warning restore 10005 
 }

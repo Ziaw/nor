@@ -17,23 +17,24 @@ using Spark.Compiler;
 using Spark.Compiler.ChunkVisitors;
 using Spark.Parser.Code;
 
-namespace Spark.Nemerle.ChunkVisitors
+namespace NRails.Spark.ChunkVisitors
 {
     public class BaseClassVisitor : ChunkVisitor
     {
         public BaseClass : Snippets { get; set; }
-        public TModel Snippets { get; set; }
+        public TModel : Snippets { get; set; }
 
         mutable _encounteredBaseClass : bool;
         mutable _encounteredTModel : bool;
 
-        public Snippets BaseClassTypeName
+        public BaseClassTypeName : Snippets
         {
             get
             {
-                def baseClass = BaseClass;
-                when (Snippets.IsNullOrEmpty(baseClass))
-                    baseClass = "Spark.SparkViewBase";
+                def baseClass = if (Snippets.IsNullOrEmpty(BaseClass))
+                    "Spark.SparkViewBase" : Snippets
+                else
+                    BaseClass;
 
                 if (Snippets.IsNullOrEmpty(TModel))
                     baseClass;
@@ -42,12 +43,13 @@ namespace Spark.Nemerle.ChunkVisitors
                     def s1 = Snippet();
                     s1.Value = "[";
                     baseClass.Add(s1);
+                    
                     baseClass.AddRange(TModel);
                     
                     def s2 = Snippet();
-                    s1.Value = "]";
-                    baseClass.Add(s2);
-                    
+                    s2.Value = "]";
+                    baseClass.Add(s2);                    
+
                     def s = Snippets();
                     s.AddRange(baseClass);
                     s
@@ -55,22 +57,22 @@ namespace Spark.Nemerle.ChunkVisitors
             }
         }
 
-        protected override void Visit(ViewDataModelChunk chunk)
+        protected override Visit(chunk : ViewDataModelChunk) : void 
         {
-            if (_encounteredTModel && !string.Equals(TModel, chunk.TModel, StringComparison.Ordinal))
+            when (_encounteredTModel && !string.Equals(TModel, chunk.TModel, StringComparison.Ordinal))
             {
-                throw new CompilerException(string.Format("Only one viewdata model can be declared. {0} != {1}", TModel,
+                throw CompilerException(string.Format("Only one viewdata model can be declared. {0} != {1}", TModel,
                                                           chunk.TModel));
             }
             TModel = chunk.TModel;
             _encounteredTModel = true;
         }
 
-        protected override void Visit(PageBaseTypeChunk chunk)
+        protected override Visit(chunk : PageBaseTypeChunk) : void
         {
-            if (_encounteredBaseClass && !string.Equals(BaseClass, chunk.BaseClass, StringComparison.Ordinal))
+            when (_encounteredBaseClass && !string.Equals(BaseClass, chunk.BaseClass, StringComparison.Ordinal))
             {
-                throw new CompilerException(string.Format("Only one pageBaseType can be declared. {0} != {1}", BaseClass,
+                throw CompilerException(string.Format("Only one pageBaseType can be declared. {0} != {1}", BaseClass,
                                                           chunk.BaseClass));
             }
             BaseClass = chunk.BaseClass;

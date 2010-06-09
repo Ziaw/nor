@@ -15,30 +15,33 @@
 using System.Collections.Generic;
 using Spark.Compiler;
 using Spark.Compiler.ChunkVisitors;
+using Spark.Parser.Code;
 
-namespace Spark.Nemerle.ChunkVisitors
+namespace NRails.Spark.ChunkVisitors
 {
     public class FileReferenceVisitor : ChunkVisitor
     {
-        private readonly IList<RenderPartialChunk> _references = new List<RenderPartialChunk>();
+        private _references : IList[RenderPartialChunk] = List.[RenderPartialChunk]();
 
         //refactor: see how this is used and change it's type
-        public IList<RenderPartialChunk> References
+        public References : IList[RenderPartialChunk]
         {
-            get { return _references; }
+            get { _references; }
         }
 
-        protected override void Visit(RenderPartialChunk chunk)
+        protected override Visit(chunk : RenderPartialChunk) : void
         {
             References.Add(chunk);
             Accept(chunk.Body);
-            foreach (var chunks in chunk.Sections.Values)
+            foreach (chunks in chunk.Sections.Values)
                 Accept(chunks);
         }
 
-        protected override void Visit(UseImportChunk chunk)
+        protected override Visit(chunk : UseImportChunk) : void
         {
-            References.Add(new RenderPartialChunk { Name = chunk.Name });
+            def s1 = RenderPartialChunk();
+            s1.Name = chunk.Name : Snippets;
+            References.Add(s1);
         }
     }
 }

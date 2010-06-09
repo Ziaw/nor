@@ -24,7 +24,7 @@ using Nemerle.Compiler;
 using Nemerle.Extensions;
 using Nemerle.Imperative;
 using Spark.Compiler;
-using Spark.Nemerle.ChunkVisitors;
+using NRails.Spark.ChunkVisitors;
 using System.Configuration;
 using System.Reflection.Emit;
 using System.CodeDom.Compiler;
@@ -34,6 +34,7 @@ namespace NRails.Spark
     
     public class NemerleViewCompiler : ViewCompiler
     {
+        #pragma warning disable 10003
         CompileString(code : string) : Assembly
         {
             def options = CompilationOptions();
@@ -66,6 +67,7 @@ namespace NRails.Spark
           
             manager.GeneratedAssembly
         }
+        #pragma warning restore 10003
         
         // workaround version BatchCompiler, not throws exceptions on warnings
         CompileStringCodeDom(code : string) : Assembly

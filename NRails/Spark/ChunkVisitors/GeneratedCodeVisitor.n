@@ -18,135 +18,139 @@ using System.Linq;
 using Spark.Compiler;
 using Spark.Compiler.ChunkVisitors;
 using Spark.Parser.Code;
+using Spark;
 
-namespace Spark.Nemerle.ChunkVisitors
+#pragma warning disable 10005 
+
+namespace NRails.Spark.ChunkVisitors
 {
-    public static class ExtConditionalType
+    public module ExtConditionalType
     {
-        public const int AlternativeIf = 99;
+        public AlternativeIf : int = 99;
     }
 
     public class GeneratedCodeVisitor : GeneratedCodeVisitorBase
     {
-        private readonly SourceWriter _source;
-        private readonly NullBehaviour _nullBehaviour;
+        private mutable _source : SourceWriter;
+        private mutable _nullBehaviour : NullBehaviour;
 
-        public GeneratedCodeVisitor(SourceWriter source, Dictionary<string, object> globalSymbols, NullBehaviour nullBehaviour)
+        public this(source : SourceWriter, globalSymbols : Dictionary[string, object], nullBehaviour : NullBehaviour)
         {
             _nullBehaviour = nullBehaviour;
             _source = source;
-
-            _scope = new Scope(new Scope(null) { Variables = globalSymbols });
+            def globalScope = Scope(null);
+            globalScope.Variables = globalSymbols;
+            _scope = Scope(globalScope);
         }
 
-        private SourceWriter CodeIndent(Chunk chunk)
+        private CodeIndent(chunk : Chunk) : SourceWriter
         {
-            if (_source.AdjustDebugSymbols)
+            when (_source.AdjustDebugSymbols)
             {
-                if (chunk != null && chunk.Position != null)
+                when (chunk != null && chunk.Position != null)
                 {
                     _source.StartOfLine = false;
-                    return _source
-                        .WriteDirective("#line {0} \"{1}\"", chunk.Position.Line, chunk.Position.SourceContext.FileName)
+                    _source.WriteDirective("#line {0} \"{1}\"", chunk.Position.Line, chunk.Position.SourceContext.FileName)
                         .Indent(chunk.Position.Column - 1);
                 }
-
                 _source.StartOfLine = false;
-                return _source.WriteLine("#line default");
+                _ = _source.WriteLine("#line default");
             }
-
-            return _source;
+            _source;
         }
 
-        private void CodeHidden()
+        private CodeHidden() : void
         {/*
             if (_source.AdjustDebugSymbols)
                 _source.WriteDirective("#line hidden");*/
         }
 
-        private void CodeDefault()
+        private CodeDefault() : void
         {
-            if (_source.AdjustDebugSymbols)
-                _source.WriteDirective("#line default");
+            when (_source.AdjustDebugSymbols)
+                _ = _source.WriteDirective("#line default");
         }
 
-        private void AppendOpenBrace()
+        private AppendOpenBrace() : void
         {
             PushScope();
-            _source.WriteLine("{").AddIndent();
+            _ = _source.WriteLine("{").AddIndent();
         }
 
-        private void AppendCloseBrace()
+        private AppendCloseBrace() : void
         {
-            _source.RemoveIndent().WriteLine("}");
+            _ = _source.RemoveIndent().WriteLine("}");
             PopScope();
         }
 
         class Scope
         {
-            public Scope(Scope prior)
+            public this(prior : Scope)
             {
-                Variables = new Dictionary<string, object>();
+                Variables = Dictionary.[string, object]();
                 Prior = prior;
             }
-            public Dictionary<string, object> Variables { get; set; }
-            public Scope Prior { get; private set; }
+            public Variables : Dictionary[string, object] { get; set; }
+            public Prior : Scope { get; private set; }
         }
 
-        private Scope _scope;
+        private mutable _scope : Scope;
 
-        void PushScope()
+        PushScope() : void
         {
-            _scope = new Scope(_scope);
+            _scope = Scope(_scope);
         }
-        void PopScope()
+        PopScope() : void
         {
             _scope = _scope.Prior;
         }
-        void DeclareVariable(string name)
+        DeclareVariable(name : string) : void
         {
             _scope.Variables.Add(name, null);
         }
-        bool IsVariableDeclared(string name)
+        IsVariableDeclared(name : string) : bool
         {
-            var scan = _scope;
+            mutable scan = _scope;
             while (scan != null)
             {
-                if (scan.Variables.ContainsKey(name))
-                    return true;
+                when (scan.Variables.ContainsKey(name))
+                     true;
+                
                 scan = scan.Prior;
             }
-            return false;
+            false;
         }
 
 
-        protected override void Visit(SendLiteralChunk chunk)
+        protected override Visit(chunk : SendLiteralChunk) : void
         {
             if (string.IsNullOrEmpty(chunk.Text))
-                return;
-
-            CodeHidden();
-            _source.Write("Output.Write(\"").Write(EscapeStringContents(chunk.Text)).WriteLine("\");");
-            CodeDefault();
+            {}
+            else
+            {
+                CodeHidden();
+                _ = _source.Write("Output.Write(\"").Write(EscapeStringContents(chunk.Text)).WriteLine("\");");
+                CodeDefault();
+            }
         }
 
-        protected override void Visit(SendExpressionChunk chunk)
+        protected override Visit(chunk : SendExpressionChunk) : void
         {
-            var automaticallyEncode = chunk.AutomaticallyEncode;
-            if (chunk.Code.ToString().StartsWith("H("))
+            mutable automaticallyEncode = chunk.AutomaticallyEncode;
+            when (chunk.Code.ToString().StartsWith("H("))
                 automaticallyEncode = false;
 
-            _source
+            _ = _source
                 .WriteLine("try")
                 .WriteLine("{");
-            CodeIndent(chunk)
+            _ = CodeIndent(chunk)
                 .Write("Output.Write(")
-                .Write(automaticallyEncode ? "H(" : "")
+                .Write(if (automaticallyEncode) "H(" else "")
                 .WriteCode(chunk.Code)
-                .Write(automaticallyEncode ? ")" : "")
+                .Write(if (automaticallyEncode) ")" else "")
                 .WriteLine(");");
             CodeDefault();
-            _source
+            _ = _source
                 .WriteLine("}");
 
             if (_nullBehaviour == NullBehaviour.Lenient)
@@ -177,31 +181,31 @@ namespace Spark.Nemerle.ChunkVisitors
             }
         }
 
-        static string EscapeStringContents(string text)
+        static EscapeStringContents(text : string) : string
         {
-            return text.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"");
+            text.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"");
         }
 
-        protected override void Visit(MacroChunk chunk)
+        protected override Visit(_ : MacroChunk) : void
         {
 
         }
 
-        protected override void Visit(CodeStatementChunk chunk)
+        protected override Visit(chunk : CodeStatementChunk) : void
         {
             CodeIndent(chunk).WriteCode(chunk.Code).WriteLine();
             CodeDefault();
         }
 
-        protected override void Visit(LocalVariableChunk chunk)
+        protected override Visit(chunk : LocalVariableChunk) : void
         {
-            if (chunk.Type.ToString() == "var")
+            when (chunk.Type.ToString() == "var")
                 chunk.Type = "def";
 
             DeclareVariable(chunk.Name);
 
             CodeIndent(chunk).WriteCode(TypeHelper.CorrectType(chunk.Type)).Write(" ").WriteCode(chunk.Name);
-            if (!Snippets.IsNullOrEmpty(chunk.Value))
+            when (!Snippets.IsNullOrEmpty(chunk.Value))
             {
                 _source.Write(" = ").WriteCode(chunk.Value);
             }
@@ -209,35 +213,41 @@ namespace Spark.Nemerle.ChunkVisitors
             CodeDefault();
         }
 
-        protected override void Visit(UseMasterChunk chunk)
+        protected override Visit(_ : UseMasterChunk) : void
         {
             //no-op
         }
 
-        protected override void Visit(DefaultVariableChunk chunk)
+        protected override Visit(chunk : DefaultVariableChunk) : void
         {
-            if (chunk.Type.ToString() == "var")
+            when (chunk.Type.ToString() == "var")
                 chunk.Type = "def";
 
             if (IsVariableDeclared(chunk.Name))
-                return;
-
-            DeclareVariable(chunk.Name);
-            CodeIndent(chunk).WriteCode(TypeHelper.CorrectType(chunk.Type)).Write(" ").Write(chunk.Name);
-            if (!Snippets.IsNullOrEmpty(chunk.Value))
+            {}
+            else 
             {
-                _source.Write(" = ").WriteCode(chunk.Value);
+                DeclareVariable(chunk.Name);
+                CodeIndent(chunk).WriteCode(TypeHelper.CorrectType(chunk.Type)).Write(" ").Write(chunk.Name);
+                when (!Snippets.IsNullOrEmpty(chunk.Value))
+                {
+                    _source.Write(" = ").WriteCode(chunk.Value);
+                }
+                _source.WriteLine(";");
+                CodeDefault();
             }
-            _source.WriteLine(";");
-            CodeDefault();
         }
 
-        protected override void Visit(ForEachChunk chunk)
+        protected override Visit(chunk : ForEachChunk) : void
         {
-            var terms = chunk.Code.ToString().Split(' ', '\r', '\n', '\t').ToList();
-            var inIndex = terms.IndexOf("in");
-            var variableName = (inIndex < 2 ? null : terms[inIndex - 1]);
-
+            def terms = chunk.Code.ToString().Split(' ', '\r', '\n', '\t').ToList();
+            def inIndex = terms.IndexOf("in");
+            
+            def variableName = if (inIndex < 2)
+                null;
+            else
+                terms[inIndex - 1];
+                
             if (variableName == null)
             {
                 CodeIndent(chunk)
@@ -251,34 +261,34 @@ namespace Spark.Nemerle.ChunkVisitors
             }
             else
             {
-                var detect = new DetectCodeExpressionVisitor(OuterPartial);
-                var autoIndex = detect.Add(variableName + "Index");
-                var autoCount = detect.Add(variableName + "Count");
-                var autoIsFirst = detect.Add(variableName + "IsFirst");
-                var autoIsLast = detect.Add(variableName + "IsLast");
+                def detect = DetectCodeExpressionVisitor(OuterPartial);
+                def autoIndex = detect.Add(variableName + "Index");
+                def autoCount = detect.Add(variableName + "Count");
+                def autoIsFirst = detect.Add(variableName + "IsFirst");
+                def autoIsLast = detect.Add(variableName + "IsLast");
                 detect.Accept(chunk.Body);
 
-                if (autoIsLast.Detected)
+                when (autoIsLast.Detected)
                 {
                     autoIndex.Detected = true;
                     autoCount.Detected = true;
                 }
 
                 AppendOpenBrace();
-                if (autoIndex.Detected)
+                when (autoIndex.Detected)
                 {
                     DeclareVariable(variableName + "Index");
                     _source.WriteLine("def {0}Index = 0;", variableName);
                 }
-                if (autoIsFirst.Detected)
+                when (autoIsFirst.Detected)
                 {
                     DeclareVariable(variableName + "IsFirst");
                     _source.WriteLine("def {0}IsFirst = true;", variableName);
                 }
-                if (autoCount.Detected)
+                when (autoCount.Detected)
                 {
                     DeclareVariable(variableName + "Count");
-                    var collectionCode = string.Join(" ", terms.ToArray(), inIndex + 1, terms.Count - inIndex - 1);
+                    def collectionCode = string.Join(" ", terms.ToArray(), inIndex + 1, terms.Count - inIndex - 1);
                     _source.WriteLine("def {0}Count = Spark.Compiler.CollectionUtility.Count({1});", variableName, collectionCode);
                 }
 
@@ -293,7 +303,7 @@ namespace Spark.Nemerle.ChunkVisitors
                 DeclareVariable(variableName);
 
                 CodeHidden();
-                if (autoIsLast.Detected)
+                when (autoIsLast.Detected)
                 {
                     DeclareVariable(variableName + "IsLast");
                     _source.WriteLine("def {0}IsLast = ({0}Index == {0}Count - 1);", variableName);
@@ -303,9 +313,9 @@ namespace Spark.Nemerle.ChunkVisitors
                 Accept(chunk.Body);
 
                 CodeHidden();
-                if (autoIndex.Detected)
+                when (autoIndex.Detected)
                     _source.WriteLine("++{0}Index;", variableName);
-                if (autoIsFirst.Detected)
+                when (autoIsFirst.Detected)
                     _source.WriteLine("{0}IsFirst = false;", variableName);
                 CodeDefault();
 
@@ -315,7 +325,7 @@ namespace Spark.Nemerle.ChunkVisitors
             }
         }
 
-        protected override void Visit(ScopeChunk chunk)
+        protected override Visit(chunk : ScopeChunk) : void
         {
             AppendOpenBrace();
             CodeDefault();
@@ -323,11 +333,11 @@ namespace Spark.Nemerle.ChunkVisitors
             AppendCloseBrace();
         }
 
-        protected override void Visit(GlobalVariableChunk chunk)
+        protected override Visit(_ : GlobalVariableChunk) : void
         {
         }
 
-        protected override void Visit(AssignVariableChunk chunk)
+        protected override Visit(chunk : AssignVariableChunk) : void
         {
             CodeIndent(chunk)
                 .Write(chunk.Name)
@@ -338,7 +348,7 @@ namespace Spark.Nemerle.ChunkVisitors
         }
 
 
-        protected override void Visit(ContentChunk chunk)
+        protected override Visit(chunk : ContentChunk) : void
         {
             CodeIndent(chunk).WriteLine("using(OutputScope(\"{0}\"))", chunk.Name);
             CodeDefault();
@@ -347,12 +357,12 @@ namespace Spark.Nemerle.ChunkVisitors
             AppendCloseBrace();
         }
 
-        protected override void Visit(UseImportChunk chunk)
+        protected override Visit(_ : UseImportChunk) : void
         {
 
         }
 
-        protected override void Visit(ContentSetChunk chunk)
+        protected override Visit(chunk : ContentSetChunk) : void
         {
             CodeIndent(chunk).WriteLine("using(OutputScope(System.IO.StringWriter()))");
             CodeDefault();
@@ -362,18 +372,14 @@ namespace Spark.Nemerle.ChunkVisitors
             Accept(chunk.Body);
 
             CodeHidden();
-            string format;
-            switch (chunk.AddType)
+            def format = match (chunk.AddType)
             {
-                case ContentAddType.AppendAfter:
-                    format = "{0} = {0} + Output.ToString();";
-                    break;
-                case ContentAddType.InsertBefore:
-                    format = "{0} = Output.ToString() + {0};";
-                    break;
-                default:
-                    format = "{0} = Output.ToString();";
-                    break;
+                | ContentAddType.AppendAfter =>
+                    "{0} = {0} + Output.ToString();";
+                | ContentAddType.InsertBefore =>
+                    "{0} = Output.ToString() + {0};";
+                | _ =>
+                    "{0} = Output.ToString();";
             }
             _source.WriteLine(format, chunk.Variable);
 
@@ -382,7 +388,7 @@ namespace Spark.Nemerle.ChunkVisitors
             CodeDefault();
         }
 
-        protected override void Visit(UseContentChunk chunk)
+        protected override Visit(chunk : UseContentChunk) : void
         {
             CodeIndent(chunk).WriteLine(string.Format("when (Content.ContainsKey(\"{0}\"))", chunk.Name));
             CodeHidden();
@@ -390,7 +396,7 @@ namespace Spark.Nemerle.ChunkVisitors
             _source.WriteFormat("Spark.Spool.TextWriterExtensions.WriteTo(Content[\"{0}\"], Output);", chunk.Name);
             AppendCloseBrace();
 
-            if (chunk.Default.Count != 0)
+            when (chunk.Default.Count != 0)
             {
                 _source.WriteLine("else");
                 AppendOpenBrace();
@@ -401,69 +407,58 @@ namespace Spark.Nemerle.ChunkVisitors
         }
 
 
-        protected override void Visit(ViewDataChunk chunk)
+        protected override  Visit(_ : ViewDataChunk) : void
         {
 
         }
 
-        protected override void Visit(UseNamespaceChunk chunk)
+        protected override  Visit(_ : UseNamespaceChunk) : void
         {
 
         }
 
-        protected override void Visit(UseAssemblyChunk chunk)
+        protected override Visit(_ : UseAssemblyChunk): void
         {
 
         }
 
-        protected override void Visit(ExtensionChunk chunk)
+        protected override Visit(chunk : ExtensionChunk) : void
         {
             chunk.Extension.VisitChunk(this, OutputLocation.RenderMethod, chunk.Body, _source.GetStringBuilder());
         }
 
-        protected override void Visit(ConditionalChunk chunk)
+        protected override Visit(chunk : ConditionalChunk) : void
         {
-            switch (chunk.Type)
+            match (chunk.Type)
             {
-                case (ConditionalType)ExtConditionalType.AlternativeIf:
-                    {
-                        CodeIndent(chunk)
-                            .Write("if (")
-                            .WriteCode(chunk.Condition)
-                            .WriteLine(")");
-                    }
-                    break;
-                case ConditionalType.If:
-                    {
+                | ConditionalType.If =>
                         CodeIndent(chunk)
                             .Write("when (")
                             .WriteCode(chunk.Condition)
                             .WriteLine(")");
-                    }
-                    break;
-                case ConditionalType.ElseIf:
-                    {
+                | ConditionalType.ElseIf =>
                         CodeIndent(chunk)
                             .Write("else if (")
                             .WriteCode(chunk.Condition)
                             .WriteLine(")");
-                    }
-                    break;
-                case ConditionalType.Else:
-                    {
+                | ConditionalType.Else =>
                         _source.WriteLine("else");
-                    }
-                    break;
-                case ConditionalType.Once:
-                    {
+                | ConditionalType.Once =>
                         CodeIndent(chunk)
                             .Write("when (Once(")
                             .WriteCode(chunk.Condition)
                             .WriteLine("))");
+                | x => 
+                    match (x :> int)
+                    {
+                        | ExtConditionalType.AlternativeIf =>
+                                CodeIndent(chunk)
+                                    .Write("if (")
+                                    .WriteCode(chunk.Condition)
+                                    .WriteLine(")");
+                        | _ =>
+                            throw CompilerException($"Unexpected conditional type $(chunk.Type)");
                     }
-                    break;
-                default:
-                    throw new CompilerException("Unexpected conditional type " + chunk.Type);
             }
             CodeDefault();
             AppendOpenBrace();
@@ -471,9 +466,9 @@ namespace Spark.Nemerle.ChunkVisitors
             AppendCloseBrace();
         }
 
-        protected override void Visit(CacheChunk chunk)
+        protected override Visit(chunk : CacheChunk) : void
         {
-            var siteGuid = Guid.NewGuid();
+            def siteGuid = Guid.NewGuid();
 
             CodeIndent(chunk)
                 .Write("when (BeginCachedContent(\"")
@@ -506,3 +501,4 @@ namespace Spark.Nemerle.ChunkVisitors
     }
 
 }
+#pragma warning restore 10005 
