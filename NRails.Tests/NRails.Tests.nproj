@@ -97,10 +97,16 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations" />
+    <Folder Include="Spark.Views" />
     <Folder Include="Spark" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <MacroProjectReference Include="..\Nemerle.Contrib\Nemerle.Contrib.nproj">
+      <Name>Nemerle.Contrib</Name>
+      <Project>{bd5f199e-9539-408b-80fe-a040cb93a141}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
     <ProjectReference Include="..\NRails.Database\NRails.Database.csproj">
       <Name>NRails.Database</Name>
       <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
@@ -124,6 +130,9 @@
     <Content Include="nrails.cfg">
       <SubType>Content</SubType>
     </Content>
+    <EmbeddedResource Include="Spark.Views\match.spark">
+      <SubType>Content</SubType>
+    </EmbeddedResource>
     <Compile Include="Spark\NewSyntaxTests.n">
       <SubType>Code</SubType>
     </Compile>
@@ -132,6 +141,9 @@
     </Compile>
     <Compile Include="Spark\StubSparkView2.n">
       <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Spark\SyntaxExtensionTests.n">
+      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />

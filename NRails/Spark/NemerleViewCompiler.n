@@ -217,7 +217,14 @@ namespace NRails.Spark
                         }
                     | [] => null;
                 }
-                findAutoModel(Descriptor.Templates.ToArray().ToNList()) : Snippets;
+                def autoModelType = findAutoModel(Descriptor.Templates.ToArray().ToNList());
+                
+                match (autoModelType)
+                {
+                    | null                             => null
+                    | x when Type.GetType(x) != null   => autoModelType : Snippets;
+                    | _                                => null
+                }
             }
             else
                 null;

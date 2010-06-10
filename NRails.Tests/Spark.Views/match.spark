@@ -1,0 +1,5 @@
+﻿# def i = 10;
+<match expr="i">
+  <pattern expr="10"><test if="true">true</test></pattern>
+  <pattern expr="_">false</pattern>
+</match>

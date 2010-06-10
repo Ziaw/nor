@@ -1,0 +1,153 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using Spark.Compiler;
+using Spark.Compiler.NodeVisitors;
+using Spark.FileSystem;
+using Spark.Parser.Code;
+using Spark.Parser.Markup;
+using Spark.Parser;
+using Spark.Parser.Syntax;
+using Nemerle.Contrib;
+using NRails.Spark.NodeVisitors;
+
+namespace NRails.Spark
+{
+    /// <summary>
+    /// Description of NemerleSyntaxProvider.
+    /// </summary>
+    public class NemerleSyntaxProvider: AbstractSyntaxProvider
+    {
+        grammar : MarkupGrammar;
+        
+        public this(settings :  IParserSettings) 
+        {
+            grammar = MarkupGrammar(settings);
+        }
+        
+        public override GetChunks(context : VisitorContext, path : string) : IList[Chunk]
+        {
+            context.SyntaxProvider = this;
+            context.ViewPath = path;
+
+            def sourceContext = CreateSourceContext(context.ViewPath, context.ViewFolder);
+            def position = Position(sourceContext);
+
+            def result = grammar.Nodes(position);
+            when (result.Rest.PotentialLength() != 0)
+            {
+                ThrowParseException(context.ViewPath, position, result.Rest);
+            }
+
+            context.Paint = result.Rest.GetPaint();
+
+            mutable nodes = result.Value;
+            foreach (visitor in BuildNodeVisitors(context))
+            {
+                visitor.Accept(nodes);
+                nodes = visitor.Nodes;
+            }
+
+            def chunkBuilder = NemerleChunkBuilder(context);
+            chunkBuilder.Accept(nodes);
+            
+            chunkBuilder.Chunks;
+        }
+
+        public override IncludeFile(context : VisitorContext, path : string, parse : string) : IList[Node]
+        {
+            def existingPath = context.ViewPath;
+
+            mutable directoryPath = Path.GetDirectoryName(context.ViewPath);
+            mutable relativePath = path.Replace('/', '\\');
+            
+            while (relativePath.StartsWith("..\\"))
+            {
+                directoryPath = Path.GetDirectoryName(directoryPath);
+                relativePath = relativePath.Substring(3);
+            }
+            context.ViewPath = Path.Combine(directoryPath, relativePath);
+
+            def sourceContext = CreateSourceContext(context.ViewPath, context.ViewFolder);
+
+            if (parse == "text")
+            {
+                def encoded = sourceContext.Content
+                    .Replace("&", "&amp;")
+                    .Replace("<", "&lt;")
+                    .Replace(">", "&gt;");
+                array[TextNode(encoded) : Node ];
+            }
+            else
+            {
+                def position = Position(sourceContext);
+                def result = grammar.Nodes(position);
+                
+                when (result.Rest.PotentialLength() != 0)
+                {
+                    ThrowParseException(context.ViewPath, position, result.Rest);
+                }
+                context.Paint = context.Paint.Union(result.Rest.GetPaint());
+
+                def namespaceVisitor = NamespaceVisitor(context);
+                namespaceVisitor.Accept(result.Value);
+
+                def includeVisitor = IncludeVisitor(context);
+                includeVisitor.Accept(namespaceVisitor.Nodes);
+
+                context.ViewPath = existingPath;
+                includeVisitor.Nodes;
+            }
+        }
+
+        public override ParseFragment(begin : Position, end : Position) : Snippets
+        {
+            def result = grammar.Expression(begin.Constrain(end));
+
+            def unparsedLength = result.Rest.PotentialLength();
+            
+            if (unparsedLength == 0)
+            {
+                result.Value;
+            }
+            else
+            {
+                def snippets = Snippets();
+                
+                snippets.AddRange(result.Value);
+
+                snippets.Add(Snippet() with
+                {
+                    Value = result.Rest.Peek(unparsedLength);
+                    Begin = result.Rest;
+                    End = result.Rest.Advance(unparsedLength)
+                });
+
+                snippets;
+            }
+
+        }
+
+        private static BuildNodeVisitors(context : VisitorContext) : IList[INodeVisitor]
+        {
+            array[
+              NamespaceVisitor(context) : INodeVisitor,
+              IncludeVisitor(context),
+              PrefixExpandingVisitor(context),
+              NemerleSpecialNodeVisitor(context),
+              CacheAttributeVisitor(context),
+              ForEachAttributeVisitor(context),
+              ConditionalAttributeVisitor(context),
+              OmitExtraLinesVisitor(context),
+              TestElseElementVisitor(context),
+              OnceAttributeVisitor(context),
+              UrlAttributeVisitor(context),
+              BindingExpansionVisitor(context),
+              MatchElementVisitor(context),
+            ];
+        }
+        
+    }
+}

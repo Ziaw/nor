@@ -1,0 +1,161 @@
+﻿// Copyright 2008-2009 Louis DeJardin - http://whereslou.com
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Spark.Parser.Markup;
+using Spark.Compiler.NodeVisitors;
+
+namespace NRails.Spark.NodeVisitors
+{
+    public class MatchElementVisitor : INodeVisitor
+    {
+        mutable _frame : Frame = Frame();
+        _stack : Stack[Frame] = Stack.[Frame]();
+
+        public this(context: VisitorContext)
+        {
+            Context = context;
+        }
+
+        PushFrame() : void
+        {
+            _stack.Push(_frame);
+            _frame = Frame();
+        }
+        
+        PopFrame() : void 
+        {
+            _frame = _stack.Pop();
+        }
+
+        class Frame
+        {
+            public this()
+            {
+                Nodes = List.[Node]();
+            }
+            
+            public Nodes : IList[Node] { get; set; }
+            public TestParentNodes : IList[Node]{ get; set; }
+        }
+
+        public Context : VisitorContext { get; set; }
+
+        public Accept(nodes : IList[Node]) : void
+        {
+            foreach (n in nodes)
+                Accept(n)
+        }
+        
+        public Accept(node : Node) : void
+        {
+          | node is ExpressionNode
+          | node is EntityNode 
+          | node is DoctypeNode 
+          | node is TextNode
+          | node is ElementNode 
+          | node is EndElementNode
+          | node is AttributeNode 
+          | node is CommentNode
+          | node is StatementNode
+          | node is XMLDeclNode
+          | node is ProcessingInstructionNode  =>
+            Nodes.Add(node);
+          | node is ExtensionNode =>
+            Visit(node);
+          | node is SpecialNode =>
+            Visit(node);
+          | _  is ConditionNode 
+          | _ =>
+            throw System.NotImplementedException();
+        }
+
+        public Nodes : IList[Node]
+        {
+            get { _frame.Nodes; }
+        }
+
+
+        protected Visit(node : SpecialNode) : void
+        {
+            mutable detachFromParent = false;
+            
+            if (detachFromParent)
+            {
+                def reconstructed = SpecialNode(node.Element);
+                _frame.TestParentNodes.Add(reconstructed);
+                _frame.Nodes = reconstructed.Body;
+            }
+            else
+            {
+                def reconstructed = SpecialNode(node.Element);
+                Nodes.Add(reconstructed);
+
+                def parentNodes = _frame.Nodes;
+
+                PushFrame();
+
+                _frame.Nodes = reconstructed.Body;
+                when (NameUtility.IsMatch("match", Context.Namespaces, node.Element.Name, node.Element.Namespace))
+                {
+                    _frame.TestParentNodes = parentNodes;
+                }
+
+                Accept(node.Body);
+
+                PopFrame();
+            }
+        }
+
+        protected Visit(node : ExtensionNode) : void
+        {
+            def reconstructed = ExtensionNode(node.Element, node.Extension);
+
+            PushFrame();
+
+            _frame.Nodes = reconstructed.Body;
+            Accept(node.Body);
+
+            PopFrame();
+
+            Nodes.Add(reconstructed);
+        }
+    }
+
+    module NameUtility
+    {
+        public IsMatch(matchName : string, @type : NamespacesType, name : string, ns :  string) : bool
+        {
+            if (@type == NamespacesType.Unqualified)
+                name == matchName;
+            else if (ns != Spark.Constants.Namespace)
+                false;
+            else
+                GetName(name) == matchName;
+        }
+
+        public GetName(name : string) : string 
+        {
+            def colonIndex = name.IndexOf(':');
+            
+            if (colonIndex < 0)
+                name;
+            else
+                name.Substring(colonIndex + 1);
+        }
+    }
+
+}

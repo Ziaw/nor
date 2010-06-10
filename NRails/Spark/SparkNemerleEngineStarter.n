@@ -8,25 +8,23 @@ namespace NRails.Spark
 {
     public static class SparkNemerleEngineStarter
     {
-        public static ConfigureContainer(container : ISparkServiceContainer) : void 
+        public static ConfigureContainer(container : ISparkServiceContainer) : ISparkServiceContainer 
         {
             container.SetServiceBuilder.[IViewEngine](c => SparkViewFactory(c.GetService.[ISparkSettings]()));
             container.SetServiceBuilder.[ISparkLanguageFactory](_ => NemerleLanguageFactory());
-            container.SetServiceBuilder.[ISparkExtensionFactory](_ => NRailsExtensionFactory());
+            //container.SetServiceBuilder.[ISparkExtensionFactory](_ => NRailsExtensionFactory());
+            container.SetServiceBuilder.[ISparkSyntaxProvider](c => NemerleSyntaxProvider(c.GetService.[ISparkSettings]()));
+            container
         }
 
         public static CreateContainer() : ISparkServiceContainer 
         {
-            def container = SparkServiceContainer();
-            ConfigureContainer(container);
-            container;
+            ConfigureContainer(SparkServiceContainer());
         }
 
         public static CreateContainer(settings : ISparkSettings ) : ISparkServiceContainer 
         {
-            def container = SparkServiceContainer(settings);
-            ConfigureContainer(container);
-            container;
+            ConfigureContainer(SparkServiceContainer(settings));
         }
 
         /// <summary>

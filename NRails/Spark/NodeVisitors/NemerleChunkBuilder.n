@@ -1,0 +1,94 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Spark.Parser;
+using Spark.Parser.Markup;
+using Spark.Parser.Code;
+using Spark.Compiler.NodeVisitors;
+using Spark.Compiler;
+using Nemerle.Contrib;
+
+namespace NRails.Spark.NodeVisitors
+{
+  public class MatchChunk : Chunk
+  {
+      public this()
+      {
+            Body = List.[Chunk]();
+      }
+
+      public Test : Snippets { get; set; }
+      public Body : IList[Chunk] { get; set; }
+  }
+
+  class NemerleChunkBuilder: ChunkBuilderVisitor
+  {
+    public this(context : VisitorContext)
+    {
+        base(context)
+    }
+    
+    protected override Visit(specialNode : SpecialNode) : void
+    {
+        match (NameUtility.GetName(specialNode.Element.Name))
+        {
+            | "match" => VisitMatch(specialNode, SpecialNodeInspector(specialNode))
+            | _ => base.Visit(specialNode);
+        }
+    }
+    
+    protected VisitMatch(node : SpecialNode, inspector : SpecialNodeInspector) : void
+    {
+        def conditionAttr = inspector.TakeAttribute("test");
+
+        when (conditionAttr == null)
+        {
+            throw CompilerException("Element must contain an test attribute");
+        }
+
+        
+        def chunk = MatchChunk() with { Test = conditionAttr.AsCode(); Position = Locate(inspector.OriginalNode) };
+        
+        Chunks.Add(chunk);
+        
+        using (Frame(this, chunk.Body))
+        {
+            Accept(node.Body);
+        }
+    }
+
+    private Locate(expressionNode : Node) : Position
+    {
+        def _nodePaint = Context.Paint.OfType.[Paint.[Node]]().ToDictionary(paint => paint.Value);
+
+        def find(node)
+        {
+            | null => null
+            | x when _nodePaint.ContainsKey(x) => _nodePaint[x].Begin;
+            | _ =>  find(node.OriginalNode)
+        }
+        
+        find(expressionNode)
+    }
+
+    class Frame : IDisposable
+    {
+        _visitor : ChunkBuilderVisitor;
+         _chunks : IList[Chunk];
+
+        public this(visitor : ChunkBuilderVisitor,
+            chunks : IList[Chunk])
+        {
+            _visitor = visitor;
+
+            _chunks = _visitor.Chunks;
+            _visitor.Chunks = chunks;
+        }
+
+        public Dispose() : void
+        {
+            _visitor.Chunks = _chunks;
+        }
+    }
+  }
+}

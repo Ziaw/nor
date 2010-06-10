@@ -8,7 +8,8 @@ namespace NRails.Spark.ChunkVisitors
         public CorrectType(@type : Snippets) : Snippets 
         {
             foreach (s in @type)
-                s.Value = s.Value.Replace('<', '[').Replace('>', ']');
+                when (s != null && s.Value != null)
+                    s.Value = s.Value.Replace('<', '[').Replace('>', ']');
 
             @type
         }
