@@ -147,7 +147,6 @@
     <Folder Include="Configuration" />
     <Folder Include="Spark" />
     <Folder Include="Spark\ChunkVisitors\" />
-    <Folder Include="Spark\NodeVisitors" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -200,20 +199,8 @@
     <Compile Include="Spark\NemerleLanguageFactory.n">
       <SubType>Content</SubType>
     </Compile>
-    <Compile Include="Spark\NemerleSyntaxProvider.n">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Spark\NemerleViewCompiler.n">
       <SubType>Content</SubType>
-    </Compile>
-    <Compile Include="Spark\NodeVisitors\MatchElementVisitor.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Spark\NodeVisitors\NemerleChunkBuilder.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Spark\NodeVisitors\NemerleSpecailNodeVisitor.n">
-      <SubType>Code</SubType>
     </Compile>
     <Compile Include="Spark\NRailsExtensionFactory.n">
       <SubType>Code</SubType>

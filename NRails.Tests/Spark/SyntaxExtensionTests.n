@@ -45,11 +45,10 @@ namespace NRails.Tests.Spark
             
             Assert.That(entry, Is.Not.Null);
             
-            Console.WriteLine(entry.SourceCode);
-            
             def view = entry.CreateInstance();
             def result = view.RenderView();
-            Console.WriteLine($"result : $result");
+            
+            Assert.That(result, Is.EqualTo("\r\ntrue\r\n"))
         }
     }
 }
