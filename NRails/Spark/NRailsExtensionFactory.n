@@ -1,6 +1,8 @@
 ﻿using Nemerle.Collections;
 using Nemerle.Text;
 using Nemerle.Utility;
+using Nemerle.Contrib;
+using Nemerle.Macro;
 
 using System;
 using System.Text;
@@ -8,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Spark;
 using Spark.Compiler;
+using Spark.Parser.Code;
 using Spark.Compiler.ChunkVisitors;
 using Spark.Compiler.NodeVisitors;
 using Spark.Parser.Markup;
@@ -19,98 +22,121 @@ namespace NRails.Spark
   /// </summary>
   public class NRailsExtensionFactory: ISparkExtensionFactory
   {
-     public CreateExtension(_context : VisitorContext, node : ElementNode) : ISparkExtension 
-     {
-         match (node.Name)
+      mutable currentContext : VisitorContext;
+      mutable funcs : list[string];
+      
+      public CreateExtension(context : VisitorContext, node : ElementNode) : ISparkExtension 
+      {
+         def isElement(node, name)
          {
-             | "match" => MatchExtension(node)
-             | "pattern" => PatternExtension(node)
+             SparkUtils.IsMatch(name, context.Namespaces, node.Name, node.Namespace)
+         }
+         
+         def addFunc(node)
+         {
+             when (node.Attributes.Count == 1)
+             {
+                 def name = SparkUtils.GetName(node.Attributes.Single().Name);
+                 
+                 funcs = if (context : object != currentContext)
+                 {
+                     currentContext = context;
+                     [name]
+                 }
+                 else
+                 {
+                     name :: funcs
+                 }
+             }
+         }
+         
+         def isFunc(name)
+         {
+             if (context : object != currentContext)
+             {
+                 currentContext = context;
+                 funcs = [];
+                 false
+             }
+             else
+             {
+                 funcs.Contains(name);
+             }
+         }
+         
+         match (node)
+         {
+             | x when isElement(x, "match")     => MatchExtension(node)
+             | x when isElement(x, "pattern")   => PatternExtension(node)
+             | x when isElement(x, "fun")       => 
+                addFunc(x);
+                FunExtension(x)
+             | x when isFunc(SparkUtils.GetName(x.Name)) =>
+                FunCallExtension(x)
              | _ => null
          }
-     }
-  }
-  
-  module AttrUtils
-  {
-      public Attr(this attrs : IEnumerable[AttributeNode],  name : string) : AttributeNode
-      {
-         attrs.FirstOrDefault(a => a.Name == name)
       }
   }
   
-  class MatchExtension : ISparkExtension
+  module SparkUtils
   {
-      node : ElementNode;
+        public Attr(this attrs : IEnumerable[AttributeNode],  name : string) : AttributeNode
+        {
+            attrs.FirstOrDefault(a => a.Name == name)
+        }
       
-      public this(node : ElementNode)
-      {
-          this.node = node;
-      }
-      
-      static emptyChars = " \t\n\r";
-      public VisitNode(_visitor : INodeVisitor, _body : IList[Node], _chunks : IList[Chunk]) : void
-      {
+        public IsMatch(this context : VisitorContext,  matchName : string, name : string, ns :  string) : bool
+        {
+            IsMatch(matchName, context.Namespaces, name, ns)
+        }
+
+        public IsMatch(this context : VisitorContext,  node : ElementNode, name : string) : bool
+        {
+            context.IsMatch(name, node.Name, node.Namespace)
+        }
+
+        public IsMatch(this context : VisitorContext,  node : AttributeNode, name : string) : bool
+        {
+            context.IsMatch(name, node.Name, node.Namespace)
+        }
+
+        public IsMatch(matchName : string, @type : NamespacesType, name : string, ns :  string) : bool
+        {
+            if (@type == NamespacesType.Unqualified)
+                name == matchName;
+            else if (ns != Spark.Constants.Namespace)
+                false;
+            else
+                GetName(name) == matchName;
+        }
+
+        public GetName(name : string) : string 
+        {
+            def colonIndex = name.IndexOf(':');
+            
+            if (colonIndex < 0)
+                name;
+            else
+                name.Substring(colonIndex + 1);
+        }
+        
+        public RemoveEmptyLiterals(this nodes : IList[Node]) : IList[Node]
+        {
           def isEmptyNode(n)
           {
-              n.Text.All(emptyChars.Contains(_));
+              n.Text.All(" \t\n\r".Contains(_));
           }
-          
+
           def removeEmptyLiterals(nodes)
           {
               | (x is TextNode) :: tail when isEmptyNode(x) =>
                     removeEmptyLiterals(tail)
               | x :: tail => 
                     x :: removeEmptyLiterals(tail)
-              | [] => 
-                    []
+              | [] => []
           }
           
-          _visitor.Accept(removeEmptyLiterals(_body.AsList()).ToList());
-      }
-
-      public VisitChunk(visitor : IChunkVisitor, location : OutputLocation, chunks : IList[Chunk], output : StringBuilder) : void 
-      {
-          when (location == OutputLocation.RenderMethod)
-          {
-              def expr = node.Attributes.Attr("expr");
-              
-              when (expr == null)
-                throw CompilerException("requre match expression in expr attribute");
-
-              _ = output.AppendLine($"match ($(expr.Value)) {");
-              visitor.Accept(chunks);
-              _ = output.AppendLine("}");
-          }
-      }
-  }
-
-  class PatternExtension : ISparkExtension
-  {
-      node : ElementNode;
-      
-      public this(node : ElementNode)
-      {
-          this.node = node;
-      }
-      
-      public VisitNode(visitor : INodeVisitor, body : IList[Node], _chunks : IList[Chunk]) : void
-      {
-          visitor.Accept(body)
-      }
-
-      public VisitChunk(visitor : IChunkVisitor, location : OutputLocation, chunks : IList[Chunk], output : StringBuilder) : void 
-      {
-          when (location == OutputLocation.RenderMethod)
-          {
-              def expr = node.Attributes.Attr("expr");
-              
-              when (expr == null)
-                throw CompilerException("requre match pattern in expr attribute");
-
-              _ = output.AppendLine($"| $(expr.Value) => {");
-              visitor.Accept(chunks);
-              _ = output.AppendLine("}");
-          }
-      }
-  }
+          removeEmptyLiterals(nodes.AsList()).ToList();
+        }
+   }
 }

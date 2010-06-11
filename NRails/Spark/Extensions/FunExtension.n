@@ -1,0 +1,72 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Contrib;
+using Nemerle.Macro;
+
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using Spark;
+using Spark.Compiler;
+using Spark.Parser.Code;
+using Spark.Compiler.ChunkVisitors;
+using Spark.Compiler.NodeVisitors;
+using Spark.Parser.Markup;
+
+namespace NRails.Spark
+{
+   [Record]
+   class FunExtension : ISparkExtension
+   {
+       node : ElementNode;
+
+       public VisitNode(visitor : INodeVisitor, body : IList[Node], _chunks : IList[Chunk]) : void
+       {
+           unless (node.Attributes.Count == 1 )
+              throw CompilerException("fun node must have only one attribute funname=\"args\"");
+           
+           visitor.Accept(body.RemoveEmptyLiterals())
+       }
+
+       public VisitChunk(visitor : IChunkVisitor, location : OutputLocation, chunks : IList[Chunk], output : StringBuilder) : void 
+       {
+          when (location == OutputLocation.RenderMethod)
+          {
+              def expr = node.Attributes.Single();
+
+              def name = SparkUtils.GetName(expr.Name);
+              _ = output.AppendLine($"def $(name)($(expr.AsCode())) {");
+              visitor.Accept(chunks);
+              _ = output.AppendLine("}");
+          }
+       }
+   }
+
+   [Record]
+   class FunCallExtension : ISparkExtension
+   {
+       node : ElementNode;
+
+       public VisitNode(_visitor : INodeVisitor, body : IList[Node], _chunks : IList[Chunk]) : void
+       {
+           unless (node.Attributes.Count == 1 && SparkUtils.GetName(node.Attributes.Single().Name) == "args")
+              throw CompilerException("fun call must have only one attribute args=\"args\"");
+           
+           when (body.Any())
+              throw CompilerException("fun call cannot be container");
+       }
+
+       public VisitChunk(_visitor : IChunkVisitor, location : OutputLocation, _chunks : IList[Chunk], output : StringBuilder) : void 
+       {
+          when (location == OutputLocation.RenderMethod)
+          {
+              def expr = node.Attributes.Single();
+              def name = SparkUtils.GetName(node.Name);
+
+              _ = output.AppendLine($"$name($(expr.AsCode()));");
+          }
+       }
+   }
+}

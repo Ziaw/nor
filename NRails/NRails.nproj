@@ -147,6 +147,7 @@
     <Folder Include="Configuration" />
     <Folder Include="Spark" />
     <Folder Include="Spark\ChunkVisitors\" />
+    <Folder Include="Spark\Extensions\" />
     <Folder Include="Utils" />
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -194,6 +195,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Spark\ChunkVisitors\UsingNamespaceVisitor.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\Extensions\FunExtension.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\Extensions\MatchExtension.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Spark\Extensions\PatternExtension.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Spark\NemerleLanguageFactory.n">

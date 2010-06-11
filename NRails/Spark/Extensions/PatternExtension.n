@@ -1,0 +1,48 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Contrib;
+
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using Spark;
+using Spark.Compiler;
+using Spark.Compiler.ChunkVisitors;
+using Spark.Compiler.NodeVisitors;
+using Spark.Parser.Markup;
+using Spark.Parser.Code;
+
+namespace NRails.Spark
+{
+  class PatternExtension : ISparkExtension
+  {
+      node : ElementNode;
+      
+      public this(node : ElementNode)
+      {
+          this.node = node;
+      }
+      
+      public VisitNode(visitor : INodeVisitor, body : IList[Node], _chunks : IList[Chunk]) : void
+      {
+          visitor.Accept(body)
+      }
+
+      public VisitChunk(visitor : IChunkVisitor, location : OutputLocation, chunks : IList[Chunk], output : StringBuilder) : void 
+      {
+          when (location == OutputLocation.RenderMethod)
+          {
+              def expr = node.Attributes.Attr("expr") ?? node.Attributes.Attr("pattern");
+              
+              when (expr == null)
+                throw CompilerException("requre match pattern in expr attribute");
+
+              _ = output.AppendLine($"| $(expr.AsCode()) => {");
+              visitor.Accept(chunks);
+              _ = output.AppendLine("}");
+          }
+      }
+  }
+}

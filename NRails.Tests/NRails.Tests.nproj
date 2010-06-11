@@ -130,6 +130,9 @@
     <Content Include="nrails.cfg">
       <SubType>Content</SubType>
     </Content>
+    <EmbeddedResource Include="Spark.Views\fun.spark">
+      <SubType>Content</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Spark.Views\match.spark">
       <SubType>Content</SubType>
     </EmbeddedResource>
