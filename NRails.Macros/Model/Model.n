@@ -11,44 +11,58 @@ using System.Collections.Generic;
 using System.Linq;
 using NRails;
 using NRails.Database.Schema;
+using BLToolkit.Mapping;
 
 namespace NRails.Macros.Model
 {
     [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
                      Inherited = false)]
-    public macro Model(t : TypeBuilder)
+    public macro Model(t : TypeBuilder, params args : array[expr])
     {
-        ModelImpl.RegisterModelType(t);
+      ModelImpl.RegisterModelType(t, args);
     }
 
     [Nemerle.MacroUsage (Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
                      Inherited = false)]
-    public macro Model(t : TypeBuilder)
+    public macro Model(t : TypeBuilder, params args : array[expr])
     {
-        ModelImpl.GenerateColumns(t);
+        ModelImpl.GenerateColumns(t, args);
     }
 
   
-  internal module ModelImpl
-  {
-      public RegisterModelType(t : TypeBuilder) : void
+    internal module ModelImpl
+    {
+      public GetArg(args : array[PExpr], par : string) : string
       {
-          DatabaseManagerImpl.RegisterModelType(t.Name, t.FullName);
+        def getAll(args)
+        {
+          | PExpr.Assign(PExpr.Ref(para), PExpr.Literal(Literal.String(value))) :: tail when para.Id == par => value :: getAll(tail)
+          | _ => []
+        }
+
+        def tt = getAll(args.ToNList());
+        
+        match (tt)
+        {
+          | value :: [] => value
+          | [] => null
+          | _ => Message.FatalError($"Multiple '$par' in model params");
+        }
       }
-      
-      public GenerateColumns(t : TypeBuilder) : void
+
+      public RegisterModelType(t : TypeBuilder, args : array[PExpr]) : void
       {
-          def engine = try
-          {
-            Engine.CompileTimeInstance(t.Manager.Options.ProjectPath);
-          }
-          catch
-          {
-            | e => Message.Error($"Engine initialization error $e"); throw;
-          }
+        def name = GetArg(args, "Table") ?? t.Name;
+        DatabaseManagerImpl.RegisterModelType(t, name, t.FullName);
+      }
+
+      public GenerateColumns(t : TypeBuilder, args : array[PExpr]) : void
+      {
+          def engine = t.Manager.GetNRailsEngine();
           try 
           {
-            def table = engine.GetTable(t.Name);
+            def tableName = GetArg(args, "Table") ?? t.Name;
+            def table = engine.GetTable(tableName);
             
             when (table == null)
             {
@@ -58,9 +72,9 @@ namespace NRails.Macros.Model
             
             t.GetModifiers().AddCustomAttribute(<[  BLToolkit.DataAccess.TableName($(table.Name : string)) ]>);
 
-            def existingProperties = t.GetProperties().Map(p => p.Name);            
-            
             def hintBuilder = StringBuilder();
+
+            def existingProperties = t.GetProperties().Map(_.Name);
             
             foreach (col : TableColumnSchema in table.Columns)
             {
@@ -68,28 +82,58 @@ namespace NRails.Macros.Model
                 // а не по именам свойств
                 unless (existingProperties.Any(p => p == col.Name))
                 {
+                    def key = table.Keys.Any(t => t.Columns == col.Name && t.KeyType == ConstraintType.KeyForeign);
+
                     def clrType = col.Type.Type;
                     def propType = PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
-                    def fieldMemberName = $"_$(col.Name)";
+                    def propName = $"$(col.Name)" + if (key) "_Id" else string.Empty;
+                    def fieldMemberName = $"_$(propName)";
                    
                     t.Define(<[decl: 
                         private mutable $(fieldMemberName : dyn) : $propType; 
                     ]>);
-                    
                     t.Define(<[decl: 
                         [BLToolkit.Mapping.MapField($(col.Name : string))] 
-                        public $(col.Name : dyn ) : $propType
+                        public $(propName : dyn) : $propType
                         {
                             get { $(fieldMemberName : dyn); }
                             set { $(fieldMemberName : dyn) = value; }
                         }
                     ]>);
-                    _ = hintBuilder.Append($"$(col.Name) : $(clrType.Name)\n");
+                    _ = hintBuilder.Append($"$(propName) : $(clrType.Name)\n");
                 }
             }
-            
-            //unless (hintBuilder.Length == 0)
-            //    Message.Hint("\n" + hintBuilder.ToString())
+
+            foreach (key in table.Keys.Where(t => !string.IsNullOrEmpty(t.RelTable)))
+            {
+              def typeName = DatabaseManagerImpl.GetTypeForTable(t, key.RelTable);
+              def propType = PExpr.FromQualifiedIdentifier(t.Manager, typeName);
+
+              if (propType != null)
+              {
+                def propName = typeName.Substring(typeName.LastIndexOf('.')+1);
+                def fieldMemberName = $"_$(propName)";
+                def keyName = $"$(key.Columns)_Id";
+
+                t.Define(<[decl: 
+                    private mutable $(fieldMemberName : dyn) : $propType; 
+                ]>);
+                t.Define(<[decl: 
+                  [BLToolkit.Mapping.Association(ThisKey = $(keyName : string), OtherKey = $(key.RelColumns : string))] 
+                  public $(propName : dyn) : $propType
+                  {
+                      get { $(fieldMemberName : dyn); }
+                      private set { $(fieldMemberName : dyn) = value; }
+                  }
+                ]>);
+                _ = hintBuilder.Append($"$propName : $typeName\n");
+              }
+              else
+                _ = hintBuilder.Append($"can't find type for table $(key.RelTable)\n");
+            }
+
+            unless (hintBuilder.Length == 0)
+                Message.Hint("\n" + hintBuilder.ToString())
           }
           catch 
           {

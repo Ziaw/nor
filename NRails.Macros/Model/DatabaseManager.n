@@ -24,7 +24,6 @@ namespace NRails.Macros.Model
   {
     DatabaseManagerImpl.GenerateTables(t);
   } 
-  
 
   internal module DatabaseManagerImpl
   {
@@ -46,13 +45,29 @@ namespace NRails.Macros.Model
           }
       }
     }
+
+    private GetModelTypes(t : TypeBuilder) : Set[MyTypeInfo]
+    {
+      if (t.Manager.UserData.Contains("ModelTypes"))
+        t.Manager.UserData["ModelTypes"] :> Set[MyTypeInfo]
+      else
+        Set.[MyTypeInfo]()
+    }
     
-    mutable static modelTypes : Set[MyTypeInfo] = Set.[MyTypeInfo]();
-    
-    public RegisterModelType(name : string, fullName : string) : void
+    private SetModelTypes(t : TypeBuilder, modelTypes : Set[MyTypeInfo]) : void
+    {
+      t.Manager.UserData["ModelTypes"] = modelTypes;
+    }
+
+    public GetTypeForTable(t : TypeBuilder, name : string) : string
+    {
+      GetModelTypes(t).Where(t => t.Name == name).Select(t => t.FullName).SingleOrDefault()
+    }
+
+    public RegisterModelType(t : TypeBuilder, name : string, fullName : string) : void
     {
       def info = MyTypeInfo(name, fullName);
-      modelTypes = modelTypes.Add(info);
+      SetModelTypes(t, GetModelTypes(t).Add(info));
     }
     
     public GenerateHelpers(t : TypeBuilder) : void
@@ -80,6 +95,7 @@ namespace NRails.Macros.Model
     {
       def existingProperties = t.GetProperties();
       def hintBuilder = Text.StringBuilder();
+      def modelTypes = GetModelTypes(t);
       foreach (modelType in modelTypes)
       {
         def typeName = modelType.Name;
@@ -100,10 +116,8 @@ namespace NRails.Macros.Model
             _ = hintBuilder.Append($"$propertyName : table of $(typeName)\n");
         }
       }
-//      unless (hintBuilder.Length == 0)
-//          Message.Hint("\n" + hintBuilder.ToString());
-      modelTypes = Set.[MyTypeInfo]();
+      unless (hintBuilder.Length == 0)
+          Message.Hint("\n" + hintBuilder.ToString());
     }
   }
-
 }

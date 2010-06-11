@@ -1,0 +1,31 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Macros
+{
+  public module Exts
+  {
+    public GetNRailsEngine(this manager : ManagerClass) : NRails.Engine
+    {
+      unless (manager.UserData.Contains("NRailsEngine"))
+      {
+        try
+        {
+          manager.UserData["NRailsEngine"] = Engine(ConfigReader(CompileTimeConfigLocator(manager.Options.ProjectPath)).Read());
+        }
+        catch
+        {
+          | e => Message.Error($"Engine initialization error $e"); throw;
+        }
+      }
+      
+      manager.UserData["NRailsEngine"] :> NRails.Engine
+    }
+  }
+}

@@ -98,14 +98,5 @@ namespace NRails
           instance;
         }
       }
-      
-      public static CompileTimeInstance(prjPath : string) : Engine 
-      { 
-        when (instance == null)
-        {
-          instance = Engine(ConfigReader(CompileTimeConfigLocator(prjPath)).Read())
-        }
-        instance;
-      }
   }
 }
