@@ -47,7 +47,8 @@ namespace NRails.Demo.Controllers
 
         public About() : ActionResult
         {
-            View(viewmodel ( description = "NRails demo project", time = DateTime.Now ))
+            ViewData["Model"] = viewmodel ( description = "NRails demo project", time = DateTime.Now );
+            View()
         }
     }
 }

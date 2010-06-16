@@ -7,7 +7,10 @@
 <asp:Content ID="aboutContent" ContentPlaceHolderID="MainContent" runat="server">
     <h2>About</h2>
     <p>
-        <%= Html.Encode(Model().description) %>
-        Now: <%= Html.Encode(Model().time) %>
+        <% 
+            def Model = ViewData["Model"] :> ViewModels.Home.About;
+        %>
+        <%= Html.Encode(Model.description) %>
+        Now: <%= Html.Encode(Model.time) %>
     </p>
 </asp:Content>
