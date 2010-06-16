@@ -202,32 +202,31 @@ namespace NRails.Spark
             foreach (resource in allResources)
                 baseClassGenerator.Accept(resource);
 
-            def autoModel = if (Descriptor != null && baseClassGenerator.TModel == null)
+            baseClassGenerator.TModel = if (Descriptor != null && baseClassGenerator.TModel == null)
             {
                 def findAutoModel(templates): string
                 {
                     | x :: tail =>
                         regexp match (x)
                         {
-                            | @"^(?<folder>[\w\d]+)[\\\/](?<view>[\w\d]+)\.spark$" => 
-                                def viewPath = $"views_$(folder)_$(view)_spark";
-                                $"_N_$(viewPath.ToLower())";
-                                
+                            | @"^(?<controller>[\w\d]+)[\\\/](?<view>[\w\d]+)\.spark$" => 
+                                $"ViewModels.$controller.$view";
                             | _ => findAutoModel(tail);
                         }
                     | [] => null;
                 }
                 def autoModelType = findAutoModel(Descriptor.Templates.ToArray().ToNList());
-                
+                def assembly = Engine.SiteAssembly;
+
                 match (autoModelType)
                 {
-                    | null                             => null
-                    | x when Type.GetType(x) != null   => autoModelType : Snippets;
-                    | _                                => null
+                    | null                             => baseClassGenerator.TModel
+                    | x when Type.GetType($"$x, $assembly") != null   => autoModelType : Snippets;
+                    | _                                => baseClassGenerator.TModel
                 }
             }
             else
-                null;
+                baseClassGenerator.TModel;
             
             
             def viewClassName = "View" + GeneratedViewId.ToString("n");
@@ -293,15 +292,6 @@ namespace NRails.Spark
             // properties and macros
             foreach (resource in allResources)
                 globalsGenerator.Accept(resource);
-                
-            when (autoModel != null)
-            {
-                def vdm = ViewDataChunk();
-                vdm.Type = autoModel;
-                vdm.Key = "_N_Model";
-                vdm.Name = "model";
-                globalsGenerator.Accept(vdm);
-            }
                 
             def preprocessConditional(chunks : list[Chunk])
             {

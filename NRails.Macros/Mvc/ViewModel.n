@@ -14,43 +14,16 @@ using System.Text.RegularExpressions;
 
 namespace System.Web.Mvc
 {
-  // this macro developed by hardcase and taken from Nemerle snippets
-  // intellisense mode has been removed as far autocompletion didn't works
-    
-  macro Model()
+  macro ViewModelCtor(params args : array[expr])
+  syntax("viewmodel", "(", args, ")")
   {
-    ViewModelImpl.GetViewModel(Macros.ImplicitCTX());
-  }
-
-  macro ViewModelCtor(view_name, master_name, params args : array[expr])
-  syntax("model", "(", args, ")", Optional("view", view_name), Optional("master", master_name))
-  {
-    ViewModelImpl.BuildViewModel(Macros.ImplicitCTX(), view_name, master_name, NList.ToList(args));
+    ViewModelImpl.BuildViewModel(Macros.ImplicitCTX(), NList.ToList(args));
   }
 
   module ViewModelImpl
   {
-    model_key : string = "_N_Model";
-    
-    public GetViewEngineHost(manager : ManagerClass) : ViewEngineHost
+    public BuildViewModel(typer : Typer, args : list[PT.PExpr]) : PT.PExpr
     {
-        def key = "ViewEngineHost";
-        match(manager.UserData[key]) {
-          | null =>
-            
-            def host = ViewEngineHost(System.IO.Path.GetDirectoryName(manager.Options.ProjectPath));
-            manager.UserData[key] = host;
-            host
-          
-          | host => host :> ViewEngineHost
-        }
-    }
-
-    public BuildViewModel(typer : Typer, view_name : PT.PExpr, master_name : PT.PExpr, args : list[PT.PExpr]) : PT.PExpr
-    {
-      //unless(typer.Manager.IsIntelliSenseMode)
-      //  _ = System.Diagnostics.Debugger.Launch();
-
       def controller = {
         def ty_name = typer.CurrentTypeBuilder.Name;
         regexp match(ty_name) {
@@ -59,20 +32,7 @@ namespace System.Web.Mvc
         }
       }
 
-      def view = match(view_name) {
-                   | null => typer.CurrentMethodBuilder.Name
-                   | <[ $(name : string) ]> => if(string.IsNullOrEmpty(name))
-                                                 typer.CurrentMethodBuilder.Name
-                                               else
-                                                 name
-                   | _ => Message.FatalError(view_name.Location, "Expected string literal for View name.")
-                 }
-
-      def master = match(master_name) {
-                     | null => ""
-                     | <[ $(name : string) ]> => name
-                     | _ => Message.FatalError(master_name.Location, "Expected string literal for Master name.")
-                   }
+      def action = typer.CurrentMethodBuilder.Name;
 
       def args = NList.FoldRight(args, [], fun(arg, acc) {
         match(arg) {
@@ -83,40 +43,25 @@ namespace System.Web.Mvc
         }
       });
 
-      def view_engine_host = GetViewEngineHost(typer.Manager);
-
-      def model = {
-        def build_name(view_path) {
-          "_N_" + view_path.ToLower().Replace("~/", "").Replace("/", "_").Replace(".", "_").Replace("\\", "_").Trim();
-        }
-        match(view_engine_host.FindView(controller, view, master)) {
-          | (false, _) =>
-          build_name(view) // todo: without view we can generate class with default path -> views/{controller}/{action}.{Engine.DefaultViewExtension}
-          | (true, view_path) =>
-            build_name(view_path)
-        }
-      }
-
       def build_code(model_ty) {
-        match(args) {
-          | [] =>
-            <[
-              this.View($(view : string), $(master : string))
-            ]>
-          | _ =>
-            def ctor_args = args.Map( ((name, value)) => <[ $(name : name) = $value ]> );
-            <[
-              this.ViewData[$(model_key : string)] = $(model_ty.Name : usesite)( ..$ctor_args );
-              this.View($(view : string), $(master : string))
-            ]>
-        }
+          def ctor_args = args.Map( ((name, value)) => <[ $(name : name) = $value ]> );
+          <[
+            ViewModels.$(controller : dyn).$(model_ty.Name : dyn)( ..$ctor_args );
+          ]>
       }
 
-      match(typer.Env.LookupType([model])) {
+      def ns = ["ViewModels", controller];
+      
+      unless (typer.Manager.CoreEnv.OpenNamespaces.Any(t => t.FullName == ns))
+        _ = typer.Manager.CoreEnv.AddOpenNamespace(ns, Location.Default);
+      
+      def env = typer.Manager.CoreEnv.EnterIntoNamespace(ns);
+      
+      match(env.LookupType([action])) {
         | Some(ty) => build_code(ty)
         | None =>
-          def tb = typer.Manager.CoreEnv.Define(<[ decl:
-            public class $(model : usesite) { }
+          def tb = env.Define(<[ decl:
+            public class $(action : usesite) { }
           ]>);
           def compile_and_build() {
             unless(Message.ErrorCount > 0)
@@ -125,6 +70,7 @@ namespace System.Web.Mvc
           }
           def infer_args_and_build(names, targs) {
             typer.DelayMacro(fun(fail_loudly) {
+                
               def define_members(names_and_tys) {
                 def prop_infos = names_and_tys.Map( ((name, ty)) => new(ty, field = Macros.NewSymbol(name.ToString()), prop = name) );
                 { // ctor
@@ -164,6 +110,7 @@ namespace System.Web.Mvc
               }
             })
           }
+
           match(args) {
             | [] => compile_and_build()
             | _ =>
@@ -171,12 +118,6 @@ namespace System.Web.Mvc
                 infer_args_and_build(names, typer.TypeExpr(<[ (..$values) ]>))
           }
       }
-    }
-
-    public GetViewModel(typer : Typer) : PT.PExpr
-    {
-      def model_ty_name = "_N_" + typer.CurrentTypeBuilder.Name;
-      <[ this.ViewData[$(model_key : string)] :> $(model_ty_name : usesite) ]>
     }
   }
 }

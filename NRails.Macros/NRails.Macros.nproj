@@ -76,6 +76,12 @@
     <Compile Include="Constants\InitConstants.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Exts.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="New\AnonymousClass.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="NRailsInit.n">
       <SubType>Code</SubType>
     </Compile>
@@ -107,6 +113,7 @@
     <Folder Include="Model" />
     <Folder Include="Mvc" />
     <Folder Include="Constants" />
+    <Folder Include="New" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

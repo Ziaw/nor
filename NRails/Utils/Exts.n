@@ -8,9 +8,6 @@ using System.Linq;
 
 namespace NRails
 {
-  /// <summary>
-  /// Description of Exts.
-  /// </summary>
   public module Exts
   {
       public With[T](this src : array[T], withMember : T) : array[T]

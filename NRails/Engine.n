@@ -14,6 +14,7 @@ using NRails.Database.Mssql;
 using BLToolkit.Data;
 using log4net;
 using Nemerle.Logging;
+using NRails.Spark;
 
 [assembly: LogCondition(Engine.Logger != null)]
 [assembly: LogFunction (Debug => Engine.Logger.Debug, 
@@ -32,11 +33,20 @@ namespace NRails
       static logger : ILog = LogManager.GetLogger("NRails");
 
       [Accessor]
+      static mutable siteAssembly : string;
+
+      [Accessor]
       cfg : Configuration;
       
       public this(cfg : Configuration)
       {
           this.cfg = cfg;
+      }
+      
+      public static Init() : void
+      {
+        siteAssembly = Assembly.GetCallingAssembly().FullName;
+        SparkNemerleEngineStarter.RegisterViewEngine();
       }
       
       public GetSchema() : DBSchema
@@ -97,15 +107,6 @@ namespace NRails
           }
           instance;
         }
-      }
-      
-      public static CompileTimeInstance(prjPath : string) : Engine 
-      { 
-        when (instance == null)
-        {
-          instance = Engine(ConfigReader(CompileTimeConfigLocator(prjPath)).Read())
-        }
-        instance;
       }
   }
 }

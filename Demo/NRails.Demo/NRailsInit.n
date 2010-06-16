@@ -2,12 +2,13 @@
 [assembly: Nemerle.Extensions.AnonymousClassOptions( Visibility = Public )]
 
 using System.Web.Mvc;
+using NRails;
 using NRails.Spark;
 
 module MvcInit
 {
     public Init() : void
     {
-        SparkNemerleEngineStarter.RegisterViewEngine();
+        Engine.Init();
     }
 }

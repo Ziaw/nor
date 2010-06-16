@@ -18,22 +18,22 @@ namespace NRails.Demo.Controllers
             {
                 def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
                 def taxonomies =  db.Doctors.Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
-                
-                model ( message, taxonomies )
+
+                View(viewmodel ( message, taxonomies ));
             }
         }
-        
+
         public Doctor() : ActionResult
         {
             using (def db = Db())
             {
                 def doctor =  db.Doctors.Where(d => d.PersonID == 1)
                     .Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
-                
-                model (doctor);
+
+                View(viewmodel (doctor));
             }
         }
-        
+
         public Doctor(id : int) : ActionResult
         {
             using (def db = Db())
@@ -41,13 +41,13 @@ namespace NRails.Demo.Controllers
                 def doctor =  db.Doctors.Where(d => d.PersonID == id)
                     .Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
                 
-                model (doctor);
+                View(viewmodel (doctor));
             }
         }
 
         public About() : ActionResult
         {
-            model ( description = "NRails demo project", time = DateTime.Now )
+            View(viewmodel ( description = "NRails demo project", time = DateTime.Now ))
         }
     }
 }
