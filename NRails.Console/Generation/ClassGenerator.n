@@ -15,31 +15,31 @@ public class ClassGenerator
     public mutable className : string = "nameMigration";    
     public this() {}
 
-    public Generate(nameMigration : string, usings : list[string], columnsAnswers : list[string * string]) : string
-    {<#..$(usings; "\n"; GenerateUsing)
+    public Generate(_nameMigration : string, _usings : list[string], _columnsAnswers : list[string * string]) : string
+    {<#..$(_usings; "\n"; GenerateUsing)
             
 namespace $namespaceName
 {
-    public class $(GetClassname(nameMigration))
+    public class $(GetClassname(_nameMigration))
     {
-        public this () {base("$(GetClassname(nameMigration))")}
+        public this () {base("$(GetClassname(_nameMigration))")}
 
         protected override Up() : void
         {
-        $(CreateTable("Answers", columnsAnswers))
+        $(CreateTable("Answers", _columnsAnswers))
         }
     }        
 }
 #>}
 
-    public GenerateMigration(nameMigration : string, usings : list[string]) : string
+    public GenerateMigration(_nameMigration : string, _usings : list[string]) : string
     {<#..$(usings; "\n"; GenerateUsing)
             
 namespace $namespaceName
 {
-    public class $(GetClassname(nameMigration)) : Migration
+    public class $(GetClassname(_nameMigration)) : Migration
     {
-        public this () {base("$(GetClassname(nameMigration))")}
+        public this () {base("$(GetClassname(_nameMigration))")}
 
         protected override Up() : void
         {
@@ -52,13 +52,13 @@ namespace $namespaceName
 }
 #>}
 
-    public GenerateController(name : string, usings : list[string]) : string
-    {<#..$(usings; "\n"; GenerateUsing)
+    public GenerateController(_name : string, _usings : list[string]) : string
+    {<#..$(_usings; "\n"; GenerateUsing)
             
 namespace $namespaceName.Controllers
 {
     [HandleError]
-    public class $name : Controller
+    public class $_name : Controller
     {
         public Index() : ActionResult
         {
@@ -67,13 +67,13 @@ namespace $namespaceName.Controllers
 }
 #>}
 
-    public GenerateView(name : string, usings : list[string]) : string
+    public GenerateView(_name : string, _usings : list[string]) : string
     {<#<%@ Page Language="Nemerle" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage" %>
 
-<asp:Content ID="$(name)Title" ContentPlaceHolderID="TitleContent" runat="server">
+<asp:Content ID="$(_name)Title" ContentPlaceHolderID="TitleContent" runat="server">
 </asp:Content>
 
-<asp:Content ID="$(name)Content" ContentPlaceHolderID="MainContent" runat="server">
+<asp:Content ID="$(_name)Content" ContentPlaceHolderID="MainContent" runat="server">
 </asp:Content>
 #>}
 
@@ -87,11 +87,11 @@ namespace $namespaceName.Controllers
        $"$name : $type_;"
     }
 
-    CreateTable(name : string, columns : list[string * string]) : string
+    CreateTable(_name : string, _columns : list[string * string]) : string
     {<#
-    create $name
+    create $_name
     {
-      ..$(columns; "\n"; CreateColumn)
+      ..$(_columns; "\n"; CreateColumn)
     }
 #>
     }

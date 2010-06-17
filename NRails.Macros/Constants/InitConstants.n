@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace NRails.Macros
 {
@@ -41,13 +42,119 @@ namespace NRails.Macros
               ProcessController(phase, tb, mvcBuilder);
            | _ => ()
        }
-       
+
        when (phase == Phase.WithTypedMembers)
        {
+           ProcessContent(mvcBuilder);
+           ProcessScripts(mvcBuilder);
            hideEquals(mvcBuilder);
            mvcBuilder.Compile();
            mvcBuilder = null
        }
+    }
+
+    static separators = array [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
+    
+    fixFieldName(fileName : string) : string
+    {
+        def name = fileName.Replace('.', '_').Replace('-', '_');
+        match (char.IsLetter(name[0]))
+        {
+            | true => name
+            | false => $"_$name"
+        }
+    }
+
+    ProcessFiles(getFilesInfo : string -> list[string*string], fileNameFixer : string -> string, dirName : string, tb : TypeBuilder) : void
+    {
+        def projectPath = Path.GetDirectoryName(tb.Manager.Options.ProjectPath);
+        def path = Path.Combine(projectPath, dirName);
+
+        when (Directory.Exists(path))
+        {
+            def name = fixFieldName(dirName.Split(separators).Last());
+
+            def helperType = tb.DefineNestedType(<[decl: 
+                public module $(name : dyn) 
+                {
+                }
+            ]>);
+
+            def makeDecl(field)
+            {
+                def (field, value) = field;
+                def field = fixFieldName(Path.GetFileName(field));
+
+                assert(value.Length > projectPath.Length + 1);
+
+                def relName = value.Substring(projectPath.Length + 1);
+                def value = $"~/$relName".Replace('\\', '/'); // !!
+                <[decl:
+                    public static $(field : dyn) : string = $(value : string);
+                ]>
+            }
+
+            getFilesInfo(path).Iter(f => {
+                def (fileName, value) = f;
+                def fixed = (fileNameFixer(fileName), value);
+                def decl = makeDecl(fixed);
+                helperType.Define(decl);
+            });
+
+            Directory.GetDirectories(path).Iter(d => ProcessFiles(getFilesInfo, fileNameFixer, Path.Combine(dirName, Path.GetFileName(d)), helperType));
+
+            hideEquals(helperType);
+            helperType.Compile();
+        }
+    }
+
+    ProcessContent(tb : TypeBuilder) : void
+    {
+        def fileNameFixer(fileName)
+        {
+            fileName
+        }
+        def getFilesInfo(path)
+        {
+            Directory.GetFiles(path).Map(t => (t, t)).ToNList()
+        }
+        ProcessFiles(getFilesInfo, fileNameFixer, "Content", tb)
+    }
+
+    ProcessScripts(tb : TypeBuilder) : void
+    {
+        def fixFileName(fileName)
+        {
+            regexp match (fileName)
+            {
+                | @"^(?<name>.+)\.js$" => name
+                | _ => fileName
+            }
+        }
+        def getFilesInfo(path)
+        {
+            def files = NList.ToList(Directory.GetFiles(path).OrderByDescending(f => f.Length));
+
+            def isDebug = tb.Manager.Options.IsConstantDefined("DEBUG");
+            def matchFiles(files)
+            {
+                | file :: tail =>
+                    regexp match (file)
+                    {
+                        | @"^(?<name>.+)(\-vsdoc|\.debug)\.js$" =>
+                            def shortname = $"$name.js";
+                            match (tail.Contains(shortname))
+                            {
+                                | true => (shortname, if (isDebug) file else shortname) :: matchFiles(tail.Remove(shortname))
+                                | false => (file, file) :: matchFiles(tail)
+                            }
+                        | _ => (file, file) :: matchFiles(tail)
+                    }
+                | [] => []
+            }
+            matchFiles(files)
+        }
+        ProcessFiles(getFilesInfo, fixFileName, "Scripts", tb)
     }
 
     controllerPredicate : Regex = Regex("Controller$");
