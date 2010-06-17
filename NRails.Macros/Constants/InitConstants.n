@@ -203,8 +203,15 @@ namespace NRails.Macros
                     }
                 }
                 
+                
+                def actionFilter(m)
+                {
+                    m != null && m.ReturnType != null &&
+                                 typeof(ActionResult).Equals(m.ReturnType.GetSystemType())
+                }
+                         
                 def methods = controllerBilder.GetMethods()
-                    .Filter(m => m.ReturnType.GetSystemType().Name == "ActionResult")
+                    .Filter(actionFilter)
                     .Map(makeActionMethods)
                     .Flatten();
                     
