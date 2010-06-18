@@ -12,5 +12,5 @@ using NRails.Macros.Model;
 namespace NRails.Demo.Models
 {
   [DatabaseManager]
-  class Db: DbManager {}
+  public class Db: DbManager {}
 }

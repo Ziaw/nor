@@ -160,7 +160,7 @@ namespace NRails.Macros
     controllerPredicate : Regex = Regex("Controller$");
     isController(tb : TypeBuilder) : bool
     {
-        controllerPredicate.IsMatch(tb.Name)
+        controllerPredicate.IsMatch(tb.Name) && !tb.IsAbstract
     }
     
     ProcessController(phase : Phase, controllerBilder : TypeBuilder, mvcBuilder : TypeBuilder) : void

@@ -85,7 +85,7 @@
     <Compile Include="Exts.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="New\AnonymousClass.n">
+    <Compile Include="Model\DbUsage.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="NRailsInit.n">
@@ -119,7 +119,6 @@
     <Folder Include="Model" />
     <Folder Include="Mvc" />
     <Folder Include="Constants" />
-    <Folder Include="New" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

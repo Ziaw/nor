@@ -1,0 +1,23 @@
+﻿<content name="title">
+    Doctor
+</content>
+
+<h2>Doctor details</h2>
+<table>
+  <tr>
+    <td>First name</td>
+    <td>${Model.doctor.name.FirstName}</td>
+  </tr>
+  <tr>
+    <td>Middle name</td>
+    <td>${Model.doctor.name.MiddleName}</td>
+  </tr>
+  <tr>
+    <td>Last name</td>
+    <td>${Model.doctor.name.LastName}</td>
+  </tr>
+  <tr>
+    <td>Taxonomy</td>
+    <td>${Model.doctor.taxonomy}</td>
+  </tr>
+</table>

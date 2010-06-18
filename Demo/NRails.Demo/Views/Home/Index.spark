@@ -7,5 +7,3 @@
 <ul>
     <li each="tax in Model.taxonomies">${Html.ActionLink(tax.text, MVC.Home.Doctor(tax.doctor))}</li> 
 </ul>
-
-

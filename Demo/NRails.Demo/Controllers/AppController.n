@@ -1,0 +1,21 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using System.Web.Mvc;
+using NRails.Macros;
+using NRails.Demo.Models;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Demo.Controllers
+{
+  /// <summary>
+  /// Base AppController.
+  /// </summary>
+  [DbUsage]
+  public abstract class AppController : Controller
+  {
+  }
+}

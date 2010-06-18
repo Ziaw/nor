@@ -10,39 +10,29 @@ using Nemerle.Extensions;
 namespace NRails.Demo.Controllers
 {
     [HandleError]
-    public class HomeController : Controller
+    public class HomeController : AppController
     {
         public Index() : ActionResult
         {
-            using (def db = Db())
-            {
-                def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
-                def taxonomies =  db.Doctors.Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
-
-                View(viewmodel ( message, taxonomies ));
-            }
-        }
-
-        public Doctor() : ActionResult
-        {
-            using (def db = Db())
-            {
-                def doctor =  db.Doctors.Where(d => d.PersonID == 1)
-                    .Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
-
-                View(viewmodel (doctor));
-            }
+            def message = $"NRails env: '$(db.Env)'. We have $(db.Persons.Count()) persons."; 
+            def taxonomies =  db.Doctors.Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
+            
+            View(viewmodel ( message, taxonomies ));
         }
 
         public Doctor(id : int) : ActionResult
         {
-            using (def db = Db())
-            {
-                def doctor =  db.Doctors.Where(d => d.PersonID == id)
-                    .Select(d => new (text = d.Taxonomy, doctor = d.PersonID)).ToList();
-                
-                View(viewmodel (doctor));
-            }
+            def doctor =  db.Doctors.Where(d => d.PersonID == id)
+                .Select(d => new (
+                    taxonomy = d.Taxonomy, 
+                    name = new (
+                        LastName = d.Person.LastName, 
+                        MiddleName = d.Person.MiddleName, 
+                        FirstName = d.Person.FirstName
+                    )
+                )).Single();
+            
+            View(viewmodel (doctor));
         }
 
         public About() : ActionResult

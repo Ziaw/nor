@@ -15,10 +15,11 @@ namespace NRails.Macros.Model
                      Inherited = false)]
   public macro DatabaseManager(t : TypeBuilder)
   {
+    DatabaseManagerImpl.SetDbType(t);
     DatabaseManagerImpl.GenerateHelpers(t);
   }
   
-  [Nemerle.MacroUsage(Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
+  [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeTypedMembers, Nemerle.MacroTargets.Class,
                      Inherited = false)]
   public macro DatabaseManager(t : TypeBuilder)
   {
@@ -52,6 +53,16 @@ namespace NRails.Macros.Model
         t.Manager.UserData["ModelTypes"] :> Set[MyTypeInfo]
       else
         Set.[MyTypeInfo]()
+    }
+    
+    public GetDbType(manager: ManagerClass) : string
+    {
+        manager.UserData["_NRailsDbType"] :> string
+    }
+    
+    public SetDbType(t : TypeBuilder) : void
+    {
+        t.Manager.UserData["_NRailsDbType"] = t.FullName;
     }
     
     private SetModelTypes(t : TypeBuilder, modelTypes : Set[MyTypeInfo]) : void

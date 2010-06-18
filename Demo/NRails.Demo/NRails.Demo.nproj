@@ -104,6 +104,9 @@
     <Reference Include="System.Web.Routing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\AppController.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Controllers\HomeController.n" />
     <Compile Include="Global.asax.n">
       <DependentUpon>Global.asax</DependentUpon>
@@ -166,6 +169,9 @@
     <Content Include="Scripts\MicrosoftMvcAjax.js">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Views\Home\Doctor.spark">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Views\Layouts\Application.spark">
       <SubType>Content</SubType>
     </Content>
@@ -225,7 +231,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>2634</DevelopmentServerPort>
+          <DevelopmentServerPort>7015</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>
