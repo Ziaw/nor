@@ -29,12 +29,12 @@ namespace NRails.Macros
   {
       public InjectManager(t : TypeBuilder) : void
       {
-          def managerTypeName = DatabaseManagerImpl.GetDbType(t.Manager);
+          def managerType = DatabaseManagerImpl.GetDbType(t.Manager);
           
-          when (managerTypeName == null)
+          when (managerType == null)
             Message.FatalError("Database manager class not registred");
-          
-          def managerType = PExpr.FromQualifiedIdentifier(t.Manager, managerTypeName);
+
+          def managerType = PExpr.FromQualifiedIdentifier(t.Manager, managerType.FullName);
           
           t.Define(<[decl: mutable _dbHolder : $managerType; ]>);
           t.Define(<[decl: protected override OnActionExecuted(ctx : ActionExecutedContext) : void

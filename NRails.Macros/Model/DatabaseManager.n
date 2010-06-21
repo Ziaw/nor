@@ -11,21 +11,6 @@ using System.Linq;
 
 namespace NRails.Macros.Model
 {
-  [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
-                     Inherited = false)]
-  public macro DatabaseManager(t : TypeBuilder)
-  {
-    DatabaseManagerImpl.SetDbType(t);
-    DatabaseManagerImpl.GenerateHelpers(t);
-  }
-  
-  [Nemerle.MacroUsage(Nemerle.MacroPhase.BeforeTypedMembers, Nemerle.MacroTargets.Class,
-                     Inherited = false)]
-  public macro DatabaseManager(t : TypeBuilder)
-  {
-    DatabaseManagerImpl.GenerateTables(t);
-  } 
-
   internal module DatabaseManagerImpl
   {
     [Record]
@@ -55,14 +40,14 @@ namespace NRails.Macros.Model
         Set.[MyTypeInfo]()
     }
     
-    public GetDbType(manager: ManagerClass) : string
+    public GetDbType(manager: ManagerClass) : TypeBuilder
     {
-        manager.UserData["_NRailsDbType"] :> string
+        manager.UserData["_NRailsDbType"] :> TypeBuilder
     }
     
     public SetDbType(t : TypeBuilder) : void
     {
-        t.Manager.UserData["_NRailsDbType"] = t.FullName;
+        t.Manager.UserData["_NRailsDbType"] = t;
     }
     
     private SetModelTypes(t : TypeBuilder, modelTypes : Set[MyTypeInfo]) : void
@@ -78,7 +63,11 @@ namespace NRails.Macros.Model
     public RegisterModelType(t : TypeBuilder, name : string, fullName : string) : void
     {
       def info = MyTypeInfo(name, fullName);
-      SetModelTypes(t, GetModelTypes(t).Add(info));
+      def modelTypes = GetModelTypes(t);
+      if (modelTypes.Any(t => t.Name == name))
+        Message.Warning($"Type $fullName already registered in DatabaseManager");
+      else
+        SetModelTypes(t, modelTypes.Add(info));
     }
     
     public GenerateHelpers(t : TypeBuilder) : void

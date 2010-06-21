@@ -145,6 +145,7 @@
     <Folder Include="Migrations\Model" />
     <Folder Include="Constants" />
     <Folder Include="Configuration" />
+    <Folder Include="Attributes" />
     <Folder Include="Spark" />
     <Folder Include="Spark\ChunkVisitors\" />
     <Folder Include="Spark\Extensions\" />
@@ -164,6 +165,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\DatabaseManagerAttribute.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Configuration\CompileTimeConfigLocator.n">
       <SubType>Code</SubType>
     </Compile>

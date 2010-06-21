@@ -5,7 +5,6 @@ using NRails.Macros.Model;
 
 namespace NRails.Demo.Models
 {
-    [Model]
     public class Doctor	
     {
         [Association(ThisKey="PersonID", OtherKey="PersonID")]

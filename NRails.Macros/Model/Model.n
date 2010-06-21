@@ -29,26 +29,30 @@ namespace NRails.Macros.Model
         ModelImpl.GenerateColumns(t, args);
     }
 
-  
     internal module ModelImpl
     {
-      public GetArg(args : array[PExpr], par : string) : string
-      {
-        def getAll(args)
+        public GetArg(args : array[PExpr], par : string) : string
         {
-          | PExpr.Assign(PExpr.Ref(para), PExpr.Literal(Literal.String(value))) :: tail when para.Id == par => value :: getAll(tail)
-          | _ => []
-        }
+            if (args == null)
+                null
+            else
+            {
+                def getAll(args)
+                {
+                | PExpr.Assign(PExpr.Ref(para), PExpr.Literal(Literal.String(value))) :: tail when para.Id == par => value :: getAll(tail)
+                | _ => []
+                }
 
-        def tt = getAll(args.ToNList());
-        
-        match (tt)
-        {
-          | value :: [] => value
-          | [] => null
-          | _ => Message.FatalError($"Multiple '$par' in model params");
+                def tt = getAll(args.ToNList());
+
+                match (tt)
+                {
+                | value :: [] => value
+                | [] => null
+                | _ => Message.FatalError($"Multiple '$par' in model params");
+                }
+            }
         }
-      }
 
       public RegisterModelType(t : TypeBuilder, args : array[PExpr]) : void
       {
@@ -85,22 +89,27 @@ namespace NRails.Macros.Model
                     def key = table.Keys.Any(t => t.Columns == col.Name && t.KeyType == ConstraintType.KeyForeign);
 
                     def clrType = col.Type.Type;
-                    def propType = PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
+                    def nemerleType = regexp match (clrType.FullName)
+                    {
+                        | @"^(?<type>.+)\[\]$" => def elem = PExpr.FromQualifiedIdentifier(t.Manager, @type); <[ array[$elem] ]>;
+                        | _ => PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
+                    }
                     def propName = $"$(col.Name)" + if (key) "_Id" else string.Empty;
                     def fieldMemberName = $"_$(propName)";
                    
                     t.Define(<[decl: 
-                        private mutable $(fieldMemberName : dyn) : $propType; 
+                        private mutable $(fieldMemberName : dyn) : $nemerleType; 
                     ]>);
                     t.Define(<[decl: 
                         [BLToolkit.Mapping.MapField($(col.Name : string))] 
-                        public $(propName : dyn) : $propType
+                        public $(propName : dyn) : $nemerleType
                         {
                             get { $(fieldMemberName : dyn); }
                             set { $(fieldMemberName : dyn) = value; }
                         }
                     ]>);
-                    _ = hintBuilder.Append($"$(propName) : $(clrType.Name)\n");
+
+                    _ = hintBuilder.Append($"$(propName) : $(nemerleType)\n");
                 }
             }
 
