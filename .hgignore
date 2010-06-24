@@ -10,3 +10,5 @@ glob:Demo/NRails.Demo/lib/nrails/*.dll
 glob:Demo/NRails.Demo/lib/nrails/*.exe
 glob:Demo/NRails.Demo/lib/nrails/*.config
 glob:_N_GeneratedSource_NRails.n
+glob:Demo/NRails.Dinner/App_Data/ASPNETDB.MDF
+glob:Demo/NRails.Dinner/App_Data/aspnetdb_log.ldf
