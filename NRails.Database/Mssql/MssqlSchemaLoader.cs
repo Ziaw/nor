@@ -348,8 +348,8 @@ namespace NRails.Database.Mssql
 				case "BIGINT":
                     return SqlDataType.DbBigInt;
 				case "BINARY":
-                    return SqlDataType.DbBinary;
-				case "CHAR":
+                    return new SqlDataType(SqlDbType.Binary, size < 0 ? 8000 : size);
+                case "CHAR":
                     return new SqlDataType(SqlDbType.Char, size);
 				case "CURSOR":
                     return SqlDataType.DbStructured;
@@ -393,7 +393,7 @@ namespace NRails.Database.Mssql
                 case "UNIQUEIDENTIFIER":
                     return SqlDataType.Guid;
                 case "VARBINARY":
-                    return new SqlDataType(SqlDbType.VarBinary, size);
+                    return new SqlDataType(SqlDbType.VarBinary, size < 0 ? 8000 : size);
                 case "VARCHAR":
                     return new SqlDataType(SqlDbType.VarChar, size);
                 case "XML":

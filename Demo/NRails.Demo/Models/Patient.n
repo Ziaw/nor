@@ -1,10 +1,9 @@
 ﻿using System;
 using BLToolkit.Mapping;
 using BLToolkit.DataAccess;
-using NRails.Macros.Model;
 
 namespace NRails.Demo.Models
 {
-  [Model]
+  [Model(Table = "Patient")]
   public class Patient 	{	}
 }

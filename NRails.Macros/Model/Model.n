@@ -15,58 +15,14 @@ using BLToolkit.Mapping;
 
 namespace NRails.Macros.Model
 {
-    [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
-                     Inherited = false)]
-    public macro Model(t : TypeBuilder, params args : array[expr])
-    {
-      ModelImpl.RegisterModelType(t, args);
-    }
-
-    [Nemerle.MacroUsage (Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
-                     Inherited = false)]
-    public macro Model(t : TypeBuilder, params args : array[expr])
-    {
-        ModelImpl.GenerateColumns(t, args);
-    }
-
     internal module ModelImpl
     {
-        public GetArg(args : array[PExpr], par : string) : string
-        {
-            if (args == null)
-                null
-            else
-            {
-                def getAll(args)
-                {
-                | PExpr.Assign(PExpr.Ref(para), PExpr.Literal(Literal.String(value))) :: tail when para.Id == par => value :: getAll(tail)
-                | _ => []
-                }
-
-                def tt = getAll(args.ToNList());
-
-                match (tt)
-                {
-                | value :: [] => value
-                | [] => null
-                | _ => Message.FatalError($"Multiple '$par' in model params");
-                }
-            }
-        }
-
-      public RegisterModelType(t : TypeBuilder, args : array[PExpr]) : void
-      {
-        def name = GetArg(args, "Table") ?? t.Name;
-        DatabaseManagerImpl.RegisterModelType(t, name, t.FullName);
-      }
-
-      public GenerateColumns(t : TypeBuilder, args : array[PExpr]) : void
+      public GenerateColumns(t : TypeBuilder) : void
       {
           def engine = t.Manager.GetNRailsEngine();
           try 
           {
-            def tableName = GetArg(args, "Table") ?? t.Name;
-            def table = engine.GetTable(tableName);
+            def table = engine.GetTable(t.Name);
             
             when (table == null)
             {

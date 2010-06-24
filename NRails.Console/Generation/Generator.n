@@ -7,6 +7,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
+using NRails.Database.Schema;
+
 namespace NRails.Console
 {
   class Generator
@@ -30,12 +32,20 @@ namespace NRails.Console
       "NRails.Mvc",
     ]; 
 
-    public GenerateMigration(path : string) : void
+    public CreateMigration(path : string, ns : string, dbSchema : DBSchema) : void
     {
-      def date = DateTime.Now.ToString("yyyyMMddhhmmss");
-      def migrationName = $"M$(date).n";
-      def text = ClassGenerator().GenerateMigration(migrationName, migrationUsingsList);
-      File.WriteAllText(Path.Combine(path, migrationName), text);
+        def date = DateTime.Now.ToString("yyyyMMddhhmmss");
+        def migrationName = $"M$(date).n";
+        def text = ClassGenerator().Generate(ns, migrationName, migrationUsingsList, dbSchema);
+        File.WriteAllText(Path.Combine(path, migrationName), text);
+    }
+
+    public GenerateMigration(path : string, ns : string) : void
+    {
+        def date = DateTime.Now.ToString("yyyyMMddhhmmss");
+        def migrationName = $"M$(date).n";
+        def text = ClassGenerator().GenerateMigration(ns, migrationName, migrationUsingsList);
+        File.WriteAllText(Path.Combine(path, migrationName), text);
     }
 
     public GenerateView(path : string, name : string) : void
@@ -44,9 +54,9 @@ namespace NRails.Console
       File.WriteAllText(Path.Combine(path, $"$(name).aspx"), text);
     }
 
-    public GenerateController(path : string, name : string) : void
+    public GenerateController(path : string, name : string, ns : string) : void
     {
-      def text = ClassGenerator().GenerateController(name, controllerUsingsList);
+      def text = ClassGenerator().GenerateController(ns, name, controllerUsingsList);
       File.WriteAllText(Path.Combine(path, $"$(name).n"), text);
     }
   }

@@ -59,6 +59,26 @@ namespace NRails.Migrations
           this.engine = engine;
       }
       
+      public GetSchema() : DBSchema
+      {
+          log(Debug, "begin create migration");
+          def dbDriver = engine.CreateDbDriver();
+          def connString = engine.Cfg.ConnectionString.ConnectionString;
+          def schemaDriver = dbDriver.CreateSchemaDriver();
+          
+          if (schemaDriver.DatabaseExists(connString))
+          {
+              def schema = schemaDriver.LoadExistingSchema(connString);
+              log(Debug, "schema loaded, end create migration");
+              schema
+          }
+          else
+          {
+              log(Info, "Database dont exists");
+              null
+          }
+      }
+      
       public Migrate(migrationDirection : MigrationDirection, migrs : list[IMigration], allowMissing : bool) : void
       {
           log(Debug, "begin migrations");

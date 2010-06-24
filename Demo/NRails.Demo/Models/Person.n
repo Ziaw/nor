@@ -1,10 +1,9 @@
 ﻿using System;
 using BLToolkit.Mapping;
-using NRails.Macros.Model;
 
 namespace NRails.Demo.Models
 {
-    [Model]
+    [Model("Person")]
     public class Person
     {	
         [MapField("FirstName")] // you can add properties manually

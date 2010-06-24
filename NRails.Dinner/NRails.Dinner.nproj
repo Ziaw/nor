@@ -36,7 +36,31 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BLToolkit.3, Version=3.2.0.0, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+      <Name>BLToolkit.3</Name>
+      <AssemblyName>BLToolkit.3.dll</AssemblyName>
+      <HintPath>..\..\lib\BLToolkit.3.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
+      <Name>log4net</Name>
+      <AssemblyName>log4net.dll</AssemblyName>
+      <HintPath>..\..\lib\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="Spark, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+      <Name>Spark</Name>
+      <AssemblyName>Spark.dll</AssemblyName>
+      <HintPath>..\..\lib\Spark.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Spark.Web.Mvc, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+      <Name>Spark.Web.Mvc</Name>
+      <AssemblyName>Spark.Web.Mvc.dll</AssemblyName>
+      <HintPath>..\..\lib\Spark.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core">
@@ -94,11 +118,20 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountModels.n" />
+    <Compile Include="Models\Db.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NRailsInit.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="Default.aspx" />
+    <Content Include="nrails.cfg">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Web.config" />
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\jquery-1.4.1.js" />
@@ -130,6 +163,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Content\" />
     <Folder Include="Controllers\" />
+    <Folder Include="Migrations\" />
     <Folder Include="Models\" />
     <Folder Include="Properties\" />
     <Folder Include="Scripts\" />
@@ -137,6 +171,25 @@
     <Folder Include="Views\Account\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Shared\" />
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\..\NRails.Macros\NRails.Macros.nproj">
+      <Name>NRails.Macros</Name>
+      <Project>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NRails.Database\NRails.Database.csproj">
+      <Name>NRails.Database</Name>
+      <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NRails\NRails.nproj">
+      <Name>NRails</Name>
+      <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />

@@ -114,19 +114,62 @@ namespace NRails.Macros
             def dbDriver = engine.CreateDbDriver();
             def schemaDriver = dbDriver.CreateSchemaDriver();
             def schema = schemaDriver.LoadExistingSchema(engine.Cfg.ConnectionString.ConnectionString);
-            def tableNames = schema.Tables.Map(_.Name).Remove("SchemaMigrations");
+            def tableNames = schema.Tables.Map(_.Name).Remove("SchemaMigrations").Where(t => NRailsInitsImpl.FilterTable(t));
             
             def dbManagerBuilder = DatabaseManagerImpl.GetDbType(mvcBuilder.Manager);
             
             tbs = tbs.Filter(t => tableNames.Contains(t.Name));
-            tbs.Iter(tb => DatabaseManagerImpl.RegisterModelType(tb, tb.Name, tb.FullName));
+            
+            tbs.Iter(tb => {
+                def getName(typeBuilder, paramName)
+                {
+                    def matchArgs(args, paramName) : string
+                    {
+                        def getAllValues(args : list[PExpr])
+                        {
+                            def literals = args.TakeWhile(t => t is PExpr.Literal);
+                            def named = args.Except(literals);
+
+                            (match (literals)
+                            {
+                                | PExpr.Literal(Literal.String(value)) :: [] when paramName == "Table" => value :: [];
+                                | _ => []
+                            })
+                            .Append(
+                            match (named)
+                            {
+                                | PExpr.Assign(PExpr.Ref(para), PExpr.Literal(Literal.String(value))) :: tail when para.Id == paramName => value :: getAllValues(tail)
+                                | _ => []
+                            });
+                        }
+
+                        match (getAllValues(args))
+                        {
+                            | value :: [] => value
+                            | [] => null
+                            | _ => Message.FatalError($"Multiple '$paramName' in model params");
+                        }
+                    }
+                    def matchAttrs(attrs : list[PExpr]) : string
+                    {
+                        | <[ Model(..$args) ]> :: _ => matchArgs(args, paramName)
+                        | _ :: tail => matchAttrs(tail)
+                        | [] => null
+                    }
+
+                    def attrs = typeBuilder.GetModifiers().GetCustomAttributes();
+                    def m = matchAttrs(attrs);
+                    m ?? typeBuilder.Name
+                }
+                DatabaseManagerImpl.RegisterModelType(tb, getName(tb, "Table"), tb.FullName)
+            });
 
             unless (mvcBuilder.Manager.CoreEnv.OpenNamespaces.Any(t => t.FullName == ns))
                 _ = mvcBuilder.Manager.CoreEnv.AddOpenNamespace(ns, Location.Default);
             def env = mvcBuilder.Manager.CoreEnv.EnterIntoNamespace(ns);
             
             def modelNames = tbs.Map(_.Name);
-            when (engine.Cfg.GenerateMissingModelsFromDbSchema)
+            when (NRailsInitsImpl.GenerateMissingModelsFromDbSchema)
             {
                 def newTbs = tableNames.Except(modelNames).Map(t => {
                     def tb = env.Define(<[ decl:
@@ -139,7 +182,7 @@ namespace NRails.Macros
             }
 
             tbs.Iter(tb => {
-                ModelImpl.GenerateColumns(tb, null);
+                ModelImpl.GenerateColumns(tb);
                 tb.Compile();
             });
 

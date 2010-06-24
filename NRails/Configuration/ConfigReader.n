@@ -16,7 +16,6 @@ namespace NRails
   {
     configLocator : ConfigLocator;
     mutable env : string;
-    mutable generateMissingModelsFromDbSchema : bool;
 
     public this(configLocator : ConfigLocator)
     {
@@ -32,7 +31,7 @@ namespace NRails
       def config = findConfigFile(rootPath);
       def connStrings = readConnectionStrings(config);
 
-      NRails.Configuration(env, generateMissingModelsFromDbSchema, connStrings);
+      NRails.Configuration(env, connStrings);
     }
           
     findConfigFile(rootPath : string) : string
@@ -88,7 +87,6 @@ namespace NRails
           match (name, val)
           {
             | ("env", val) => env = val;
-            | ("generateMissingModelsFromDbSchema", val) => generateMissingModelsFromDbSchema = bool.Parse(val);
             | ("", _) => {};
             | (x, _) => throw NotSupportedException($"'$x' configuration value is not suported");
           }

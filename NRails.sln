@@ -17,7 +17,7 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo", "Demo\NRails.
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Contrib", "Nemerle.Contrib\Nemerle.Contrib.nproj", "{BD5F199E-9539-408B-80FE-A040CB93A141}"
 EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Dinner", "NRails.Dinner\NRails.Dinner.nproj", "{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}"
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Dinner", "Demo\NRails.Dinner\NRails.Dinner.nproj", "{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

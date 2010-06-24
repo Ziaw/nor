@@ -31,6 +31,7 @@ namespace NRails.Dinner
 			AreaRegistration.RegisterAllAreas();
 
 			RegisterRoutes(RouteTable.Routes);
+            MvcInit.Init();
 		}
 	}
 }

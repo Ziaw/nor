@@ -6,36 +6,112 @@ using System.Collections.Generic;
 using System.Console;
 using System.Linq;
 using StringTemplate;
+using NRails.Database.Schema;
+using System.Text.RegularExpressions;
+using NRails.Macros;
 
 [StringTemplateGroup]
 public class ClassGenerator
 {
-    public mutable usings : list[string];
-    public mutable namespaceName : string = "NRails.Demo";
-    public mutable className : string = "nameMigration";    
-    public this() {}
+    public this()
+    {
+    }
 
-    public Generate(_nameMigration : string, _usings : list[string], _columnsAnswers : list[string * string]) : string
-    {<#..$(_usings; "\n"; GenerateUsing)
+    public Generate(namespaceName : string, nameMigration : string, usings : list[string], dbSchema : DBSchema) : string
+    {
+        def tables = dbSchema.Tables.Where(t => t.Name != "SchemaMigrations")
+            .OrderBy(t => t, CompareTableSchema()); // not best way to sort tables, but u can always edit generated migration ..
+
+        def tablesAnsColumns = tables.Map(t => {
+            def column(col : TableColumnSchema)
+            {
+                mutable tp = col.Type.DbType.ToString();
+                when (col.Nullable)
+                    tp = $"$tp?";
+                if (col.Size > 0)
+                    tp = $"$tp($(col.Size))";
+                else
+                    when (col.Type.Precision > 0 || col.Type.Precision > 0)
+                        tp = $"$tp($(col.Type.Precision), $(col.Type.Scale))";
+
+                def keyPrimary = t.KeyPrimary();
+                when (keyPrimary != null && keyPrimary.Columns == col.Name)
+                    tp = $"$tp(pk)";
+
+                def defaultKey = t.Keys.Where(t => t.Columns == col.Name && t.KeyType == ConstraintType.Default).SingleOrDefault();
+                when (defaultKey != null)
+                {
+                    def df = regexp match (col.DefaultValue)
+                    {
+                        | @"^'(?<value>.+)'$" => $"\"$value\""
+                        | _ => col.DefaultValue
+                    }
+                    tp = $"$tp = $df";
+                }
+                (col.Name, tp)
+            }
             
-namespace $namespaceName
+            def key(key : KeySchema)
+            {
+                (key.Columns, $"$(key.RelTable)")
+            }
+            
+            def columns = t.Columns.Where(c => !t.Keys.Any(k => c.Name == k.Columns && k.KeyType == ConstraintType.KeyForeign)).Map(column);
+            def keys = t.Keys.Where(t => t.KeyType == ConstraintType.KeyForeign).Map(key);
+
+            (t.Name, columns, keys)
+        });
+        def forDrop = tables.ToListRev().Map(_.Name);
+        Generate(namespaceName, nameMigration, usings, tablesAnsColumns, forDrop);
+    }
+
+    class CompareTableSchema : IComparer[TableSchema]
+    {
+        public Compare(x : TableSchema, y : TableSchema) : int
+        {
+            def links(t)
+            {
+                t.Keys.Where(t => t.KeyType == ConstraintType.KeyForeign).Map(_.RelTable)
+            }
+            if (links(x).Contains(y.Name))
+                1
+            else
+                if (links(y).Contains(x.Name))
+                    -1
+                else
+                    0
+        }
+    }
+
+    public Generate(_namespaceName : string, _nameMigration : string, _usings : list[string],
+        _tablesColumnsKeys : list[string*list[string*string]*list[string*string]],
+        _forDrop : list[string]) : string
+    {
+    <#..$(_usings; "\n"; GenerateUsing)
+            
+namespace $_namespaceName
 {
-    public class $(GetClassname(_nameMigration))
+    public class $(GetClassname(_nameMigration)) : Migration
     {
         public this () {base("$(GetClassname(_nameMigration))")}
 
         protected override Up() : void
         {
-        $(CreateTable("Answers", _columnsAnswers))
+        ..$(_tablesColumnsKeys; "\n"; CreateTable)
+        }
+
+        protected override Down() : void
+        {
+        ..$(_forDrop; "\n"; DropTable)
         }
     }        
 }
 #>}
 
-    public GenerateMigration(_nameMigration : string, _usings : list[string]) : string
-    {<#..$(usings; "\n"; GenerateUsing)
+    public GenerateMigration(_namespaceName : string, _nameMigration : string, _usings : list[string]) : string
+    {<#..$(_usings; "\n"; GenerateUsing)
             
-namespace $namespaceName
+namespace $_namespaceName
 {
     public class $(GetClassname(_nameMigration)) : Migration
     {
@@ -52,10 +128,10 @@ namespace $namespaceName
 }
 #>}
 
-    public GenerateController(_name : string, _usings : list[string]) : string
+    public GenerateController(_namespaceName : string, _name : string, _usings : list[string]) : string
     {<#..$(_usings; "\n"; GenerateUsing)
             
-namespace $namespaceName.Controllers
+namespace $_namespaceName.Controllers
 {
     [HandleError]
     public class $_name : Controller
@@ -87,43 +163,27 @@ namespace $namespaceName.Controllers
        $"$name : $type_;"
     }
 
-    CreateTable(_name : string, _columns : list[string * string]) : string
+    CreateKey(name : string, type_: string) : string
+    {
+       $"$name :> $type_;"
+    }
+
+    CreateTable(_name : string, _columns : list[string * string], _keys : list[string*string]) : string
     {<#
     create $_name
     {
       ..$(_columns; "\n"; CreateColumn)
+      ..$(_keys; "\n"; CreateKey)
     }
-#>
-    }
+#>}
+
+    DropTable(_name : string) : string
+    {<#
+    drop $_name;
+#>}
 
     GetClassname(name : string) :string
     {
        name.Substring(0,name.Length-2)
     }    
 }
-/*
-module Program
-{
-  Main() : void
-  {    
-    def usingsList = [
-    "using Nemerle.Text",
-    "using Nemerle.Utility",
-    "using System",
-    "using System.Collections.Generic",
-    "using System.Linq",    
-    "using NRails.Migrations",
-    "using NRails.Macros.Migration",
-]; 
-    def columnsAnswers = [ 
-        ("AnswersData", "byte[](len = 512)"),
-        ("Rating","int"),
-        ("RightCount","int")
-    ];
-    def date = DateTime.Now.ToString("yyyyMMddhhmmss");
-    def fileName = String.Format("M{0}.n",date);
-    WriteLine($"File: $fileName");    
-    WriteLine(ClassGenerator().GenerateMigration(fileName,usingsList, columnsAnswers));
-    _ = ReadLine();
-  }
-}*/
