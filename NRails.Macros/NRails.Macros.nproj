@@ -144,7 +144,9 @@
 	</Target>
 	-->
   <PropertyGroup>
-    <PostBuildEvent>xcopy /D /Y $(TargetDir)NRails.Macros.dll $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
+    <PostBuildEvent>
+xcopy /D /Y $(TargetDir)NRails.Macros.dll $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
+xcopy /D /Y $(TargetDir)NRails.Macros.dll $(SolutionDir)\Demo\NRails.Dinner\lib\nrails\
     </PostBuildEvent>
   </PropertyGroup>
 </Project>
