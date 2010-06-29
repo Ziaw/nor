@@ -36,7 +36,7 @@
     <DocumentationFile>bin\Release\NRails.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BLToolkit.3, Version=3.2.0.0, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+    <Reference Include="BLToolkit.3, Version=4.0.0.987, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
       <Name>BLToolkit.3</Name>
       <AssemblyName>BLToolkit.3.dll</AssemblyName>
       <HintPath>..\lib\BLToolkit.3.dll</HintPath>
@@ -166,6 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\DatabaseManagerAttribute.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Attributes\ModelAttribute.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Configuration\CompileTimeConfigLocator.n">

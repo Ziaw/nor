@@ -25,7 +25,8 @@ namespace NRails.Database.Mssql
 				var dbsc = new DBSchema
 				{
 					Name = csb.InitialCatalog,
-					Tables = GetTables(con)
+					Tables = GetTables(con),
+                    Functions = GetFunctions(con),
 				};
 
 				foreach (var table in dbsc.Tables)
@@ -54,7 +55,16 @@ namespace NRails.Database.Mssql
 			}
 		}
 
-		private static List<TableSchema> GetTables(SqlConnection con)
+        private static List<DBFunction> GetFunctions(SqlConnection con)
+        {
+            var functions = new List<DBFunction>();
+
+
+
+            return functions;
+        }
+
+	    private static List<TableSchema> GetTables(SqlConnection con)
 		{
 			var tables = new List<TableSchema>();
 			string[] restrict4 = {null, null, null, "TABLE"};
@@ -348,8 +358,8 @@ namespace NRails.Database.Mssql
 				case "BIGINT":
                     return SqlDataType.DbBigInt;
 				case "BINARY":
-                    return SqlDataType.DbBinary;
-				case "CHAR":
+                    return new SqlDataType(SqlDbType.Binary, size < 0 ? 8000 : size);
+                case "CHAR":
                     return new SqlDataType(SqlDbType.Char, size);
 				case "CURSOR":
                     return SqlDataType.DbStructured;
@@ -393,7 +403,7 @@ namespace NRails.Database.Mssql
                 case "UNIQUEIDENTIFIER":
                     return SqlDataType.Guid;
                 case "VARBINARY":
-                    return new SqlDataType(SqlDbType.VarBinary, size);
+                    return new SqlDataType(SqlDbType.VarBinary, size < 0 ? 8000 : size);
                 case "VARCHAR":
                     return new SqlDataType(SqlDbType.VarChar, size);
                 case "XML":

@@ -1,0 +1,45 @@
+using Nemerle.Text;
+using Nemerle.Utility;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NRails.Migrations;
+using NRails.Macros.Migration;
+            
+namespace NRails.Dinner
+{
+    public class M20100624031121 : Migration
+    {
+        public this () {base("M20100624031121")}
+
+        protected override Up() : void
+        {
+            create Dinners
+            {
+              DinnerID : Int(pk, identity);
+              Title : NVarChar(50);
+              EventDate : DateTime;
+              Description : NVarChar(256);
+              HostedBy : NVarChar(20);
+              ContactPhone : NVarChar(20);
+              Address : NVarChar(50);
+              Country : NVarChar(30);
+              Latitude : Float;
+              Longitude : Float;
+              
+            }
+            create RSVP
+            {
+              RsvpID : Int(pk, identity);
+              AttendeeName : NVarChar(30);
+              DinnerID :> Dinners;
+            }
+        }
+
+        protected override Down() : void
+        {
+            drop RSVP;
+            drop Dinners;
+        }
+    }        
+}

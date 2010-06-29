@@ -1,0 +1,85 @@
+﻿<viewdata model="ViewModels.Dinners.Details">
+
+<content name="title">
+    ${Model.Dinner.Title}
+</content>
+
+<div id="dinnerDiv" class="vevent">
+
+    <h2 class="summary">${Model.Dinner.Title}</h2>
+    
+    <p>
+        <a href="http://feeds.technorati.com/events/!{Url.ActionAbsolute(MVC.Dinners.Details(Model.Dinner.DinnerID))}">
+            Add event to your calendar (iCal)
+        </a>
+    </p>
+    
+    <p>
+        <strong>When:</strong> 
+        <abbr class="dtstart" title="<%= Model.Dinner.EventDate.ToString("s") %>">
+            <%= Model.Dinner.EventDate.ToString("MMM dd, yyyy") %> 
+            <strong>@</strong>
+            <%= Model.Dinner.EventDate.ToShortTimeString() %>
+        </abbr>
+    </p>
+    
+    <p>
+        <strong>Where:</strong>
+        <span class="location adr">
+            <span class="entended-address">${Model.Dinner.Address}</span>,
+            <span class="country-name">${Model.Dinner.Country}</span>
+            <abbr class="geo" title="${Model.Dinner.Latitude};${Model.Dinner.Longitude}" style="display: none;">Geolocation for hCalendar</abbr>
+        </span>
+    </p>
+    
+    <p>
+        <strong>Description:</strong> 
+        <span class="description">${Model.Dinner.Description}</span>
+        <span style="display: none;">
+            <%= Html.ActionLink("URL for hCalendar", MVC.Dinners.Details(Model.Dinner.DinnerID), new ( @class = "url" ))%>
+        </span>
+    </p>
+        
+    <p>
+        <strong>Organizer:</strong>
+        <span class="organizer">
+            <span class="vcard">
+                <span class="fn nickname">${Model.Dinner.HostedBy}</span>
+                <span class="tel">${Model.Dinner.ContactPhone}</span>
+            </span>                
+        </span>
+    </p>
+    
+    <RSVPStatus/>
+    
+    <p id="whoscoming">
+        <strong>Who's Coming:</strong>
+        <if condition="!Model.RSVPs.Any()">
+              No one has registered.
+        </if>
+    </p>
+    
+    <if condition="Model.RSVPs.Any()">
+        <div id="whoscomingDiv">
+            <ul class="attendees">
+                <for each="rsvp in Model.RSVPs">
+                    <li class="attendee">
+                        <span class="vcard">
+                            <span class="fn nickname">${rsvp.AttendeeName}</span>
+                        </span>
+                    </li>
+                </for>
+            </ul>
+        </div>
+    </if>
+    
+    <EditAndDeleteLinks/>
+    
+</div>
+
+<div id="mapDiv">
+    <Map/>
+    <p>
+	    <img src="!{Url.Content(MVC.Content.Img.microformat_hcalendar_png)}" alt="hCalendar"/>
+    </p>
+</div>

@@ -9,6 +9,7 @@ namespace NRails.Database.Schema
 	{
 		private List<DBGenerator> _generators = new List<DBGenerator>();
 		private List<TableSchema> _tables = new List<TableSchema>();
+        private List<DBFunction> _functions = new List<DBFunction>();
 
 		[XmlAttribute("version")]
 		public int Version { get; set; }
@@ -25,6 +26,13 @@ namespace NRails.Database.Schema
 		{
 			get { return _generators; }
 			set { _generators = value; }
+		}
+
+		[XmlElement("generator", IsNullable = false)]
+		public List<DBFunction> Functions
+		{
+			get { return _functions; }
+            set { _functions = value; }
 		}
 
 		#region Methods

@@ -1,0 +1,28 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using BLToolkit.Data;
+using BLToolkit.DataAccess;
+using BLToolkit.Data.Linq;
+
+namespace NRails.Dinner.Models
+{
+  [DatabaseManager]
+  public class Db: DbManager
+  {
+    public abstract class DinnersAccessor : DataAccessor[Dinners, DinnersAccessor]
+    {
+        public abstract NearestDinners(manager : DbManager, latitude : float, longitude : float) : IQueryable[Dinners];
+    }
+      
+    public NearestDinners(latitude : float, longitude : float) : IQueryable[Dinners]
+    {
+        def t = DinnersAccessor.CreateInstance() : DinnersAccessor;
+        t.NearestDinners(this, latitude, longitude);
+    }
+  }
+}

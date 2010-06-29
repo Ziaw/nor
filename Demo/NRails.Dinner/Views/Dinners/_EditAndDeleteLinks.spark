@@ -1,0 +1,5 @@
+﻿<test if="Model.HostedByCurrentUser">
+    <%= Html.ActionLink("Edit Dinner", MVC.Dinners.Edit(Model.Dinner.DinnerID))%>
+    |
+    <%= Html.ActionLink("Delete Dinner", MVC.Dinners.Delete(Model.Dinner.DinnerID))%>    
+</test>

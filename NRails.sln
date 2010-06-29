@@ -17,6 +17,8 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo", "Demo\NRails.
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Contrib", "Nemerle.Contrib\Nemerle.Contrib.nproj", "{BD5F199E-9539-408B-80FE-A040CB93A141}"
 EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Dinner", "Demo\NRails.Dinner\NRails.Dinner.nproj", "{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,11 +53,16 @@ Global
 		{BD5F199E-9539-408B-80FE-A040CB93A141}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD5F199E-9539-408B-80FE-A040CB93A141}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD5F199E-9539-408B-80FE-A040CB93A141}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{810ED8D0-4804-4A3D-B1F9-AE596BBB3FBC} = {FCE4439C-9BD4-4418-972C-16DAB5DE776F}
+		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA} = {FCE4439C-9BD4-4418-972C-16DAB5DE776F}
 	EndGlobalSection
 EndGlobal

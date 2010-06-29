@@ -1,0 +1,195 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Extensions;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using BLToolkit.Data.Linq;
+
+using NRails.Macros;
+using NRails.Dinner.Models;
+using NRails.Dinner.Helpers;
+
+namespace NRails.Dinner
+{
+    [DbUsage]
+    public class DinnersController : Controller
+    {
+        public Index(page : int?) : ActionResult
+        {
+            def pageSize = 25;
+
+            def upcomingDinners = db.FindUpcomingDinners(); 
+            def paginatedDinners = PaginatedList.[Dinners](upcomingDinners, page ?? 0, pageSize);
+
+            View(paginatedDinners)
+        }
+
+        [Authorize]
+        public Create() : ActionResult
+        {
+            def dinner = Dinners();
+            dinner.EventDate = DateTime.Now.AddDays(7);
+            View(viewmodel (Dinner = dinner, Countries = SelectList(PhoneValidator.Countries, dinner.Country)))
+        }
+
+        [AcceptVerbs(HttpVerbs.Post), Authorize]
+        public Create(dinner : Dinners) : ActionResult
+        {
+            def showError()
+            {
+                View(viewmodel (Dinner = dinner, Countries = SelectList(PhoneValidator.Countries, dinner.Country)));
+            }
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _ = db.BeginTransaction();
+                    dinner.HostedBy = User.Identity.Name;
+                    def id = db.InsertWithIdentity(dinner);
+                    def dinnerId = Convert.ToInt32(id);
+                    
+                    def rsvp = RSVP();
+                    rsvp.DinnerID = dinnerId;
+                    rsvp.AttendeeName = User.Identity.Name;
+                    _ = db.Insert(rsvp);
+
+                    _ = db.CommitTransaction();
+
+                    RedirectToAction(MVC.Dinners.Details(dinnerId))
+                }
+                catch
+                {
+                    | _ =>
+                        this.ModelState.AddModelErrors(dinner.GetRuleViolations());
+                        showError()
+                }
+            }
+            else
+            {
+                showError()
+            }
+        }
+        
+        [Authorize]
+        public Delete(id : int) : ActionResult
+        {
+            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+
+            if (dinner == null)
+                View("NotFound")
+            else
+                if (!dinner.IsHostedBy(User.Identity.Name))
+                    View("InvalidOwner")
+                else
+                    View(dinner);
+        }
+
+        [AcceptVerbs(HttpVerbs.Post), Authorize]
+        public Delete(id : int, _confirmButton : string) : ActionResult
+        {
+            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+
+            if (dinner == null)
+                View("NotFound")
+            else
+                if (!dinner.IsHostedBy(User.Identity.Name))
+                    View("InvalidOwner")
+                else
+                {
+                    _ = db.Delete(dinner);
+                    View("Deleted")
+                }
+        }
+        
+        public Details(id : int?) : ActionResult
+        {
+            if (id == null)
+            {
+                FileNotFoundResult("No Dinner found due to invalid dinner id")
+            }
+            else
+            {
+                def dinner = db.Dinnerss.Single(t => t.DinnerID == id.Value);
+
+                if (dinner == null)
+                {
+                    FileNotFoundResult("No Dinner found for that id")
+                }
+                else
+                {
+                    def rsvps = db.RSVPs.Where(t => t.DinnerID == id.Value).Map(t => new (AttendeeName = t.AttendeeName.Replace("@"," at ")));
+                    def hostedBuCurrentUser = dinner.IsHostedBy(User.Identity.Name);
+                    def isUserRegistered = db.IsUserRegistered(User.Identity.Name, dinner.DinnerID);
+                    View(viewmodel (Dinner = dinner, RSVPs = rsvps, HostedByCurrentUser = hostedBuCurrentUser, IsUserRegistered = isUserRegistered));
+                }
+            }
+        }
+        
+        [Authorize]
+        public Edit(id : int) : ActionResult
+        {
+            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+
+            if (!dinner.IsHostedBy(User.Identity.Name))
+                View("InvalidOwner")
+            else
+                View(viewmodel (Dinner = dinner, Countries = SelectList(PhoneValidator.Countries, dinner.Country)))
+        }
+
+        [AcceptVerbs(HttpVerbs.Post), Authorize]
+        public Edit(id : int, _ : FormCollection) : ActionResult
+        {
+            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+
+            if (!dinner.IsHostedBy(User.Identity.Name))
+                View("InvalidOwner")
+            else
+            {
+                try
+                {
+                    UpdateModel(dinner);
+
+                    _ = db.Dinnerss
+                        .Where(t => t.DinnerID == dinner.DinnerID)
+                        .Set(t => t.Address, dinner.Address)
+                        .Set(t => t.ContactPhone, dinner.ContactPhone)
+                        .Set(t => t.Country, dinner.Country)
+                        .Set(t => t.Description, dinner.Description)
+                        .Set(t => t.EventDate, dinner.EventDate)
+                        .Set(t => t.Latitude, dinner.Latitude)
+                        .Set(t => t.Longitude, dinner.Longitude)
+                        .Set(t => t.Title, dinner.Title)
+                        .Update();
+
+                    RedirectToAction(MVC.Dinners.Details(dinner.DinnerID))
+                }
+                catch
+                {
+                    | _ =>
+                        this.ModelState.AddModelErrors(dinner.GetRuleViolations());
+                        View(viewmodel (Dinner = dinner, Countries = SelectList(PhoneValidator.Countries, dinner.Country)))
+                }
+            }
+        }
+        
+		protected override HandleUnknownAction(actionName : string) : void
+		{
+            throw HttpException(404, "Action not found")
+		}
+
+		public Confused() : ActionResult
+		{
+			View()
+		}
+
+		public Trouble() : ActionResult
+		{
+			View("Error")
+		}
+    }
+}

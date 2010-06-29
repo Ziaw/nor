@@ -12,6 +12,9 @@ using NRails.Migrations;
 using NRails.Utils;
 using NRails.Console;
 using log4net.Config;
+using System.Text.RegularExpressions;
+
+using NRails.Database.Schema;
 
 module Program
 {
@@ -70,7 +73,7 @@ module Program
           | _ => Console.WriteLine("Valid commands: migrate, generate.");
       }
   }
-  
+
   Migrate(args : list[string], opts : list[string]) : void
   {
       mutable migrationMode = MigrationMode.NotSet();
@@ -139,17 +142,62 @@ module Program
       migrator.Migrate(migrationDirection, migrationTypes.Map(makeMigration), allowMissing);
   }
   
-  Generate(args : list[string], _ : list[string]) : void
-  {
-    match (args)
+    Generate(args : list[string], opts : list[string]) : void
     {
-      | ["migration"] with path = "Migrations"
-      | ["migration", path] =>
-          match (string.IsNullOrEmpty(path) || Directory.Exists(path))
-          {
-            | true => Generator().GenerateMigration(path)
-            | false => Console.WriteLine($"Not existing path '$(path)'")
-          }
+        mutable path = "Migrations";
+        mutable ns = null;
+        def options = [
+            Getopt.CliOption.String(name = "--path",
+                aliases = ["-p"],
+                handler = c => path = c,
+            ),
+            Getopt.CliOption.String(name = "--namespace",
+                aliases = ["-ns"],
+                handler = (c) => ns = c,
+            ),
+            Getopt.CliOption.NonOption(name = "command args",  handler = _ => ())
+        ];
+        Getopt.Parse(Getopt.Error, options, NList.Flatten([args, opts]));
+
+        if (string.IsNullOrEmpty(path) || Directory.Exists(path))
+        {
+            def findRootNamespace()
+            {
+                def files = Directory.GetFiles(Environment.CurrentDirectory, "*.nproj").ToNList();
+                match (files)
+                {
+                    | file :: [] => 
+                        def m = Regex(@"<RootNamespace>(.+)</RootNamespace>", RegexOptions.Multiline).Match(File.ReadAllText(file));
+                        if (m.Success)
+                        {
+                            m.Groups[1].Value
+                        }
+                        else
+                        {
+                            Console.WriteLine($"RootNamespace not set, tried to get it from project file $file but was unable to find RootNamespace");
+                            null
+                        }
+                    | [] =>
+                        Console.WriteLine("RootNamespace not set, tried to get it from project file but project file is missing");
+                        null
+                    | _ =>
+                        Console.WriteLine($"RootNamespace not set, tried to get it from project file but found more then one: ..$files");
+                        null
+                }
+            }
+            
+            when (string.IsNullOrEmpty(ns))
+                ns = findRootNamespace();
+
+            when (ns != null)            
+            match (args)
+            {
+                | ["migration"] => Generator().GenerateMigration(path, ns)
+                | ["create"]
+                | ["new"] =>
+                    def migrator = Migrator(Engine.Instance);
+                    def dbSchema = migrator.GetSchema();
+                    Generator().CreateMigration(path, ns, dbSchema)
 
 /* типа на будущее но все равно переделывать
       | [obj, name] with path = "Controllers"
@@ -165,7 +213,12 @@ module Program
             | false => Console.WriteLine($"Not existing path '$(path)'")
           }
 */
-      | _ => throw ArgumentException($"..$args");
+                | _ => throw ArgumentException($"..$args");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Not existing path '$(path)'");
+        }
     }
-  }
 }

@@ -1,0 +1,22 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Dinner.Models
+{
+    public class JsonDinner
+    {
+        public DinnerID : int { get; set; }
+        public EventDate : DateTime { get; set; }
+        public Title : string { get; set; }
+        public Latitude : double { get; set; }
+        public Longitude : double { get; set; }
+        public Description : string { get; set; }
+        public RSVPCount : int { get; set; }
+		public Url : string { get; set; }
+    }
+}

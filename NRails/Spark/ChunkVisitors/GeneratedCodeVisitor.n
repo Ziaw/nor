@@ -27,6 +27,7 @@ namespace NRails.Spark.ChunkVisitors
     public module ExtConditionalType
     {
         public AlternativeIf : int = 99;
+        public AlternativeElseIf : int = 98;
     }
 
     public class GeneratedCodeVisitor : GeneratedCodeVisitorBase
@@ -47,17 +48,14 @@ namespace NRails.Spark.ChunkVisitors
         {
             when (_source.AdjustDebugSymbols)
             {
-                if (chunk != null && chunk.Position != null)
+                when (chunk != null && chunk.Position != null)
                 {
                     _source.StartOfLine = false;
-                    _ = _source.WriteDirective("#line {0} \"{1}\"", chunk.Position.Line, chunk.Position.SourceContext.FileName)
+                    _source.WriteDirective("#line {0} \"{1}\"", chunk.Position.Line, chunk.Position.SourceContext.FileName)
                         .Indent(chunk.Position.Column - 1);
                 }
-                else
-                {
-                    _source.StartOfLine = false;
-                    _ = _source.WriteLine("#line default");
-                }
+                _source.StartOfLine = false;
+                _ = _source.WriteLine("#line default");
             }
             _source;
         }
@@ -146,10 +144,9 @@ namespace NRails.Spark.ChunkVisitors
             _ = _source
                 .WriteLine("try")
                 .WriteLine("{");
-            _ = _source
-                .Write("Output.Write(")
-                .Write(if (automaticallyEncode) "H(" else "");
             _ = CodeIndent(chunk)
+                .Write("Output.Write(")
+                .Write(if (automaticallyEncode) "H(" else "")
                 .WriteCode(chunk.Code)
                 .Write(if (automaticallyEncode) ")" else "")
                 .WriteLine(");");
@@ -254,9 +251,10 @@ namespace NRails.Spark.ChunkVisitors
                 
             if (variableName == null)
             {
-                _source.Write("foreach(");
-
-                CodeIndent(chunk).WriteCode(chunk.Code).WriteLine(")");
+                CodeIndent(chunk)
+                    .Write("foreach(")
+                    .WriteCode(chunk.Code)
+                    .WriteLine(")");
                 CodeDefault();
                 AppendOpenBrace();
                 Accept(chunk.Body);
@@ -296,9 +294,10 @@ namespace NRails.Spark.ChunkVisitors
                 }
 
 
-                
-                _source.Write("foreach(");
-                CodeIndent(chunk).WriteCode(chunk.Code).WriteLine(")");
+                CodeIndent(chunk)
+                    .Write("foreach(")
+                    .WriteCode(chunk.Code)
+                    .WriteLine(")");
                 CodeDefault();
 
                 AppendOpenBrace();
@@ -434,27 +433,35 @@ namespace NRails.Spark.ChunkVisitors
             match (chunk.Type)
             {
                 | ConditionalType.If =>
-                            _source.Write("when (");
-                            CodeIndent(chunk).WriteCode(chunk.Condition)
+                        CodeIndent(chunk)
+                            .Write("when (")
+                            .WriteCode(chunk.Condition)
                             .WriteLine(")");
                 | ConditionalType.ElseIf =>
-                        
-                            _source.Write("else if (");
-                            CodeIndent(chunk).WriteCode(chunk.Condition)
+                        CodeIndent(chunk)
+                            .Write("else when (")
+                            .WriteCode(chunk.Condition)
                             .WriteLine(")");
                 | ConditionalType.Else =>
                         _source.WriteLine("else");
                 | ConditionalType.Once =>
-                        
-                            _source.Write("when (Once(");
-                            CodeIndent(chunk).WriteCode(chunk.Condition).WriteLine("))");
+                        CodeIndent(chunk)
+                            .Write("when (Once(")
+                            .WriteCode(chunk.Condition)
+                            .WriteLine("))");
                 | x => 
                     match (x :> int)
                     {
                         | ExtConditionalType.AlternativeIf =>
-                                
-                                    _source.Write("if (");
-                                    CodeIndent(chunk).WriteCode(chunk.Condition).WriteLine(")");
+                                CodeIndent(chunk)
+                                    .Write("if (")
+                                    .WriteCode(chunk.Condition)
+                                    .WriteLine(")");
+                        | ExtConditionalType.AlternativeElseIf =>
+                                CodeIndent(chunk)
+                                    .Write("else when (")
+                                    .WriteCode(chunk.Condition)
+                                    .WriteLine(")");
                         | _ =>
                             throw CompilerException($"Unexpected conditional type $(chunk.Type)");
                     }

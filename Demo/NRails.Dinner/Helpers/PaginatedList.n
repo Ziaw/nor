@@ -1,0 +1,38 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Dinner.Helpers
+{
+    public class PaginatedList[T] : List[T]
+    {
+        public PageIndex : int{ get; private set; }
+        public PageSize : int { get; private set; }
+        public TotalCount : int { get; private set; }
+        public TotalPages : int { get; private set; }
+
+        public this(source : IQueryable[T], pageIndex : int, pageSize : int)
+        {
+            PageIndex = pageIndex;
+            PageSize = pageSize;
+            TotalCount = source.Count();
+            TotalPages = Math.Ceiling(TotalCount / PageSize :> double) :> int;
+
+            AddRange(source.Skip(PageIndex * PageSize).Take(PageSize));
+        }
+
+        public HasPreviousPage : bool
+        {
+            get { PageIndex > 0 }
+        }
+
+        public HasNextPage : bool
+        {
+            get { PageIndex+1 < TotalPages }
+        }
+    }
+}

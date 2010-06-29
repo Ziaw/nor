@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title><use content="title"/></title>
+    <link href="!{Url.Content(MVC.Content.Production_css)}" rel="stylesheet" type="text/css" />
+  	<meta content="Nerd, Dinner, Geek, Luncheon, Dweeb, Breakfast, Technology, Bar, Beer, Wonk" name="keywords" /> 
+	<meta name="description" content="Host and promote your own Nerd Dinner free!" /> 
+
+    <script src="!{Url.Content(MVC.Scripts.jquery_1_4_1_min)}" type="text/javascript"></script>    
+    <script src="!{Url.Content(MVC.Scripts.date_format)}" type="text/javascript"></script>
+    <script src="!{Url.Content(MVC.Scripts.NerdDinner+'?v=3')}" type="text/javascript"></script>    
+    <script type="text/javascript"> 
+        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script> 
+    <script type="text/javascript"> 
+        var pageTracker = _gat._getTracker("UA-6399325-1");
+        pageTracker._initData();
+        pageTracker._trackPageview();
+    </script> 
+    <script type="text/javascript">
+        var uservoiceJsHost = ("https:" == document.location.protocol) ? "https://uservoice.com" : "http://cdn.uservoice.com";
+        document.write(unescape("%3Cscript src='" + uservoiceJsHost + "/javascripts/widgets/tab.js' type='text/javascript'%3E%3C/script%3E"))
+    </script>
+    <script type="text/javascript">
+        UserVoice.Tab.show({
+            key: 'nerddinner',
+            host: 'feedback.nerddinner.com',
+            forum: 'general',
+            alignment: 'right', /* 'left', 'right' */
+            background_color: '#A2CC3B',
+            text_color: 'white', /* 'white', 'black' */
+            hover_color: '#7A0100',
+            lang: 'en' /* 'en', 'de', 'nl', 'es', 'fr' */
+        })
+    </script>
+</head>
+<body>
+    <div class="page">
+
+        <div id="header">
+            <div id="title">
+                <h1><a href="/" title="Nerd Dinner" class="logo"></a></h1>
+            </div>
+              
+            <div id="logindisplay">
+				<LoginStatus/>
+            </div> 
+            
+            <div id="menucontainer">
+            
+                <ul id="menu">              
+                    <li><%= Html.ActionLink("Find Dinner", MVC.Home.Index())%></li>
+                    <li><%= Html.ActionLink("Host Dinner", MVC.Dinners.Create())%></li>
+                    <li><%= Html.ActionLink("About", MVC.Home.About())%></li>   
+                </ul>
+            
+            </div>
+        </div>
+
+        <div id="hm-masthead">
+		    <use content="masthead"/>
+		</div>
+
+        <div id="main" class="clearfix">
+            <use content="view"/>
+        </div>
+        <div id="footer">Code by <a href="http://www.hanselman.com">Hanselman</a>, <a href="http://weblogs.asp.net/scottgu">Guthrie</a>, and <a href="http://blog.wekeroad.com">Conery</a>. JavaScript by <a href="http://encosia.com">Dave Ward</a>. ASP.NET MVC by <a href="http://www.haacked.com">Haack</a> and friends. Style by <a href="http://michaeldorian.com/">Michael Dorian Bach</a>.<br/> Source Code at <a href="http://nerddinner.codeplex.com">http://nerddinner.codeplex.com</a>. Free Sample Book Chapter and code walkthrough at <a href="http://tinyurl.com/aspnetmvc">http://tinyurl.com/aspnetmvc</a>.</div>
+</body>
+</html>

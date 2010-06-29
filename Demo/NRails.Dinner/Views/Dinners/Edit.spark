@@ -1,0 +1,7 @@
+﻿<content name="title">
+    Edit: ${Model.Dinner.Title}
+</content>
+
+<h2>Edit Dinner</h2>
+
+<DinnerForm />

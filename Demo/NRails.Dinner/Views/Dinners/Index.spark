@@ -1,0 +1,30 @@
+﻿<viewdata model="NRails.Dinner.Helpers.PaginatedList[Dinners]">
+
+<content name="title">
+	Upcoming Nerd Dinners
+</content>
+
+<h2>
+    Upcoming Dinners
+</h2>
+
+<ul class="upcomingdinners">
+    <for each="dinner in Model">
+        <li>     
+            <%= Html.ActionLink(dinner.Title, MVC.Dinners.Details(dinner.DinnerID)) %>
+            on 
+            ${dinner.EventDate.ToString("yyyy-MMM-dd")}
+            @
+            ${dinner.EventDate.ToString("HH:mm tt")}
+        </li>
+    </for>
+</ul>
+
+<div class="pagination">
+    <if condition="Model.HasPreviousPage">
+        <%= Html.RouteLink("<<< Previous Page", "UpcomingDinners", new ( page=(Model.PageIndex-1) )) %>
+    </if>
+    <if condition="Model.HasNextPage">
+        <%= Html.RouteLink("Next Page >>>", "UpcomingDinners", new ( page = (Model.PageIndex + 1) ))%>
+    </if>
+</div>

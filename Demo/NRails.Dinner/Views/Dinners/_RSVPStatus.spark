@@ -1,0 +1,29 @@
+﻿
+<script src="!{Url.Content(MVC.Scripts.MicrosoftAjax)}" type="text/javascript"></script>
+<script src="!{Url.Content(MVC.Scripts.MicrosoftMvcAjax)}" type="text/javascript"></script>    
+
+<script type="text/javascript">
+    function AnimateRSVPMessage() {
+        $("#rsvpmsg").animate({ fontSize: "1.5em" }, 400);
+    }
+</script>
+    
+<div id="rsvpmsg">
+    <match expr="Request.IsAuthenticated">
+        <pattern expr="true">
+            <match expr="Model.IsUserRegistered">
+                <pattern expr="true">
+                    <p>You are registered for this event!</p>
+                </pattern>
+                <pattern expr="false">
+                    <%= Ajax.ActionLink( "RSVP for this event",
+                                         MVC.RSVP.Register(Model.Dinner.DinnerID), 
+                                         AjaxOptions() with { UpdateTargetId="rsvpmsg"; OnSuccess="AnimateRSVPMessage" }) %>
+                </pattern>
+             </match>
+        </pattern>
+        <pattern expr="false">
+            <strong><%= Html.ActionLink("Log On", MVC.Account.LogOn(), new ( returnUrl = HttpContext.Current.Request.RawUrl )) %> to RSVP for this event.</strong>
+        </pattern>
+    </match>
+</div>

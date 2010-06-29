@@ -16,14 +16,12 @@ namespace NRails
   {
       static defaultPrefix = "NRails" : string;
       [Accessor] mutable env : string;
-      [Accessor] mutable generateMissingModelsFromDbSchema : bool;
       connectionNames = SCG.Dictionary.[string, string]() : SCG.Dictionary[string, string];
       [Accessor] connectionStrings : SCG.Dictionary[string, ConnectionStringSettings] = SCG.Dictionary.[string, ConnectionStringSettings]();
       
-      public this(env : string, generateMissingModelsFromDbSchema : bool, connectionStrings : SCG.Dictionary[string, ConnectionStringSettings])
+      public this(env : string, connectionStrings : SCG.Dictionary[string, ConnectionStringSettings])
       {
         this.env = env;
-        this.generateMissingModelsFromDbSchema = generateMissingModelsFromDbSchema;
         this.connectionStrings = connectionStrings;
       }
       

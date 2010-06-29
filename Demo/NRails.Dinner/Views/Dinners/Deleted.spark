@@ -1,0 +1,13 @@
+﻿<content name="title">
+	Deleted
+</content>
+
+<h2>Dinner Deleted</h2>
+
+<div>
+    <p>Your dinner was successfully deleted.</p>
+</div>
+
+<div>
+    <p>!{Html.ActionLink("Click for Upcoming Dinners", MVC.Dinners.Index())}</p>
+</div>

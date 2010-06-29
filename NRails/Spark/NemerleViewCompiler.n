@@ -296,9 +296,16 @@ namespace NRails.Spark
             def preprocessConditional(chunks : list[Chunk])
             {
                 | [] => ()
-                | (x is ConditionalChunk) :: (y is ConditionalChunk) :: tail 
-                    when x.Type == ConditionalType.If && (y.Type == ConditionalType.Else || y.Type == ConditionalType.ElseIf) => 
-                    x.Type = ExtConditionalType.AlternativeIf :> ConditionalType;
+                | (x is ConditionalChunk) :: (y is ConditionalChunk) :: tail  =>
+                    match (x.Type, y.Type)
+                    {
+                        | (ConditionalType.If, ConditionalType.ElseIf) 
+                        | (ConditionalType.If, ConditionalType.Else) => x.Type = ExtConditionalType.AlternativeIf :> ConditionalType;
+                        | (ConditionalType.ElseIf, ConditionalType.ElseIf) 
+                        | (ConditionalType.ElseIf, ConditionalType.Else) => x.Type = ExtConditionalType.AlternativeElseIf :> ConditionalType;
+                        | _ => ()
+                    }
+                    
                     preprocessConditional(tail)
                 | _ :: tail =>
                     preprocessConditional(tail)

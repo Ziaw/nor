@@ -1,0 +1,100 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Contrib;
+using Nemerle.Extensions;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+using System.Xml.Linq;
+
+using NRails.Macros;
+using NRails.Dinner.Models;
+using NRails.Dinner.Helpers;
+
+namespace NRails.Dinner
+{
+  [DbUsage]
+  public class SearchController : Controller
+  {
+    [AcceptVerbs(HttpVerbs.Post)]
+    public SearchByLocation(latitude : float, longitude : float) : ActionResult
+    {
+        def dinners = db.FindByLocation(latitude, longitude).Select(t => JsonDinnerFromDinner(t));
+
+        Json(dinners)
+    }
+
+    [AcceptVerbs(HttpVerbs.Post)]
+    public SearchByPlaceNameOrZip(placeOrZip : string) : ActionResult
+    {
+        if (!string.IsNullOrEmpty(placeOrZip))
+        {
+            mutable url = "http://ws.geonames.org/postalCodeSearch?{0}={1}&maxRows=1&style=SHORT";
+            url = String.Format(url, if (IsNumeric(placeOrZip)) "postalcode" else "placename", placeOrZip);
+
+            mutable result = ControllerContext.HttpContext.Cache[placeOrZip] :> XDocument;
+            when (result == null)
+            {
+                result = XDocument.Load(url);
+                ControllerContext.HttpContext.Cache.Insert(placeOrZip, result, null, DateTime.Now.AddDays(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            }
+
+            def LatLong = result.Descendants("code")
+                .Map(x => new (Lat = x.Element("lat") :> float, Long = x.Element("lng") :> float))
+                .First();
+
+            def dinners = db.FindByLocation(LatLong.Lat, LatLong.Long).OrderByDescending(p => p.EventDate);
+
+            View("Results", PaginatedList.[Dinners](dinners, 0, 20))
+        }
+        else
+            null
+    }
+
+    private IsNumeric(Expression : object) : bool
+    {
+        // Define variable to collect out parameter of the TryParse method. If the conversion fails, the out parameter is zero.
+        mutable retNum;
+
+        // The TryParse method converts a string in a specified style and culture-specific format to its double-precision floating point number equivalent.
+        // The TryParse method does not generate an exception if the conversion fails. If the conversion passes, True is returned. If it does not, False is returned.
+        Double.TryParse(Convert.ToString(Expression), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum)
+    }	
+
+    //
+    // AJAX: /Search/GetMostPopularDinners
+    // AJAX: /Search/GetMostPopularDinners?limit=5
+    [AcceptVerbs(HttpVerbs.Post)]
+    public GetMostPopularDinners(mutable limit : int?) : ActionResult
+    {
+        // Default the limit to 40, if not supplied.
+        when (!limit.HasValue)
+            limit = 40;
+
+        def mostPopularDinners = db.FindUpcomingDinners().ToArray()
+            .OrderByDescending(t => db.RSVPsCount(t.DinnerID))
+            .Select(t => JsonDinnerFromDinner(t))
+            .Take(limit.Value);
+
+        Json(mostPopularDinners)
+    }
+
+    private JsonDinnerFromDinner(dinner : Dinners) : JsonDinner
+    {
+        JsonDinner() with
+        {
+            DinnerID = dinner.DinnerID;
+            EventDate = dinner.EventDate;
+            Latitude = dinner.Latitude;
+            Longitude = dinner.Longitude;
+            Title = dinner.Title;
+            Description = dinner.Description;
+            RSVPCount = db.RSVPsCount(dinner.DinnerID);
+            Url = dinner.DinnerID.ToString();
+        };
+    }
+  }
+}

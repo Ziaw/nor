@@ -12,61 +12,18 @@ using System.Linq;
 using NRails;
 using NRails.Database.Schema;
 using BLToolkit.Mapping;
+using BLToolkit.DataAccess;
 
 namespace NRails.Macros.Model
 {
-    [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance, Nemerle.MacroTargets.Class,
-                     Inherited = false)]
-    public macro Model(t : TypeBuilder, params args : array[expr])
-    {
-      ModelImpl.RegisterModelType(t, args);
-    }
-
-    [Nemerle.MacroUsage (Nemerle.MacroPhase.WithTypedMembers, Nemerle.MacroTargets.Class,
-                     Inherited = false)]
-    public macro Model(t : TypeBuilder, params args : array[expr])
-    {
-        ModelImpl.GenerateColumns(t, args);
-    }
-
     internal module ModelImpl
     {
-        public GetArg(args : array[PExpr], par : string) : string
-        {
-            if (args == null)
-                null
-            else
-            {
-                def getAll(args)
-                {
-                | PExpr.Assign(PExpr.Ref(para), PExpr.Literal(Literal.String(value))) :: tail when para.Id == par => value :: getAll(tail)
-                | _ => []
-                }
-
-                def tt = getAll(args.ToNList());
-
-                match (tt)
-                {
-                | value :: [] => value
-                | [] => null
-                | _ => Message.FatalError($"Multiple '$par' in model params");
-                }
-            }
-        }
-
-      public RegisterModelType(t : TypeBuilder, args : array[PExpr]) : void
-      {
-        def name = GetArg(args, "Table") ?? t.Name;
-        DatabaseManagerImpl.RegisterModelType(t, name, t.FullName);
-      }
-
-      public GenerateColumns(t : TypeBuilder, args : array[PExpr]) : void
+      public GenerateColumns(t : TypeBuilder) : void
       {
           def engine = t.Manager.GetNRailsEngine();
           try 
           {
-            def tableName = GetArg(args, "Table") ?? t.Name;
-            def table = engine.GetTable(tableName);
+            def table = engine.GetTable(t.Name);
             
             when (table == null)
             {
@@ -79,6 +36,12 @@ namespace NRails.Macros.Model
             def hintBuilder = StringBuilder();
 
             def existingProperties = t.GetProperties().Map(_.Name);
+            
+            def pkeys = match (table.KeyPrimary())
+            {
+                | null => [];
+                | x => x.Columns.Split(',').Map(_.Trim());
+            }
             
             foreach (col : TableColumnSchema in table.Columns)
             {
@@ -100,15 +63,29 @@ namespace NRails.Macros.Model
                     t.Define(<[decl: 
                         private mutable $(fieldMemberName : dyn) : $nemerleType; 
                     ]>);
+                    
+                    def isPk = pkeys.Contains(col.Name);
+                    def isIdentity = col.AutoIncrement;
+
+                    mutable attrs = [<[ MapFieldAttribute($(col.Name : string)) ]>];
+
+                    when (isPk) 
+                        attrs ::= <[ PrimaryKeyAttribute ]>;
+                    
+                    when (isIdentity) 
+                        attrs ::= <[ IdentityAttribute]>;
+                        
+                    def attrsExprs = Modifiers(NemerleAttributes.Public, attrs);
+
                     t.Define(<[decl: 
-                        [BLToolkit.Mapping.MapField($(col.Name : string))] 
-                        public $(propName : dyn) : $nemerleType
+                        ..$attrsExprs
+                        $(propName : dyn) : $nemerleType
                         {
                             get { $(fieldMemberName : dyn); }
                             set { $(fieldMemberName : dyn) = value; }
                         }
                     ]>);
-
+                    
                     _ = hintBuilder.Append($"$(propName) : $(nemerleType)\n");
                 }
             }
@@ -128,7 +105,7 @@ namespace NRails.Macros.Model
                     private mutable $(fieldMemberName : dyn) : $propType; 
                 ]>);
                 t.Define(<[decl: 
-                  [BLToolkit.Mapping.Association(ThisKey = $(keyName : string), OtherKey = $(key.RelColumns : string))] 
+                  [Association(ThisKey = $(keyName : string), OtherKey = $(key.RelColumns : string))] 
                   public $(propName : dyn) : $propType
                   {
                       get { $(fieldMemberName : dyn); }

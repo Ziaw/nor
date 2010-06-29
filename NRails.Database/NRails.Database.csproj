@@ -55,6 +55,7 @@
     <Compile Include="ISqlFormatter.cs" />
     <Compile Include="Schema\DBSchemaException.cs" />
     <Compile Include="Schema\Elements\ConstraintType.cs" />
+    <Compile Include="Schema\Elements\DBFunction.cs" />
     <Compile Include="Schema\Elements\DBGenerator.cs" />
     <Compile Include="Schema\Elements\DBSchema.cs" />
     <Compile Include="Schema\Elements\IndexClearType.cs" />

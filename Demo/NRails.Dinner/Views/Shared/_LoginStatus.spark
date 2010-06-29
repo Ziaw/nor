@@ -1,0 +1,9 @@
+﻿<match expr="Request.IsAuthenticated">
+    <pattern expr="true">
+        Welcome <b>${Context.User.Identity.Name}</b>!
+        [ <%= Html.ActionLink("Log Off", MVC.Account.LogOff()) %> ]
+    </pattern>
+    <pattern expr="false">
+        [ <%= Html.ActionLink("Log On", MVC.Account.LogOn()) %> ]
+    </pattern>
+</match>

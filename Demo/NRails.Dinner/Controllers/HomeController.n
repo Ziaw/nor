@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using NRails.Macros;
+
+namespace NRails.Dinner.Controllers
+{
+	[HandleError]
+	public class HomeController : Controller
+	{
+		public Index() : ActionResult
+		{
+			View();
+		}
+
+		public About() : ActionResult
+		{
+			View();
+		}
+	}
+}

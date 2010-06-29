@@ -1,0 +1,13 @@
+﻿<use namespace="System"/>
+<use namespace="System.Linq"/>
+<use namespace="System.Collections"/>
+<use namespace="System.Collections.Generic"/>
+<use namespace="System.Web"/>
+<use namespace="System.Web.Mvc"/>
+<use namespace="System.Web.Mvc.Html"/>
+<use namespace="System.Web.Mvc.Ajax"/>
+<use namespace="System.Web.Routing"/>
+<use namespace="System.Globalization"/>
+<use namespace="Nemerle.Extensions"/>
+<use namespace="Nemerle.Contrib"/>
+<use namespace="NRails.Dinner.Models"/>

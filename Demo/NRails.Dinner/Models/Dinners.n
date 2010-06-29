@@ -1,0 +1,54 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+
+namespace NRails.Dinner.Models
+{
+    public class Dinners
+    {
+		public IsHostedBy(userName : string) : bool
+		{
+			HostedBy.Equals(userName, StringComparison.InvariantCultureIgnoreCase);
+		}
+
+		public GetRuleViolations() : IEnumerable[RuleViolation]
+		{
+			when (String.IsNullOrEmpty(Title))
+				yield RuleViolation("Title is required", "Title");
+
+			when (!String.IsNullOrEmpty(Title) && Title.Length > 50)
+				yield RuleViolation("Title may not be longer than 50 characters", "Title");
+
+			when (String.IsNullOrEmpty(Description))
+				yield RuleViolation("Description is required", "Description");
+
+			when (!String.IsNullOrEmpty(Description) && Description.Length > 256)
+				yield RuleViolation("Description may not be longer than 256 characters", "Description");
+
+			when (String.IsNullOrEmpty(HostedBy))
+				yield RuleViolation("HostedBy is required", "HostedBy");
+
+			when (String.IsNullOrEmpty(Address))
+				yield RuleViolation("Address is required", "Address");
+
+			when (String.IsNullOrEmpty(Country))
+				yield RuleViolation("Country is required", "Country");
+
+			when (String.IsNullOrEmpty(ContactPhone))
+				yield RuleViolation("Phone# is required", "ContactPhone");
+
+			when (Latitude == 0 || Longitude == 0)
+				yield RuleViolation("Make sure to enter a valid address!", "Address");
+
+			//TODO: For now, PhoneValidator is more trouble than it's worth. People 
+			// get very frustrated when it doesn't work.
+			//when (!PhoneValidator.IsValidNumber(ContactPhone, Country))
+			//    yield return new RuleViolation("Phone# does not match country", "ContactPhone");
+		}
+    }
+}

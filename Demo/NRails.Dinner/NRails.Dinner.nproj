@@ -1,0 +1,531 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NoStdLib>true</NoStdLib>
+    <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
+    <Name>NRails.Dinner</Name>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2c25563c-df99-46c7-9f1f-fcb8bdc5dfca}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{edcc3b85-0bad-11db-bc1a-00112fde8b61}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NRails.Dinner</RootNamespace>
+    <AssemblyName>NRails.Dinner</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BLToolkit.3, Version=4.0.0.987, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+      <Name>BLToolkit.3</Name>
+      <AssemblyName>BLToolkit.3.dll</AssemblyName>
+      <HintPath>..\..\lib\BLToolkit.3.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
+      <Name>log4net</Name>
+      <AssemblyName>log4net.dll</AssemblyName>
+      <HintPath>..\..\lib\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="Spark, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+      <Name>Spark</Name>
+      <AssemblyName>Spark.dll</AssemblyName>
+      <HintPath>..\..\lib\Spark.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Spark.Web.Mvc, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+      <Name>Spark.Web.Mvc</Name>
+      <AssemblyName>Spark.Web.Mvc.dll</AssemblyName>
+      <HintPath>..\..\lib\Spark.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="Nemerle">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.dll</HintPath>
+    </Reference>
+    <Reference Include="Nemerle.Compiler">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.Compiler.dll</HintPath>
+    </Reference>
+    <Reference Include="Nemerle.Macros">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.Macros.dll</HintPath>
+    </Reference>
+    <Reference Include="Nemerle.Linq">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Microsoft ASP.NET\ASP.NET MVC 2\\Assemblies\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.ComponentModel.DataAnnotations">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\AccountController.n" />
+    <Compile Include="Controllers\DinnersController.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controllers\HomeController.n" />
+    <Compile Include="Global.asax.n">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.n">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\M20100624031121.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\Db.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\Dinners.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NRailsInit.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.n" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\Img\bkg.jpg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\btn-go.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\btn-login.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\content-bottom.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\content-top.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\exclamation.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\header-bkg.jpg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\hm-content-bkg.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\hm-content-bottom.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\hm-content-top.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\hm-masthead.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\logo.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\menu-left-selected.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\menu-left.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\menu-right-selected.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\menu-right.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\microformat_hcalendar.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\Mobile\btn-search.jpg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\Mobile\logo.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\Mobile\logo_medium.jpg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\Mobile\logo_medium.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\Mobile\logo_medium_trans.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\Mobile\logo_small.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\search-bubble.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Img\search-header.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\backButton.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\blueButton.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\cancel.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\custom.css">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\custom.js">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\grayButton.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\iPhoneLogo.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\iui.css">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\iui.js">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\iuix.css">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\iuix.js">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\LICENSE.txt">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\listArrow.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\listArrowSel.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\listGroup.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\loading.gif">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\NOTICE.txt">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\pinstripes.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\README.txt">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\releaseNotes.txt">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\selection.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\thumb.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\toggle.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\toggleOn.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\toolbar.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\toolButton.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\iui\whiteButton.png">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Mobile\mobile-xhtml.css">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\nerd.jpg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\Production.css">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Global.asax" />
+    <Content Include="Default.aspx" />
+    <Compile Include="Controllers\RSVPController.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controllers\SearchController.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Helpers\Helpers.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Helpers\FileNotFoundResult.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Helpers\PaginatedList.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Helpers\PhoneValidator.n">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Migrations\M20100628020643.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\DinnersRepository.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\JsonDinner.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\RuleViolation.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Content Include="nrails.cfg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scripts\date.format.js">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scripts\MSAjaxHistoryBundle.js">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Scripts\NerdDinner.js">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\Create.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\Delete.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\Deleted.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\Details.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\Edit.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\_EditAndDeleteLinks.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\_RSVPStatus.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\_DinnerForm.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\Index.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\InvalidOwner.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\_Map.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Dinners\NotFound.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Home\About.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Home\Index.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Layouts\Application.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Shared\Confused.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Shared\_LoginStatus.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Shared\_Masthead.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Views\Shared\_global.spark">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Web.config" />
+    <Content Include="Content\Site.css" />
+    <Content Include="Scripts\jquery-1.4.1.js" />
+    <Content Include="Scripts\jquery-1.4.1.min.js" />
+    <Content Include="Scripts\jquery-1.4.1-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.4.1.min-vsdoc.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.validate.min-vsdoc.js" />
+    <Content Include="Scripts\MicrosoftAjax.js" />
+    <Content Include="Scripts\MicrosoftAjax.debug.js" />
+    <Content Include="Scripts\MicrosoftMvcAjax.js" />
+    <Content Include="Scripts\MicrosoftMvcAjax.debug.js" />
+    <Content Include="Scripts\MicrosoftMvcValidation.js" />
+    <Content Include="Scripts\MicrosoftMvcValidation.debug.js" />
+    <Content Include="Views\Account\ChangePassword.spark" />
+    <Content Include="Views\Account\ChangePasswordSuccess.spark" />
+    <Content Include="Views\Account\LogOn.spark" />
+    <Content Include="Views\Account\Register.spark" />
+    <Content Include="Views\Shared\Error.spark" />
+    <Content Include="Views\Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Content\" />
+    <Folder Include="Content\Img\" />
+    <Folder Include="Content\Img\Mobile\" />
+    <Folder Include="Content\iui\" />
+    <Folder Include="Content\Mobile\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Models\" />
+    <Folder Include="Helpers" />
+    <Folder Include="Properties\" />
+    <Folder Include="Scripts\" />
+    <Folder Include="Views\" />
+    <Folder Include="Views\Account\" />
+    <Folder Include="Views\Home\" />
+    <Folder Include="Views\Layouts" />
+    <Folder Include="Views\Dinners" />
+    <Folder Include="Views\Shared\" />
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\..\NRails.Macros\NRails.Macros.nproj">
+      <Name>NRails.Macros</Name>
+      <Project>{d22c1976-8647-4cb6-a57f-b82e3949b21d}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\..\Nemerle.Contrib\Nemerle.Contrib.nproj">
+      <Name>Nemerle.Contrib</Name>
+      <Project>{bd5f199e-9539-408b-80fe-a040cb93a141}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
+    <ProjectReference Include="..\..\NRails.Database\NRails.Database.csproj">
+      <Name>NRails.Database</Name>
+      <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NRails\NRails.nproj">
+      <Name>NRails</Name>
+      <Project>{74a35da7-49a5-4260-87d9-d559d6aa1daa}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target> -->
+  <Target Name="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(ProjectDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties Guid="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>57083</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties Guid="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <PublishCopyOption>RunFiles</PublishCopyOption>
+          <PublishTargetLocation>
+          </PublishTargetLocation>
+          <PublishDeleteAllFiles>False</PublishDeleteAllFiles>
+          <PublishCopyAppData>True</PublishCopyAppData>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>True</AlwaysStartWebServerOnDebug>
+          <EnableWcfTestClientForSVC>False</EnableWcfTestClientForSVC>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PreBuildEvent>
+      xcopy /D /Y $(SolutionDir)\NRails.Macros\bin\$(Configuration)\NRails.Macros.dll $(TargetDir)
+      xcopy /D /Y $(SolutionDir)\Nemerle.Contrib\bin\$(Configuration)\Nemerle.Contrib.dll $(TargetDir)
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

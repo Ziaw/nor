@@ -1,0 +1,9 @@
+﻿<viewdata model="ViewModels.Dinners.Create">
+
+<content name="title">
+    Host a Nerd Dinner
+</content>
+
+<h2>Host a Dinner</h2>
+<DinnerForm/>
+

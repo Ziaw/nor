@@ -1,0 +1,21 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+
+using NRails.Dinner.Models;
+
+namespace NRails.Dinner.Helpers
+{
+    public module ModelStateHelpers
+    {
+        public AddModelErrors(this modelState : ModelStateDictionary, errors : IEnumerable[RuleViolation]) : void
+        {
+            errors.Iter(e => modelState.AddModelError(e.PropertyName, e.ErrorMessage))
+        }
+    }
+}

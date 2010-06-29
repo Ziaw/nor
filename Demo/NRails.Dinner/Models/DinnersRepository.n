@@ -1,0 +1,35 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Data.Linq;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NRails.Dinner.Models
+{
+    public module DinnersRepository
+    {
+        public IsUserRegistered(this db : Db, username : string, dinnerId : int) : bool
+        {
+            db.RSVPs.Where(t => t.DinnerID == dinnerId).Any(r => r.AttendeeName.Equals(username))
+        }
+
+        public RSVPsCount(this db : Db, dinnerId : int) : int
+        {
+            db.RSVPs.Count(t => t.DinnerID == dinnerId);
+        }
+
+        public FindUpcomingDinners(this db : Db) : IQueryable[Dinners]
+        {
+            db.Dinnerss.Where(d => d.EventDate > DateTime.Now.AddDays(-1)).OrderBy(d => d.EventDate)
+        }
+        
+        public FindByLocation(this db : Db, latitude : float, longitude : float) : IQueryable[Dinners]
+        {
+            db.FindUpcomingDinners()
+                .Join(db.NearestDinners(latitude, longitude), t => t.DinnerID, t => t.DinnerID, (t, _) => t)
+        }
+    }
+}

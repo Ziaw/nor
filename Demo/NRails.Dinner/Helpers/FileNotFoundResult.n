@@ -1,0 +1,27 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace NRails.Dinner.Helpers
+{
+    public class FileNotFoundResult : ActionResult
+    {
+        public Message : string { get; private set; }
+
+        public this(message : string)
+        {
+            Message = message;
+        }
+        
+        public override ExecuteResult(_ : ControllerContext) : void
+        {
+            throw HttpException(404, Message);
+        }
+    }
+}

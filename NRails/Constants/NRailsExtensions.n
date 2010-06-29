@@ -24,7 +24,7 @@ namespace System.Web.Mvc
         RouteValueDictionary : RouteValueDictionary { get; set; }
     }
     
-    public class NRActionResult : INRActionResult 
+    public class NRActionResult : INRActionResult
     {
         public this(area : string, controller : string, action : string)  
         {

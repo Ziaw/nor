@@ -1,0 +1,25 @@
+﻿<script src="http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.2" type="text/javascript"></script>
+<script src="${Url.Content(MVC.Scripts.NerdDinner)}" type="text/javascript"></script>
+
+<div id="theMap" style="width:520px"/></div>
+<script type="text/javascript">
+//<![CDATA[   
+    $(document).ready(function() {
+        var latitude = ${Convert.ToString(Model.Dinner.Latitude, CultureInfo.InvariantCulture)};
+        var longitude = ${Convert.ToString(Model.Dinner.Longitude, CultureInfo.InvariantCulture)};
+                
+        if ((latitude == 0) || (longitude == 0))
+            NerdDinner.LoadMap();
+        else
+            NerdDinner.LoadMap(latitude, longitude, mapLoaded);
+    });
+      
+    function mapLoaded() {
+        var title = "${Model.Dinner.Title}";
+        var address = "${Model.Dinner.Address}";
+    
+        NerdDinner.LoadPin(NerdDinner._map.GetCenter(), title, address);
+        NerdDinner._map.SetZoomLevel(14);
+    } 
+//]]>
+</script>
