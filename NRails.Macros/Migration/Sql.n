@@ -36,7 +36,7 @@ namespace NRails.Macros.Migration
   
   module SqlImpl
   {
-      paramRegex : Regex = Regex(@"\$\(?([\w\d]+\s*:\s*[\w\d]+|[\w\d]+)\)?");
+      paramRegex : Regex = Regex(@"\$\(?([\w\d]+\s*:\s*[\w\d\[\]]+|[\w\d]+)\)?");
       public SqlReader(args : array[PExpr], body : PExpr) : PExpr
       {
           def (db, sqlStr, args) = matchParams("select", args);
@@ -46,6 +46,7 @@ namespace NRails.Macros.Migration
               regexp match (m.Groups[1].Value)
               {
                 | @"(?<name>\w[\w\d]*)" => (name, "string");
+                | @"(?<name>\w[\w\d]*)\s*:\s*(?<type_>array\s*\[[\w\d]*\])" => (name, type_);
                 | @"(?<name>\w[\w\d]*)\s*:\s*(?<type_>\w[\w\d]*)" => (name, type_);
                 | _ => Message.FatalError($"Invalid var $(m.Groups[1].Value)");
               }
@@ -55,7 +56,7 @@ namespace NRails.Macros.Migration
 
           def getReaderMethod(type_, number)
           {
-              match (type_)
+              regexp match (type_)
               {
                   | "string" => <[ reader.GetString($(number : int)) ]>
                   | "char" => <[ reader.GetString($(number : int))[0] ]>
@@ -65,9 +66,28 @@ namespace NRails.Macros.Migration
                   | "float" => <[ reader.GetFloat($(number : int)) ]>
                   | "double" => <[ reader.GetDouble($(number : int)) ]>
                   | "int16" => <[ reader.GetInt16($(number : int)) ]>
-                  | "int" | "int32" => <[ reader.GetInt32($(number : int)) ]>
+                  | "int"
+                  | "int32" => <[ reader.GetInt32($(number : int)) ]>
                   | "int64" => <[ reader.GetInt64($(number : int)) ]>
                   | "datetime" => <[ reader.GetDateTime($(number : int)) ]>
+                  | "object" => <[ reader.GetValue($(number : int)) ]>
+                  | @"array\[(?<subtype>[\w\d]*)\]" =>
+                    match (subtype)
+                    {
+                        | "byte" => <[ {
+                                def len = reader.GetBytes($(number : int), 0, null, 0, 0) :> int;
+                                def result = array.[byte](len);
+                                _ = reader.GetBytes($(number : int), 0, result, 0, len);
+                                result;
+                            }]>
+                        | "char" => <[ {
+                                def len = reader.GetChars($(number : int), 0, null, 0, 0);
+                                def result = array.[char](len);
+                                _ = reader.GetChars($(number : int), 0, result, 0, len);
+                                result;
+                            }]>
+                        | _ => <[ reader.GetValue($(number : int)) :> array[$(subtype : dyn)] ]>
+                    }
                   | _ => Message.FatalError($"Unknown type $type_");
               }
           }

@@ -37,9 +37,9 @@ namespace NRails.Macros
           def managerType = PExpr.FromQualifiedIdentifier(t.Manager, managerType.FullName);
           
           t.Define(<[decl: mutable _dbHolder : $managerType; ]>);
-          t.Define(<[decl: protected override OnActionExecuted(ctx : ActionExecutedContext) : void
+          t.Define(<[decl: protected override OnResultExecuted(ctx : ResultExecutedContext) : void
                 {
-                    base.OnActionExecuted(ctx);
+                    base.OnResultExecuted(ctx);
                     
                     when (_dbHolder != null)
                     {
