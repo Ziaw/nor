@@ -16,6 +16,7 @@ namespace NRails.Migrations
   {
       AssignSchema(schema : DBSchema, db : DbManager) : void;
       Version : string {get};
+      NeedScope : bool {get};
       Up() : void;
       Down() : void;
   }

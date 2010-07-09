@@ -18,10 +18,12 @@ namespace NRails.Migrations
       mutable schema : DBSchema;
       protected mutable db : DbManager;
       version : string;
+      protected mutable needScope : bool;
       
       protected this([NotNull]version : string)
       {
           this.version = version;
+          this.needScope = true;
       }
 
       #region Helpers
@@ -72,6 +74,11 @@ namespace NRails.Migrations
       Version : string implements IMigration.Version
       {
           get {version;}
+      }
+
+      NeedScope : bool implements IMigration.NeedScope
+      {
+          get { needScope }
       }
       #endregion
       

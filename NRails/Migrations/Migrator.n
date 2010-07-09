@@ -193,44 +193,53 @@ namespace NRails.Migrations
               log(Info, $"Start migration '$(m.Version)'");
               try 
               {
-                  using (tx = TransactionScope())
-                  using (conn = schemaDriver.CreateConnection(connString), db = DbManager(conn))
+                  def tx = if (m.NeedScope) TransactionScope() else null;
+                  try
                   {
-                      conn.Open();
-                      using (m.HandlerScope(ExecuteAction(conn, schema, schemaDriver, _)))
+                      using (conn = schemaDriver.CreateConnection(connString), db = DbManager(conn))
                       {
-                          m.AssignSchema(schema, db);
-          
-                          match (exactMigrationDirection)
+                          conn.Open();
+                          using (m.HandlerScope(ExecuteAction(conn, schema, schemaDriver, _)))
                           {
-                              | MigrationDirection.Up => m.Up()
-                              | MigrationDirection.Down => m.Down()
-                              | _ => throw NotSupportedException();
+                              m.AssignSchema(schema, db);
+              
+                              match (exactMigrationDirection)
+                              {
+                                  | MigrationDirection.Up => m.Up()
+                                  | MigrationDirection.Down => m.Down()
+                                  | _ => throw NotSupportedException();
+                              }
                           }
+                          
+                          when (!m.Version.EndsWith("!"))
+                              {
+                                  def _dir = match (exactMigrationDirection)
+                                  {
+                                      | MigrationDirection.Up => "insert"
+                                      | MigrationDirection.Down => "delete"
+                                      | _ => throw NotSupportedException();
+                                  }
+                                  log(Debug, $"$(_dir) migration info $(m.Version)");
+                                  def version = SchemaMigrations();
+                                  version.Version = m.Version;
+                                  _ = match (exactMigrationDirection)
+                                  {
+                                      | MigrationDirection.Up => db.Insert(version)
+                                      | MigrationDirection.Down => db.Delete(version)
+                                      | _ => throw NotSupportedException();
+                                  }
+                                  log(Debug, $"migration info $(_dir) finished");
+                              }
+                          when (m.NeedScope)
+                          tx.Complete();
                       }
-                      
-                      when (!m.Version.EndsWith("!"))
-                          {
-                              def _dir = match (exactMigrationDirection)
-                              {
-                                  | MigrationDirection.Up => "insert"
-                                  | MigrationDirection.Down => "delete"
-                                  | _ => throw NotSupportedException();
-                              }
-                              log(Debug, $"$(_dir) migration info $(m.Version)");
-                              def version = SchemaMigrations();
-                              version.Version = m.Version;
-                              _ = match (exactMigrationDirection)
-                              {
-                                  | MigrationDirection.Up => db.Insert(version)
-                                  | MigrationDirection.Down => db.Delete(version)
-                                  | _ => throw NotSupportedException();
-                              }
-                              log(Debug, $"migration info $(_dir) finished");
-                          }
-                      tx.Complete();
+                      log(Debug, $"Finish migration '$(m.Version)'");
                   }
-                  log(Debug, $"Finish migration '$(m.Version)'");
+                  finally
+                  {
+                      when(m.NeedScope)
+                          tx.Dispose();
+                  }
               }
               catch 
               {
