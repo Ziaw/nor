@@ -1,6 +1,7 @@
 ﻿using Nemerle.Collections;
 using Nemerle.Text;
 using Nemerle.Utility;
+using Nemerle.Contrib;
 
 using System;
 using SCG = System.Collections.Generic;
@@ -118,6 +119,13 @@ namespace NRails.Migrations
                   col.Nullable = isNullable;
               });
           }
+          
+          tableSchema.Keys = tableSchema.Keys.With(KeySchema() with {
+            Columns = names;
+            KeyType = ConstraintType.KeyForeign;
+            RelTable = table;
+            RelColumns = refKey.Columns;
+          })
       }
       
       public Add([NotNull] colAction : TableColumnSchema -> void) : void

@@ -593,10 +593,8 @@ namespace NRails.Database
 
 			if (withConstraint)
 			{
-				if (!firstColumn)
-					stat.Append(",\n\t");
 				foreach (var key in table.Keys)
-					stat.Append(@" " + ParseKey(key));
+                    stat.Append(",\n\t" + ParseKey(key));
 			}
 
 			return string.Format("CREATE TABLE {0} (\n\t{1})",
