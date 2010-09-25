@@ -43,7 +43,7 @@ namespace NRails.Macros
         public ExcludeTables : string { get; private set; }
         public GenerateMissingModelsFromDbSchema : bool { get; private set; }
 
-        private this()
+        this()
         {
             IncludeTables = ".*";
             ExcludeTables = "sysdiagrams";

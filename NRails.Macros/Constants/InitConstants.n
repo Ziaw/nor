@@ -195,8 +195,6 @@ namespace NRails.Macros
         }
     }
     
-    static separators = array [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
-    
     fixFieldName(fileName : string) : string
     {
         def name = fileName.Replace('.', '_').Replace('-', '_');
@@ -214,6 +212,8 @@ namespace NRails.Macros
 
         when (Directory.Exists(path))
         {
+            def separators = array [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
+    
             def name = fixFieldName(dirName.Split(separators).Last());
 
             def helperType = tb.DefineNestedType(<[decl: 

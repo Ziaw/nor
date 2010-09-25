@@ -14,7 +14,7 @@ namespace NRails
       {
           def src = if (src != null) src else array[];
           
-          def dst = array.[T](src.Length+1);
+          def dst = array(src.Length+1);
           Array.Copy(src, dst, src.Length);
           dst[dst.Length - 1] = withMember;
           dst
@@ -26,7 +26,7 @@ namespace NRails
           def index = Array.IndexOf(src, withMember);
           if (index >= 0)
           {
-              def dst = array.[T](src.Length-1);
+              def dst = array(src.Length-1);
               Array.Copy(src, dst, index);
               
               when (index < src.Length)

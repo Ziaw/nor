@@ -76,13 +76,13 @@ namespace NRails.Macros.Migration
                     {
                         | "byte" => <[ {
                                 def len = reader.GetBytes($(number : int), 0, null, 0, 0) :> int;
-                                def result = array.[byte](len);
+                                def result = array(len);
                                 _ = reader.GetBytes($(number : int), 0, result, 0, len);
                                 result;
                             }]>
                         | "char" => <[ {
                                 def len = reader.GetChars($(number : int), 0, null, 0, 0);
-                                def result = array.[char](len);
+                                def result = array(len);
                                 _ = reader.GetChars($(number : int), 0, result, 0, len);
                                 result;
                             }]>
