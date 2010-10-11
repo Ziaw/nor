@@ -58,7 +58,7 @@ namespace NRails.Demo.Migrations
              };
              
              // remove dml sample data
-             sql(db, "delete from Person");
+             //sql(db, "delete from Person"); // commented because fails next migration
             
 /*
 CREATE TABLE Person

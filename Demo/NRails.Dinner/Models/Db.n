@@ -21,7 +21,7 @@ namespace NRails.Dinner.Models
       
     public NearestDinners(latitude : float, longitude : float) : IQueryable[Dinners]
     {
-        def t = DinnersAccessor.CreateInstance() : DinnersAccessor;
+        def t = DinnersAccessor.CreateInstance.[DinnersAccessor]();
         t.NearestDinners(this, latitude, longitude);
     }
   }
