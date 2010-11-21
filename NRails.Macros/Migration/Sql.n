@@ -133,7 +133,7 @@ namespace NRails.Macros.Migration
           def (sql, paramNames) = parseSql(sqlStr, args.ToArray());
           if (args.Length > paramNames.Count)
           {
-              Message.FatalError(args.Last().loc, "Get enough parameters in query");
+              Message.FatalError(args.Last().Location, "Get enough parameters in query");
           }
           else
           {
@@ -252,7 +252,7 @@ namespace NRails.Macros.Migration
                         def name = genParamName();
                         (<[ db.Parameter($(name : string), $p) ]>, name)
                       });
-                  | _ => Message.Error(values.loc, "Invalid values syntax"); []
+                  | _ => Message.Error(values.Location, "Invalid values syntax"); []
               }
           }
           def parsedValues = valParse(values);

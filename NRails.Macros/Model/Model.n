@@ -49,15 +49,13 @@ namespace NRails.Macros.Model
                 // а не по именам свойств
                 unless (existingProperties.Any(p => p == col.Name))
                 {
-                    def key = table.Keys.Any(t => t.Columns == col.Name && t.KeyType == ConstraintType.KeyForeign);
-
                     def clrType = col.Type.Type;
                     def nemerleType = regexp match (clrType.FullName)
                     {
                         | @"^(?<type>.+)\[\]$" => def elem = PExpr.FromQualifiedIdentifier(t.Manager, @type); <[ array[$elem] ]>;
                         | _ => PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
                     }
-                    def propName = $"$(col.Name)" + if (key) "_Id" else string.Empty;
+                    def propName = col.Name; 
                     def fieldMemberName = $"_$(propName)";
                    
                     t.Define(<[decl: 

@@ -70,7 +70,7 @@ namespace NRails.Macros.Migration
           {
               if (colNames.Contains(name.ToString()))
               {
-                  Message.Error(name.loc, $"Duplicate column '$name'");
+                  Message.Error(name.Location, $"Duplicate column '$name'");
                   <[]>
               }
               else
@@ -88,31 +88,31 @@ namespace NRails.Macros.Migration
                     match (name.ToString(), expr)
                     {
                         | ("change", [SyntaxElement.Expression(x)]) => 
-                            checkChangesMode(s.loc, () => compile(x, ParsedAction.Change()));
+                            checkChangesMode(s.Location, () => compile(x, ParsedAction.Change()));
 
                         | ("rename", [SyntaxElement.Expression(oldName), SyntaxElement.Expression(newName)]) => 
-                            checkChangesMode(s.loc, () => 
+                            checkChangesMode(s.Location, () => 
                                 match (oldName, newName)
                                 {
                                     | (PExpr.Ref(_), PExpr.Ref(_)) =>
                                        <[ $t.Rename($(oldName.ToString() : string), $(newName.ToString() : string)) ]>
-                                    | _ => Message.Error(name.loc, "Invalid drop syntax"); <[]>
+                                    | _ => Message.Error(name.Location, "Invalid drop syntax"); <[]>
                                 });
 
                         | ("drop", [SyntaxElement.Expression(x)]) => 
-                            checkChangesMode(s.loc, () => 
+                            checkChangesMode(s.Location, () => 
                                 match (x)
                                 {
                                     | PExpr.Ref(name) =>
                                        <[ $t.Drop($(name.ToString() : string)) ]>
-                                    | _ => Message.Error(x.loc, "Invalid drop syntax"); <[]>
+                                    | _ => Message.Error(x.Location, "Invalid drop syntax"); <[]>
                                 });
                         |  ("createindex", [SyntaxElement.Expression(expr)]) =>
                             CompileCreateIndex(t, expr);
                         |  ("dropindex", [SyntaxElement.Expression(expr)]) =>
                             CompileDropIndex(t, expr);
                         | _ => 
-                           Message.Error(s.loc, $"Invalid macro call '$(name.ToString())'");
+                           Message.Error(s.Location, $"Invalid macro call '$(name.ToString())'");
                            <[]>
                     }
                 | <[ $name :> $type_? ]> with isNullable = true
@@ -127,7 +127,7 @@ namespace NRails.Macros.Migration
                   newField(name, () => CompileColumn(t, c, name, type_, defExpr, isNullable, action));
 
                 | x => 
-                    Message.Error(x.loc, $"Ivalid field definition $x, $(x.GetType())");
+                    Message.Error(x.Location, $"Ivalid field definition $x, $(x.GetType())");
                     <[]>;
             }
           }
@@ -147,7 +147,7 @@ namespace NRails.Macros.Migration
                   | <[ $(id : name)(asc) ]> 
                   | <[ $(id : name) ]> => id.ToString();
                   | <[ $(id : name)(desc) ]> => $"$(id.ToString()) DESC";
-                  | _ => Message.Error(f.loc, "Invalid field, syntax: FieldName[(desc)]"); String.Empty;
+                  | _ => Message.Error(f.Location, "Invalid field, syntax: FieldName[(desc)]"); String.Empty;
               }
           }
           match (expr)
@@ -156,7 +156,7 @@ namespace NRails.Macros.Migration
                 def fieldsDef = String.Join(", ", fields.Map(parseField).ToArray());
                 <[ $t.CreateIndex($(indexName.ToString() : string), $(fieldsDef : string)); ]>
               | _ => 
-                Message.Error(expr.loc, "Invalid index definition, valid syntax: createindex IndexName(field1, field2 [desc])");
+                Message.Error(expr.Location, "Invalid index definition, valid syntax: createindex IndexName(field1, field2 [desc])");
                 <[]>
           }
       }
@@ -168,7 +168,7 @@ namespace NRails.Macros.Migration
               | <[ $(indexName : name) ]> =>
                 <[ $t.DropIndex($(indexName.ToString() : string)); ]>
               | _ => 
-                Message.Error(expr.loc, "Invalid dropindex syntax, valid: dropindex IndexName");
+                Message.Error(expr.Location, "Invalid dropindex syntax, valid: dropindex IndexName");
                 <[]>
           }
       }
@@ -192,7 +192,7 @@ namespace NRails.Macros.Migration
                   }
               
               | _ => 
-                Message.Error(type_.loc, "Only create references allowed");
+                Message.Error(type_.Location, "Only create references allowed");
                 <[]>
           }
       }
@@ -263,13 +263,13 @@ namespace NRails.Macros.Migration
                           | <[ Scale = $(number : int)]>
                           | <[ scale = $(number : int)]> 
                             => 
-                            when (size > 0) Message.Error(parm.loc, "Can not define scale with size.");
+                            when (size > 0) Message.Error(parm.Location, "Can not define scale with size.");
                             scale = number;
                             
                           | <[ Precision = $(number : int)]>
                           | <[ precision = $(number : int)]> 
                             => 
-                            when (size > 0) Message.Error(parm.loc, "Can not define precision with size.");
+                            when (size > 0) Message.Error(parm.Location, "Can not define precision with size.");
                             precision = number;
                           
                           | <[ Size = $(number : int)]> 
@@ -278,7 +278,7 @@ namespace NRails.Macros.Migration
                           | <[ size = $(number : int)]> 
                           | <[ $(number : int)]> 
                             =>
-                            when (precision > 0 || scale > 0) Message.Error(parm.loc, "Can not define size with precision and scale.");
+                            when (precision > 0 || scale > 0) Message.Error(parm.Location, "Can not define size with precision and scale.");
                             size = number;
 
                           | <[ pk ]> 
@@ -292,7 +292,7 @@ namespace NRails.Macros.Migration
                               Add(<[ $c.Increment = $(increment : int); ]>);
                                   
                           | <[ $x = $_ ]> 
-                          | x => Message.Error(x.loc, $"Invalid param '$x'")
+                          | x => Message.Error(x.Location, $"Invalid param '$x'")
                       }
                     }
                     
@@ -318,7 +318,7 @@ namespace NRails.Macros.Migration
                 }
                 else
                 {
-                    Message.Error(typeName.loc, $"Invalid type name '$strType'");
+                    Message.Error(typeName.Location, $"Invalid type name '$strType'");
                 }
           }
           
@@ -329,7 +329,7 @@ namespace NRails.Macros.Migration
               // и преобразовывать их в нужный сиквельный эквивалент (похоже тулкит умеет, глядел мельком)
               | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $("'"  + x.ToString() + "'": string) ; ]>);
               | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $("'"  + x + "'": string); ]>);
-              | <[ $x ]> => Message.Error(x.loc, "Only string or int default value supported.");
+              | <[ $x ]> => Message.Error(x.Location, "Only string or int default value supported.");
           }
           
           match (action)
