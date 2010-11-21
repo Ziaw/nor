@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
-using NRails.Macros.Model;;
+using NRails.Macros.Model;
 
 namespace NRails.Macros
 {
@@ -60,20 +60,26 @@ namespace NRails.Macros
             nss.GetTypeBuilders().Map(tbToClassType).Filter(_.IsSome).Map(_.Value);
         }
 
+        def engine = mvcBuilder.Manager.GetNRailsEngine();
         match (phase)
         {
             | Phase.BeforeInheritance =>
-                def dbManagers = getClasses().MapFiltered(t => t is ClassType.DbManager, t => t.tb);
-                when (dbManagers.Length == 0)
-                    Message.FatalError("Class with attribute DatabaseManager not found");
-                when (dbManagers.Length > 1)
-                    Message.FatalError($"Multiple DatabaseManagers: ..$(dbManagers.Map(_.FullName))");
-                DatabaseManagerImpl.SetDbType(dbManagers.First());
-                DatabaseManagerImpl.GenerateHelpers(dbManagers.First());
+                when (!engine.Cfg.NoDb)
+                {
+                    def dbManagers = getClasses().MapFiltered(t => t is ClassType.DbManager, t => t.tb);
+                    when (dbManagers.Length == 0)
+                        Message.FatalError("Class with attribute DatabaseManager not found");
+                    when (dbManagers.Length > 1)
+                        Message.FatalError($"Multiple DatabaseManagers: ..$(dbManagers.Map(_.FullName))");
+                    DatabaseManagerImpl.SetDbType(dbManagers.First());
+                    DatabaseManagerImpl.GenerateHelpers(dbManagers.First());
+                }
             | Phase.WithTypedMembers =>
                 def classes = getClasses();
-                ProcessModels(classes.MapFiltered(_ is ClassType.Model, _.tb), mvcBuilder, ns);
-
+                when (!engine.Cfg.NoDb)
+                {
+                    ProcessModels(classes.MapFiltered(_ is ClassType.Model, _.tb), mvcBuilder, ns);
+                }
                 classes.MapFiltered(_ is ClassType.Controller, _.tb)
                     .Iter(ProcessController(_, mvcBuilder));
 

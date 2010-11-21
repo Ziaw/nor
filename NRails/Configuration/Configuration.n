@@ -60,5 +60,10 @@ namespace NRails
               connectionStrings[ConnectionStringName];
           }
       }
+
+      public NoDb : bool
+      {
+          get { !connectionStrings.ContainsKey(ConnectionStringName) }
+      }
   }
 }
