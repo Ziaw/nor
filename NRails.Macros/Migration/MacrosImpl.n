@@ -111,7 +111,7 @@ namespace NRails.Macros.Migration
                             CompileCreateIndex(t, expr);
                         |  ("dropindex", [SyntaxElement.Expression(expr)]) =>
                             CompileDropIndex(t, expr);
-                        | _ => 
+                        | (_, _) => 
                            Message.Error(s.Location, $"Invalid macro call '$(name.ToString())'");
                            <[]>
                     }

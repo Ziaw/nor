@@ -49,12 +49,7 @@ namespace NRails.Macros.Model
                 // а не по именам свойств
                 unless (existingProperties.Any(p => p == col.Name))
                 {
-                    def clrType = col.Type.Type;
-                    def nemerleType = regexp match (clrType.FullName)
-                    {
-                        | @"^(?<type>.+)\[\]$" => def elem = PExpr.FromQualifiedIdentifier(t.Manager, @type); <[ array[$elem] ]>;
-                        | _ => PExpr.FromQualifiedIdentifier(t.Manager, clrType.FullName);
-                    }
+                    def nemerleType = ConvertToNemerleType(t.Manager, col);
                     def propName = col.Name; 
                     def fieldMemberName = $"_$(propName)";
                    
@@ -122,6 +117,17 @@ namespace NRails.Macros.Model
           catch 
           {
              | e => Message.Error($"$(t.Name) model error: $(e.ToString())");
+          }
+      }
+      
+      public ConvertToNemerleType(manager : ManagerClass, col : TableColumnSchema) : PExpr
+      {
+          def clrType = col.Type.Type;
+          
+          regexp match (clrType.FullName)
+          {
+              | @"^(?<type>.+)\[\]$" => def elem = PExpr.FromQualifiedIdentifier(manager, @type); <[ array[$elem] ]>;
+              | _ => PExpr.FromQualifiedIdentifier(manager, clrType.FullName);
           }
       }
   }

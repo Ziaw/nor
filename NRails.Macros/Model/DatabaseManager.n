@@ -9,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using NRails.Database;
+using NRails.Database.Schema;
+
 namespace NRails.Macros.Model
 {
   internal module DatabaseManagerImpl
@@ -52,7 +55,7 @@ namespace NRails.Macros.Model
     
     private SetModelTypes(t : TypeBuilder, modelTypes : Set[MyTypeInfo]) : void
     {
-      t.Manager.UserData["ModelTypes"] = modelTypes;
+        t.Manager.UserData["ModelTypes"] = modelTypes;
     }
 
     public GetTypeForTable(t : TypeBuilder, name : string) : string
@@ -94,17 +97,20 @@ namespace NRails.Macros.Model
     public GenerateTables(t : TypeBuilder) : void
     {
       def existingProperties = t.GetProperties();
+      def existingMethods = t.GetMethods();
       def hintBuilder = Text.StringBuilder();
       def modelTypes = GetModelTypes(t);
+      def engine = t.Manager.GetNRailsEngine();
+      
       foreach (modelType in modelTypes)
       {
         def typeName = modelType.Name;
         def propertyName = $"$(typeName)s";
+        def typeFullName = modelType.FullName;
+        def modelType = PExpr.FromQualifiedIdentifier(t.Manager, typeFullName);
 
         unless (existingProperties.Any(p => p.Name == propertyName))
         {
-            def typeFullName = modelType.FullName;
-            def modelType = PExpr.FromQualifiedIdentifier(t.Manager, typeFullName);
             
             t.Define(<[decl:
                 public $(propertyName : dyn) : BLToolkit.Data.Linq.Table[ $modelType ]
@@ -115,7 +121,48 @@ namespace NRails.Macros.Model
 
             _ = hintBuilder.Append($"$propertyName : table of $(typeName)\n");
         }
+
+        def table = engine.GetTable(typeName);
+        def pk = table.Keys
+            .Where(k => k.KeyType == ConstraintType.KeyPrimary)
+            .Select(k => k.Columns.Split(',').ToNList().Map(_.Trim()))
+            .SingleOrDefault();
+        
+        def getByKeyName = $"$(typeName)ByKey";
+        
+        when (pk != null && pk.Any() && !existingMethods.Any(p => p.Name == getByKeyName))
+        {
+            def cols = pk.Map(table.GetColumn(_));
+            def parms = cols.Map(col => {
+                def parType = ModelImpl.ConvertToNemerleType(t.Manager, col);
+                
+                PParameter(<[ $(col.Name : dyn) : $parType ]>)
+            });
+            
+            def model = <[ $("model" : usesite) ]>;
+            
+            def parmsAndCols = parms.Zip(cols);
+            
+            def makeAnds(parmsAndCols)
+            {
+                | (parm, col) :: [] =>
+                    <[ $model.$(col.Name : dyn) == $(parm.Name : dyn) ]>
+                | (parm, col) :: tail => 
+                    <[ $model.$(col.Name : dyn) == $(parm.Name : dyn) && $(makeAnds(tail)) ]>
+            }
+            
+            
+            t.Define(<[decl:
+                public $(getByKeyName : dyn)(..$parms) : $modelType 
+                {
+                    this.GetTable.[$modelType]().Single($model => { 
+                        $(makeAnds(parmsAndCols))
+                    });
+                }
+            ]>);
+        }
       }
+
       unless (hintBuilder.Length == 0)
           Message.Hint("\n" + hintBuilder.ToString());
     }

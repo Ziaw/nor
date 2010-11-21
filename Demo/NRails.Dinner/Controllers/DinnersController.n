@@ -92,7 +92,7 @@ namespace NRails.Dinner
         [AcceptVerbs(HttpVerbs.Post), Authorize]
         public Delete(id : int, _confirmButton : string) : ActionResult
         {
-            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+            def dinner = db.DinnersByKey(id);
 
             if (dinner == null)
                 View("NotFound")
@@ -133,7 +133,7 @@ namespace NRails.Dinner
         [Authorize]
         public Edit(id : int) : ActionResult
         {
-            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+            def dinner = db.DinnersByKey(id);
 
             if (!dinner.IsHostedBy(User.Identity.Name))
                 View("InvalidOwner")
@@ -144,7 +144,7 @@ namespace NRails.Dinner
         [AcceptVerbs(HttpVerbs.Post), Authorize]
         public Edit(id : int, _ : FormCollection) : ActionResult
         {
-            def dinner = db.Dinnerss.Single(t => t.DinnerID == id);
+            def dinner = db.DinnersByKey(id);
 
             if (!dinner.IsHostedBy(User.Identity.Name))
                 View("InvalidOwner")
