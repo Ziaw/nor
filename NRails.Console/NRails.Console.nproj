@@ -118,12 +118,12 @@
 	-->
   <PropertyGroup>
     <PostBuildEvent>
-xcopy /D /Y $(TargetDir)*.dll $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
-xcopy /D /Y $(TargetDir)*.exe $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
-xcopy /D /Y $(TargetDir)*.exe.config $(SolutionDir)\Demo\NRails.Demo\lib\nrails\
-xcopy /D /Y $(TargetDir)*.dll $(SolutionDir)\Demo\NRails.Dinner\lib\nrails\
-xcopy /D /Y $(TargetDir)*.exe $(SolutionDir)\Demo\NRails.Dinner\lib\nrails\
-xcopy /D /Y $(TargetDir)*.exe.config $(SolutionDir)\Demo\NRails.Dinner\lib\nrails\
+xcopy /D /Y "$(TargetDir)*.dll" "$(SolutionDir)Demo\NRails.Demo\lib\nrails\"
+xcopy /D /Y "$(TargetDir)*.exe" "$(SolutionDir)Demo\NRails.Demo\lib\nrails\"
+xcopy /D /Y "$(TargetDir)*.exe.config" "$(SolutionDir)Demo\NRails.Demo\lib\nrails\"
+xcopy /D /Y "$(TargetDir)*.dll" "$(SolutionDir)Demo\NRails.Dinner\lib\nrails\"
+xcopy /D /Y "$(TargetDir)*.exe" "$(SolutionDir)Demo\NRails.Dinner\lib\nrails\"
+xcopy /D /Y "$(TargetDir)*.exe.config" "$(SolutionDir)Demo\NRails.Dinner\lib\nrails\"
     </PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -271,7 +271,7 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /D /Y $(SolutionDir)\NRails.Macros\bin\$(Configuration)\NRails.Macros.dll $(TargetDir)
+    <PreBuildEvent>xcopy /D /Y "$(SolutionDir)NRails.Macros\bin\$(Configuration)\NRails.Macros.dll" "$(TargetDir)"
     </PreBuildEvent>
   </PropertyGroup>
 </Project>

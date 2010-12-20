@@ -524,8 +524,8 @@
   </ProjectExtensions>
   <PropertyGroup>
     <PreBuildEvent>
-      xcopy /D /Y $(SolutionDir)\NRails.Macros\bin\$(Configuration)\NRails.Macros.dll $(TargetDir)
-      xcopy /D /Y $(SolutionDir)\Nemerle.Contrib\bin\$(Configuration)\Nemerle.Contrib.dll $(TargetDir)
+      xcopy /D /Y "$(SolutionDir)NRails.Macros\bin\$(Configuration)\NRails.Macros.dll" "$(TargetDir)"
+      xcopy /D /Y "$(SolutionDir)Nemerle.Contrib\bin\$(Configuration)\Nemerle.Contrib.dll" "$(TargetDir)"
     </PreBuildEvent>
   </PropertyGroup>
 </Project>

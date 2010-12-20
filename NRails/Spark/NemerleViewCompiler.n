@@ -58,8 +58,7 @@ namespace NRails.Spark
             {
               def thread = System.Threading.Thread(
                            fun(){ manager.Run() },
-                           //Указание размера стека для треда напрямую
-                           //Необходимо для компилятора, т.к. он падает на значениях размера стека по умолчанию
+                           //Setting stack size to a greater value prevents compiler from crashing with StackOverflowException
                            5*System.IntPtr.Size*1024*1024); 
               thread.Start();
               thread.Join();
