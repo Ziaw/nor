@@ -31,7 +31,13 @@ namespace NRails.Console
           options.ReferencedLibraries = [loc.[Engine]()];
           options.LibraryPaths = [@"C:\Program Files\Nemerle", Assembly.GetEntryAssembly().Location];
           
-          manager.Run();
+          def thread = System.Threading.Thread(
+                       fun(){ manager.Run() },
+                       //Указание размера стека для треда напрямую
+                       //Необходимо для компилятора, т.к. он падает на значениях размера стека по умолчанию
+                       5*System.IntPtr.Size*1024*1024); 
+          thread.Start();
+          thread.Join();
           
           manager.GeneratedAssembly
       }

@@ -56,7 +56,13 @@ namespace NRails.Spark
             options.Sources = [filename];
             try
             {
-                manager.Run(); // crash !?!?
+              def thread = System.Threading.Thread(
+                           fun(){ manager.Run() },
+                           //Указание размера стека для треда напрямую
+                           //Необходимо для компилятора, т.к. он падает на значениях размера стека по умолчанию
+                           5*System.IntPtr.Size*1024*1024); 
+              thread.Start();
+              thread.Join();
             }
             catch
             {
