@@ -19,71 +19,102 @@ public class ClassGenerator
 
     public Generate(namespaceName : string, nameMigration : string, usings : list[string], dbSchema : DBSchema) : string
     {
-        def tables = dbSchema.Tables.Where(t => t.Name != "SchemaMigrations")
-            .OrderBy(t => t, CompareTableSchema()); // not best way to sort tables, but u can always edit generated migration ..
+        def comparer = TableSchemaComparer();
+        def tables = dbSchema.Tables.Filter(t => t.Name != "SchemaMigrations")
+            .Sort(comparer.Compare);
 
-        def tablesAnsColumns = tables.Map(t => {
-            def column(col : TableColumnSchema)
+        def makeTableDef(table : TableSchema) 
+        {
+            def foreignKeys = table.Keys
+              .Filter(k => k.KeyType == ConstraintType.KeyForeign);
+              
+            def column(col : TableColumnSchema) 
             {
                 mutable tp = col.Type.DbType.ToString();
                 mutable attrs = [];
                 
                 when (col.Nullable)
-                    tp = $"$tp?";
+                    tp += "?";
                 
-                if (col.Size > 0)
-                    attrs = $"len = $(col.Size)" :: attrs;
-                else
-                    when (col.Type.Precision > 0 || col.Type.Precision > 0)
-                        attrs = $"precision = $(col.Type.Precision), seed = $(col.Type.Scale)" :: attrs;
+                match (col)
+                {
+                  | col when col.Size > 0 => 
+                    attrs ::= $"len = $(col.Size)";
+                  | col when col.Type.Precision > 0 || col.Type.Precision > 0 =>
+                    attrs ::= $"precision = $(col.Type.Precision), seed = $(col.Type.Scale)";
+                  | _ => ()
+                }
 
-                def keyPrimary = t.KeyPrimary();
-                when (keyPrimary != null && keyPrimary.Columns == col.Name)
-                    attrs = "pk" :: attrs;
+                match (table.KeyPrimary())
+                {
+                  | null => ();
+                  | x when x.Columns.Split(',').Map(_.Trim()).Contains(col.Name) =>
+                    attrs ::= "pk";
+                }
+                
                 when (col.AutoIncrement)
-                    attrs = $"identity($(col.Seed), $(col.Increment))" :: attrs;
+                    attrs ::= $"identity($(col.Seed), $(col.Increment))";
 
                 def attrString = if (attrs.Any())
                     "(" + String.Join(", ", attrs.Rev().ToArray()) + ")"
                 else
                     String.Empty;
                     
-                tp = $"$tp$attrString";
-
-                def defaultKey = t.Keys.Where(t => t.Columns == col.Name && t.KeyType == ConstraintType.Default).SingleOrDefault();
-                when (defaultKey != null)
+                tp += attrString;
+                
+                def isDefaultConstrint(k, colName)
                 {
-                    def df = regexp match (col.DefaultValue)
-                    {
-                        | @"^'(?<value>.+)'$" => $"\"$value\""
-                        | _ => col.DefaultValue
-                    }
-                    tp = $"$tp = $df";
+                  k.Columns == colName && k.KeyType == ConstraintType.Default
                 }
+
+                when (table.Keys.Filter(isDefaultConstrint(_, col.Name)).Any())
+                {
+                  def df = match (col.DefaultValue)
+                  {
+                      | x when x.StartsWith("'") => "\"" + x.Trim('\'') + "\""
+                      | x => x
+                  }
+                  tp = $"$tp = $df";
+                }
+                  
                 (col.Name, tp)
             }
             
-            def key(key : KeySchema)
+            def foreignKey(key : KeySchema) 
             {
-                (key.Columns, $"$(key.RelTable)")
+                (key.Columns, key.RelTable)
             }
             
-            def columns = t.Columns.Where(c => !t.Keys.Any(k => c.Name == k.Columns && k.KeyType == ConstraintType.KeyForeign)).Map(column);
-            def keys = t.Keys.Where(t => t.KeyType == ConstraintType.KeyForeign).Map(key);
+            def isForeignKey(col)
+            {
+              match (foreignKeys.Filter(fk => fk.Columns == col.Name))
+              {
+                | [] => false
+                | _ => true
+              }
+            }
 
-            (t.Name, columns, keys)
-        });
+            def columns = table.Columns
+              .Filter(c => !isForeignKey(c))
+              .Map(column)
+              .ToList();
+              
+            def keys = foreignKeys.Map(foreignKey);
+
+            (table.Name, columns, keys)
+        }; 
+        def tablesAndColumns = tables.Map(makeTableDef);
         def forDrop = tables.ToListRev().Map(_.Name);
-        Generate(namespaceName, nameMigration, usings, tablesAnsColumns, forDrop);
+        Generate(namespaceName, nameMigration, usings, tablesAndColumns, forDrop);
     }
 
-    class CompareTableSchema : IComparer[TableSchema]
+    class TableSchemaComparer : IComparer[TableSchema]
     {
         public Compare(x : TableSchema, y : TableSchema) : int
         {
             def links(t)
             {
-                t.Keys.Where(t => t.KeyType == ConstraintType.KeyForeign).Map(_.RelTable)
+                t.Keys.Filter(t => t.KeyType == ConstraintType.KeyForeign).Map(_.RelTable)
             }
             if (links(x).Contains(y.Name))
                 1
@@ -96,7 +127,7 @@ public class ClassGenerator
     }
 
     public Generate(_namespaceName : string, _nameMigration : string, _usings : list[string],
-        _tablesColumnsKeys : list[string*list[string*string]*list[string*string]],
+        _tablesColumnsKeys : list[string*list[string*string]*list[string*string]], // TODO: ugly design
         _forDrop : list[string]) : string
     {
     <#..$(_usings; "\n"; GenerateUsing)
