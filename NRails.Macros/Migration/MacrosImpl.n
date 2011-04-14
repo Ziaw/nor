@@ -298,7 +298,7 @@ namespace NRails.Macros.Migration
                     
                     parms.Iter(compileParm);
                     
-                    def sqlDbType = <[System.Data.SqlDbType.$(columnType.DbType.ToString() : usesite)]>;
+                    def sqlDbType = <[System.Data.SqlDbType.$(columnType.SqlDbType.ToString() : usesite)]>;
                 
                     def typeExpr = match (size, precision, scale)
                     {

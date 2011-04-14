@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <NoStdLib>true</NoStdLib>
     <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
@@ -15,7 +15,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NRails</RootNamespace>
     <AssemblyName>NRails</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -36,11 +36,10 @@
     <DocumentationFile>bin\Release\NRails.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BLToolkit.3, Version=4.0.0.987, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
-      <Name>BLToolkit.3</Name>
-      <AssemblyName>BLToolkit.3.dll</AssemblyName>
-      <HintPath>..\lib\BLToolkit.3.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="BLToolkit.4, Version=4.0.0.1052, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+      <Name>BLToolkit.4</Name>
+      <AssemblyName>BLToolkit.4.dll</AssemblyName>
+      <HintPath>..\lib\BLToolkit.4.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
       <Name>log4net</Name>
@@ -49,43 +48,41 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="Spark, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+    <Reference Include="Spark">
       <Name>Spark</Name>
       <AssemblyName>Spark.dll</AssemblyName>
       <HintPath>..\lib\Spark.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Spark.Web.Mvc, Version=1.1.0.0, Culture=neutral, PublicKeyToken=7f8549eed921a12c">
+    <Reference Include="Spark.Web.Mvc">
       <Name>Spark.Web.Mvc</Name>
       <AssemblyName>Spark.Web.Mvc.dll</AssemblyName>
       <HintPath>..\lib\Spark.Web.Mvc.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Name>System.Configuration</Name>
-      <AssemblyName>System.configuration.dll</AssemblyName>
+    <Reference Include="System.Configuration">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Transactions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-      <Name>System.Transactions</Name>
-      <AssemblyName>System.Transactions.dll</AssemblyName>
+    <Reference Include="System.Transactions">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Web, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Name>System.Web</Name>
-      <AssemblyName>System.Web.dll</AssemblyName>
+    <Reference Include="System.Web">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+    <Reference Include="System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <Name>System.Web.Mvc</Name>
       <AssemblyName>System.Web.Mvc.dll</AssemblyName>
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -153,11 +150,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <MacroProjectReference Include="..\Nemerle.Contrib\Nemerle.Contrib.nproj">
-      <Name>Nemerle.Contrib</Name>
-      <Project>{bd5f199e-9539-408b-80fe-a040cb93a141}</Project>
-      <Private>False</Private>
-    </MacroProjectReference>
     <ProjectReference Include="..\NRails.Database\NRails.Database.csproj">
       <Name>NRails.Database</Name>
       <Project>{9bbc85b7-7590-43eb-8fe6-8a1ef9218e08}</Project>

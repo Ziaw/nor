@@ -30,7 +30,7 @@ public class ClassGenerator
               
             def column(col : TableColumnSchema) 
             {
-                mutable tp = col.Type.DbType.ToString();
+                mutable tp = col.Type.SqlDbType.ToString();
                 mutable attrs = [];
                 
                 when (col.Nullable)

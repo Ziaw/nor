@@ -43,7 +43,7 @@ namespace NRails.Database.Schema
                 if (Type == null)
                     Type = new SqlDataType(SqlDbType.Structured, value);
                 else
-                    Type = new SqlDataType(Type.DbType, value);
+                    Type = new SqlDataType(Type.SqlDbType, value);
             }
         }
 
@@ -60,7 +60,7 @@ namespace NRails.Database.Schema
                 if (Type == null)
                     Type = new SqlDataType(SqlDbType.Structured, value, 0);
                 else
-                    Type = new SqlDataType(Type.DbType, Type.Precision, value);
+                    Type = new SqlDataType(Type.SqlDbType, Type.Precision, value);
             }
         }
 
@@ -77,7 +77,7 @@ namespace NRails.Database.Schema
                 if (Type == null)
                     Type = new SqlDataType(SqlDbType.Structured, 0, value);
                 else
-                    Type = new SqlDataType(Type.DbType, Type.Precision, value);
+                    Type = new SqlDataType(Type.SqlDbType, Type.Precision, value);
             }
         }
 

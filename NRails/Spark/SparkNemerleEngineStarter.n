@@ -5,7 +5,7 @@ using Spark.Web.Mvc;
 using Spark;
 using Spark.Compiler;
 using Spark.FileSystem;
-using Nemerle.Contrib;
+using Nemerle.Extensions;
 
 namespace NRails.Spark
 {
@@ -14,7 +14,7 @@ namespace NRails.Spark
         public static ConfigureContainer(container : ISparkServiceContainer) : ISparkServiceContainer 
         {
             container.SetServiceBuilder.[IViewEngine](c => SparkViewFactory(c.GetService.[ISparkSettings]()));
-            container.SetServiceBuilder.[ISparkViewEngine](c => SparkViewEngine() with
+            container.SetServiceBuilder.[ISparkViewEngine](c => SparkViewEngine() <-
                          {
                              LanguageFactory = c.GetService.[ISparkLanguageFactory]();
                              ExtensionFactory = c.GetService.[ISparkExtensionFactory]();

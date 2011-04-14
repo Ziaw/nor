@@ -415,16 +415,12 @@ namespace NRails.Database.Mssql
 
         class SqlTypeBuilder : MsSql2005SqlProvider
         {
-            public SqlTypeBuilder(DataProviderBase dataProvider) : base(dataProvider)
-            {
-            }
-
             public string BuildType(SqlDataType type)
             {
                 // workaround toolkit bug, when money generates with precision and scale, as Money(19,4)
-                if (type.DbType == SqlDbType.Money || type.DbType == SqlDbType.SmallMoney)
+                if (type.SqlDbType == SqlDbType.Money || type.SqlDbType == SqlDbType.SmallMoney)
                 {
-                    return type.DbType.ToString();
+                    return type.SqlDbType.ToString();
                 }
                 var sb = new StringBuilder();
 
@@ -435,7 +431,7 @@ namespace NRails.Database.Mssql
 
 		public static string TypeDbsmToSql(TableColumnSchema eColumn)
 		{
-		    return new SqlTypeBuilder(null).BuildType(eColumn.Type);
+		    return new SqlTypeBuilder().BuildType(eColumn.Type);
 		}
 		#endregion
 

@@ -149,6 +149,8 @@ namespace NRails.Macros.Model
                     <[ $model.$(col.Name : dyn) == $(parm.Name : dyn) ]>
                 | (parm, col) :: tail => 
                     <[ $model.$(col.Name : dyn) == $(parm.Name : dyn) && $(makeAnds(tail)) ]>
+                | _ =>
+                    throw InvalidOperationException();
             }
             
             
