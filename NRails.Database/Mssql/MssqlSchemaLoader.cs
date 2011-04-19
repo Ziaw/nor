@@ -426,17 +426,20 @@ namespace NRails.Database.Mssql
 
                 BuildDataType(sb, type);
                 // fix incorrect length
+                string result = sb.ToString();
+                
                 switch (type.SqlDbType)
                 {
                     case SqlDbType.NText:
-                        return sb.ToString().Replace(String.Format("({0})", type.Length), "");
+                        return result.Replace(String.Format("({0})", type.Length), "");
                     case SqlDbType.VarBinary:
                     case SqlDbType.VarChar:
                     case SqlDbType.NVarChar:
                         if (type.Length == SqlDataType.GetMaxLength(type.SqlDbType))
-                            return sb.ToString().Replace(String.Format("({0})", type.Length), "(MAX)");
+                            return result.Replace(String.Format("({0})", type.Length), "(MAX)");
+                        break;
                 }
-                return sb.ToString();
+                return result;
             }
         }
 
