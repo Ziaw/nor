@@ -23,6 +23,8 @@ namespace NRails.Demo.Migrations
                   Id : Guid(pk);
                   Zip : string?(len = 10) = "zzzz";
                   createindex IDX_Test(Zip, Id(desc));
+		  Test: ntext;
+		  TestMaxString: string;
               }
               
               change Test

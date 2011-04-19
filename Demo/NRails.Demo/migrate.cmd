@@ -1,1 +1,1 @@
-nr migrate
+nr migrate %*

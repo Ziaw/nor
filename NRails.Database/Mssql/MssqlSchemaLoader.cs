@@ -358,7 +358,7 @@ namespace NRails.Database.Mssql
 				case "BIGINT":
                     return SqlDataType.DbBigInt;
 				case "BINARY":
-                    return new SqlDataType(SqlDbType.Binary, size < 0 ? 8000 : size);
+                    return new SqlDataType(SqlDbType.Binary, size);
                 case "CHAR":
                     return new SqlDataType(SqlDbType.Char, size);
 				case "CURSOR":
@@ -379,9 +379,9 @@ namespace NRails.Database.Mssql
 				case "NCHAR":
                     return new SqlDataType(SqlDbType.NChar, size);
                 case "NVARCHAR":
-					return new SqlDataType(SqlDbType.NVarChar, size);
+					return new SqlDataType(SqlDbType.NVarChar, size <= 0 ? SqlDataType.GetMaxLength(SqlDbType.NVarChar) : size);
 				case "NTEXT":
-                    return new SqlDataType(SqlDbType.NText, size);
+                    return new SqlDataType(SqlDbType.NText);
 				case "REAL":
                     return SqlDataType.DbReal;
 				case "SMALLMONEY":
@@ -403,9 +403,9 @@ namespace NRails.Database.Mssql
                 case "UNIQUEIDENTIFIER":
                     return SqlDataType.Guid;
                 case "VARBINARY":
-                    return new SqlDataType(SqlDbType.VarBinary, size < 0 ? 8000 : size);
+                    return new SqlDataType(SqlDbType.VarBinary, size <= 0 ? SqlDataType.GetMaxLength(SqlDbType.VarBinary) : size);
                 case "VARCHAR":
-                    return new SqlDataType(SqlDbType.VarChar, size);
+                    return new SqlDataType(SqlDbType.VarChar, size <= 0 ? SqlDataType.GetMaxLength(SqlDbType.VarChar) : size);
                 case "XML":
                     return SqlDataType.DbXml;
 				default:
@@ -425,6 +425,17 @@ namespace NRails.Database.Mssql
                 var sb = new StringBuilder();
 
                 BuildDataType(sb, type);
+                // fix incorrect length
+                switch (type.SqlDbType)
+                {
+                    case SqlDbType.NText:
+                        return sb.ToString().Replace(String.Format("({0})", type.Length), "");
+                    case SqlDbType.VarBinary:
+                    case SqlDbType.VarChar:
+                    case SqlDbType.NVarChar:
+                        if (type.Length == SqlDataType.GetMaxLength(type.SqlDbType))
+                            return sb.ToString().Replace(String.Format("({0})", type.Length), "(MAX)");
+                }
                 return sb.ToString();
             }
         }

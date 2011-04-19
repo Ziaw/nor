@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{FCE4439C-9BD4-4418-972C-16DAB5DE776F}"
+EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails", "NRails\NRails.nproj", "{74A35DA7-49A5-4260-87D9-D559D6AA1DAA}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Tests", "NRails.Tests\NRails.Tests.nproj", "{B4287CB5-676C-46AB-A4F1-C1C9FD184DE8}"
@@ -11,11 +13,7 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Macros", "NRails.Mac
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Console", "NRails.Console\NRails.Console.nproj", "{9599F34C-A9B1-4704-9E0D-F8C9D09AD9E3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{FCE4439C-9BD4-4418-972C-16DAB5DE776F}"
-EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Demo", "Demo\NRails.Demo\NRails.Demo.nproj", "{810ED8D0-4804-4A3D-B1F9-AE596BBB3FBC}"
-EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Contrib", "Nemerle.Contrib\Nemerle.Contrib.nproj", "{BD5F199E-9539-408B-80FE-A040CB93A141}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "NRails.Dinner", "Demo\NRails.Dinner\NRails.Dinner.nproj", "{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}"
 EndProject
@@ -49,10 +47,6 @@ Global
 		{810ED8D0-4804-4A3D-B1F9-AE596BBB3FBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{810ED8D0-4804-4A3D-B1F9-AE596BBB3FBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{810ED8D0-4804-4A3D-B1F9-AE596BBB3FBC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BD5F199E-9539-408B-80FE-A040CB93A141}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BD5F199E-9539-408B-80FE-A040CB93A141}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BD5F199E-9539-408B-80FE-A040CB93A141}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BD5F199E-9539-408B-80FE-A040CB93A141}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C25563C-DF99-46C7-9F1F-FCB8BDC5DFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
