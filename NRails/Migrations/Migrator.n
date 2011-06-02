@@ -47,6 +47,7 @@ namespace NRails.Migrations
                   {
                       c.Name = "Version";
                       c.Type = SqlDataType.String;
+                      c.Size = 255;
                       c.Nullable = false;
                   });
                   t.AddPk("Version");
