@@ -703,6 +703,17 @@
             </summary>
             <value>The result.</value>
         </member>
+        <member name="P:NUnit.Framework.TestCaseAttribute.Categories">
+            <summary>
+            Gets a list of categories associated with this test;
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.TestCaseAttribute.Category">
+            <summary>
+            Gets or sets the category associated with this test.
+            May be a single category or a comma-separated list.
+            </summary>
+        </member>
         <member name="P:NUnit.Framework.TestCaseAttribute.ExpectedException">
             <summary>
             Gets or sets the expected exception.
@@ -808,6 +819,17 @@
         <member name="P:NUnit.Framework.TestFixtureAttribute.Description">
             <summary>
             Descriptive text for this fixture
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.TestFixtureAttribute.Category">
+            <summary>
+            Gets and sets the category for this fixture.
+            May be a comma-separated list of categories.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.TestFixtureAttribute.Categories">
+            <summary>
+            Gets a list of categories for this fixture
             </summary>
         </member>
         <member name="P:NUnit.Framework.TestFixtureAttribute.Arguments">
@@ -5189,6 +5211,47 @@
             <summary>
             Serialization Constructor
             </summary>
+        </member>
+        <member name="T:NUnit.Framework.ITestAction">
+            <summary>
+            The base interface for test actions
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.ITestCaseAction">
+            <summary>
+            The interface implemented to provide actions to execute before and after tests.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.ITestCaseAction.BeforeTestCase(System.Object,System.Reflection.MethodInfo)">
+            <summary>
+            Executed before each test case is run
+            </summary>
+            <param name="fixture">The fixture the test is part of</param>
+            <param name="method">The method that implements the test case</param>
+        </member>
+        <member name="M:NUnit.Framework.ITestCaseAction.AfterTestCase(System.Object,System.Reflection.MethodInfo)">
+            <summary>
+            Executed after each test case is run
+            </summary>
+            <param name="fixture">The fixture the test is part of</param>
+            <param name="method">The method that implements the test case</param>
+        </member>
+        <member name="T:NUnit.Framework.ITestSuiteAction">
+            <summary>
+            The interface implemented to provide actions to execute before and after suites.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.ITestSuiteAction.BeforeTestSuite(System.Object)">
+            <summary>
+            Executed before each suite is run
+            </summary>
+            <param name="fixture">The fixture that defines the test suite</param>
+        </member>
+        <member name="M:NUnit.Framework.ITestSuiteAction.AfterTestSuite(System.Object)">
+            <summary>
+            Executed after each suite is run
+            </summary>
+            <param name="fixture">The fixture that defines the test suite</param>
         </member>
         <member name="T:NUnit.Framework.TestDelegate">
             <summary>
