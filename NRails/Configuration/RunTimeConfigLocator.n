@@ -17,11 +17,14 @@ namespace NRails
     {
       def location = match (HttpContext.Current == null)
       {
-        | true => getConfigLocation([
-          Environment.CurrentDirectory, 
-          Assembly.GetCallingAssembly().Location, 
-          Assembly.GetExecutingAssembly().Location].Distinct().ToList());
-        | false => HttpContext.Current.Server.MapPath("~/nrails.cfg");
+        | true => 
+          getConfigLocation([
+              Environment.CurrentDirectory, 
+              Assembly.GetCallingAssembly().Location, 
+              Assembly.GetExecutingAssembly().Location
+          ]);
+        | false => 
+          HttpContext.Current.Server.MapPath("~/nrails.cfg");
       } 
 
       when (location == null)

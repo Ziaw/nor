@@ -59,10 +59,10 @@ namespace NRails.Tests
                            TableAction.AddColumn(col2),
                            TableAction.CreateIndex(idx)] => 
                             Expect(col.Name, Is.EqualTo("Id"));
-                            Expect(col.Type.DbType, Is.EqualTo(SqlDbType.UniqueIdentifier));
+                            Expect(col.Type.SqlDbType, Is.EqualTo(SqlDbType.UniqueIdentifier));
                             
                             Expect(col2.Name, Is.EqualTo("Zip"));
-                            Expect(col2.Type.DbType, Is.EqualTo(SqlDbType.NVarChar));
+                            Expect(col2.Type.SqlDbType, Is.EqualTo(SqlDbType.NVarChar));
                             Expect(col2.Size, Is.EqualTo(10));
                             Expect(col2.Nullable, Is.EqualTo(true));
                             Expect(col2.DefaultValue, Is.EqualTo("'zzzz'"));
@@ -88,7 +88,7 @@ namespace NRails.Tests
                            TableAction.DropIndex(idx)] =>
                            def cols = [col, colZip, colNewZip, colId, renamedColumn];
                            Expect(cols.Map(_.Name), Is.EquivalentTo(["Street", "Zip", "Zip", "Id", "Zip"]));
-                           Expect(cols.Map(c => c.Type.DbType), Is.EquivalentTo([SqlDbType.NVarChar, SqlDbType.NVarChar, SqlDbType.NVarChar, SqlDbType.UniqueIdentifier, SqlDbType.NVarChar]));
+                           Expect(cols.Map(c => c.Type.SqlDbType), Is.EquivalentTo([SqlDbType.NVarChar, SqlDbType.NVarChar, SqlDbType.NVarChar, SqlDbType.UniqueIdentifier, SqlDbType.NVarChar]));
                            Expect(colNewZip.Nullable, EqualTo(false));
                            Expect(colNewZip.Size, EqualTo(20));
                            Expect((oldName, newName), EqualTo(("Zip", "Zap")));

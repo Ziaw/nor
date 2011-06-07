@@ -96,8 +96,7 @@ public class ClassGenerator
 
             def columns = table.Columns
               .Filter(c => !isForeignKey(c))
-              .Map(column)
-              .ToList();
+              .Map(column);
               
             def keys = foreignKeys.Map(foreignKey);
 

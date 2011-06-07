@@ -29,7 +29,7 @@ namespace NRails.Console
           
           options.MacrosToLoad = ["NRails.Macros"];
           options.ReferencedLibraries = [loc.[Engine]()];
-          options.LibraryPaths = [@"C:\Program Files\Nemerle", Assembly.GetEntryAssembly().Location];
+          options.LibraryPaths = [Assembly.GetEntryAssembly().Location, @"C:\Program Files\Nemerle"];
           
           def thread = System.Threading.Thread(
                        fun(){ manager.Run() },
