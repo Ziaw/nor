@@ -1,8 +1,10 @@
 ﻿<fun showList="lst">
   <pattern expr="x :: tail"> 
-	$!{x}
-	<showList args="tail" />
+	  $!{x}
+	  <showList args="tail" />
   </pattern>
-  <pattern expr="[]">end</pattern>
+  <pattern expr="[]">
+    end
+  </pattern>
 </fun>
 <showList args="['1', '2', '3']"/>

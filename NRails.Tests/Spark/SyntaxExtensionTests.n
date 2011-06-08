@@ -75,7 +75,7 @@ namespace NRails.Tests.Spark
             
             def test = Regex.Replace(result, @"[\r\n\t ]+", " ").Trim();
             
-            Assert.That(test, Is.EqualTo("1 2 3end"))
+            Assert.That(test, Is.EqualTo("1 2 3 end"))
         }
     }
 }
