@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <NoStdLib>true</NoStdLib>
-    <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle</Nemerle>
+    <Nemerle Condition=" '$(Nemerle)' == '' ">$(ProgramFiles)\Nemerle\Net-4.0</Nemerle>
     <Name>NRails.Demo</Name>
   </PropertyGroup>
   <PropertyGroup>
@@ -16,7 +16,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NRails.Demo</RootNamespace>
     <AssemblyName>NRails.Demo</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -37,11 +37,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BLToolkit.3, Version=4.0.0.987, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
-      <Name>BLToolkit.3</Name>
-      <AssemblyName>BLToolkit.3.dll</AssemblyName>
-      <HintPath>..\..\lib\BLToolkit.3.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="BLToolkit.4, Version=4.0.0.1052, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+      <Name>BLToolkit.4</Name>
+      <AssemblyName>BLToolkit.4.dll</AssemblyName>
+      <HintPath>..\..\lib\BLToolkit.4.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
       <Name>log4net</Name>
@@ -97,7 +96,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Nemerle)\Nemerle.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
     <Reference Include="System.Web.Abstractions" />
@@ -217,7 +216,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
