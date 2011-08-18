@@ -26,6 +26,12 @@ namespace NRails
     {
       def location = configLocator.GetLocation();
       readConfig(location);
+      
+      match (Environment.GetEnvironmentVariable("NRAILS_ENV"))
+      {
+        | null => ()
+        | value => env = value;
+      }
 
       def rootPath = FileInfo(location).Directory.FullName;
       def config = findConfigFile(rootPath);

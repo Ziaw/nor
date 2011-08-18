@@ -50,6 +50,7 @@ public class ClassGenerator
                   | null => ();
                   | x when x.Columns.Split(',').Map(_.Trim()).Contains(col.Name) =>
                     attrs ::= "pk";
+                  | _ => ();
                 }
                 
                 when (col.AutoIncrement)
