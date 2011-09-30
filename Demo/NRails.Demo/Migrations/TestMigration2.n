@@ -47,6 +47,7 @@ namespace NRails.Demo.Migrations
 	            UInt32_         :   UInt32?;     //NULL,
 	            UInt64_         :   UInt64?;     //NULL,
 	            Xml_            :   xml?;        //NULL
+	            BoolWithDef     :   bool = true;
 	        }
 
 /* todo

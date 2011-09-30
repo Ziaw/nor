@@ -327,8 +327,9 @@ namespace NRails.Macros.Migration
               | null => ()
               // todo: надо разобраться как вычислять выражения типа даты
               // и преобразовывать их в нужный сиквельный эквивалент (похоже тулкит умеет, глядел мельком)
-              | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $("'"  + x.ToString() + "'": string) ; ]>);
-              | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $("'"  + x + "'": string); ]>);
+              | <[ $(x : int) ]> => Add(<[ $c.DefaultValue = $($"'$x'": string) ; ]>);
+              | <[ $(x : string) ]> => Add(<[ $c.DefaultValue = $($"'$x'": string); ]>);
+              | <[ $(x : bool) ]> => Add(<[ $c.DefaultValue = $($"$x": string); ]>);
               | <[ $x ]> => Message.Error(x.Location, "Only string or int default value supported.");
           }
           
