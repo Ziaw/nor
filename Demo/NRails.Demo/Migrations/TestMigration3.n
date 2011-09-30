@@ -21,16 +21,16 @@ namespace NRails.Demo.Migrations
               create Test
               {
                   Id : Guid(pk);
-                  Zip : string?(len = 10) = "zzzz";
+                  Zip : string(len = 10) = "zzzz";
                   createindex IDX_Test(Zip, Id(desc));
-		  Test: ntext;
-		  TestMaxString: string;
+                  Test: ntext;
+                  TestMaxString: string;
               }
               
               change Test
               {
                   Street : string;
-                  change Zip : string(len = 20);
+                  change Zip : string?(len = 20);
                   rename Zip Zap;
                   dropindex IDX_Test;
                   drop Id;

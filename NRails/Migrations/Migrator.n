@@ -280,7 +280,7 @@ namespace NRails.Migrations
                         ddlHandler(schemaDriver.MakeDdlColumnCreate(col, table));
                         
                    | TableAction.ChangeColumn(col, newCol) =>
-                        ddlHandler(schemaDriver.MakeDdlColumnAlter(col, newCol, table));
+                        ddlHandler(schemaDriver.MakeDdlColumnAlter(newCol, col, table));
                         
                    | TableAction.RenameColumn(col, _, newName) =>
                         ddlHandler(schemaDriver.MakeDdlColumnRename(col, newName, table));
