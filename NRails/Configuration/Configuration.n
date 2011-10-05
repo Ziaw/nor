@@ -27,14 +27,18 @@ namespace NRails
       
       public GetConnectionStringName(env : string) : string
       {
-          if (connectionNames.ContainsKey(env))
-              connectionNames[env];
-          else
+          unless (connectionNames.ContainsKey(env))
           {
               def default = $"$defaultPrefix.$env";
-              connectionNames[env] = default;
-              default;
+              if (connectionStrings.ContainsKey(default))
+                connectionNames[env] = default;
+              else if (connectionStrings.ContainsKey(env))
+                connectionNames[env] = env;
+              else
+                throw ArgumentException($"$defaultPrefix.$env or $env connection string is not found.");
           }
+          
+          connectionNames[env];
       }
 
       public GetConnectionString(env : string) : ConnectionStringSettings

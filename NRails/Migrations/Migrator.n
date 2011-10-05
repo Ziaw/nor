@@ -4,6 +4,7 @@ using Nemerle.Utility;
 using Nemerle.Data;
 
 using System;
+using System.Reflection;
 using System.Transactions;
 using System.Data;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ using BLToolkit.Data.Linq;
 using BLToolkit.Data.Sql;
 using BLToolkit.DataAccess;
 using Nemerle.Logging;
+using Nemerle.Extensions;
+using System.Configuration;
 
 namespace NRails.Migrations
 {
@@ -60,6 +63,14 @@ namespace NRails.Migrations
           this.engine = engine;
       }
       
+      public this(connectionStringName : string)
+      {
+          def connStrings = Dictionary();
+          connStrings.Add(connectionStringName, ConfigurationManager.ConnectionStrings[connectionStringName]);
+          
+          this(Engine(Configuration(connectionStringName, connStrings)));
+      }
+      
       public GetSchema() : DBSchema
       {
           log(Debug, "begin create migration");
@@ -78,6 +89,22 @@ namespace NRails.Migrations
               log(Info, "Database dont exists");
               null
           }
+      }
+      
+      /// Apply all migrations from assembly with T type
+      public Migrate[T]() : void
+      {
+          Migrate(typeof(T).Assembly);
+      }
+      
+      /// Apply all migrations from assembly
+      public Migrate(migrationsAssembly : Assembly) : void
+      {
+          def migrationTypes = migrationsAssembly.GetTypes().Filter(t => t.IsSubclassOf(typeof(Migration)) && !t.IsAbstract);
+          
+          def migrations = migrationTypes.Map(t => Activator.CreateInstance(t) :> IMigration);
+          
+          Migrate(MigrationDirection.Up(), migrations, true);
       }
       
       public Migrate(migrationDirection : MigrationDirection, migrs : list[IMigration], allowMissing : bool) : void

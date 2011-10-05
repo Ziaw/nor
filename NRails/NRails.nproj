@@ -36,10 +36,11 @@
     <DocumentationFile>bin\Release\NRails.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BLToolkit.4, Version=4.0.0.1052, Culture=neutral, PublicKeyToken=b1d3f6ab3aadaca3">
+    <Reference Include="BLToolkit.4">
       <Name>BLToolkit.4</Name>
       <AssemblyName>BLToolkit.4.dll</AssemblyName>
       <HintPath>..\lib\BLToolkit.4.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
       <Name>log4net</Name>
