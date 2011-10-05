@@ -100,11 +100,11 @@ namespace NRails.Migrations
       /// Apply all migrations from assembly
       public Migrate(migrationsAssembly : Assembly) : void
       {
-          def migrationTypes = migrationsAssembly.GetTypes().Filter(t => t.IsSubclassOf(typeof(Migration)) && !t.IsAbstract);
+          def migrationTypes = migrationsAssembly.GetTypes().Filter(t => typeof(IMigration).IsAssignableFrom(t) && !t.IsAbstract);
           
           def migrations = migrationTypes.Map(t => Activator.CreateInstance(t) :> IMigration);
           
-          Migrate(MigrationDirection.Up(), migrations, true);
+          Migrate(MigrationDirection.All(), migrations, true);
       }
       
       public Migrate(migrationDirection : MigrationDirection, migrs : list[IMigration], allowMissing : bool) : void
