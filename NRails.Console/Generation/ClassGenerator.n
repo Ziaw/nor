@@ -40,8 +40,8 @@ public class ClassGenerator
                 {
                   | col when col.Size > 0 => 
                     attrs ::= $"len = $(col.Size)";
-                  | col when col.Type.Precision > 0 || col.Type.Precision > 0 =>
-                    attrs ::= $"precision = $(col.Type.Precision), seed = $(col.Type.Scale)";
+                  | col when col.Type.Precision > 0 || col.Type.Scale > 0 =>
+                    attrs ::= $"precision = $(col.Type.Precision), scale = $(col.Type.Scale)";
                   | _ => ()
                 }
 

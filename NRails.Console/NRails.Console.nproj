@@ -25,6 +25,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <StartProgram />
+    <WorkingDirectory>D:\Projects\lib\nor\\Demo\NRails.Demo\</WorkingDirectory>
+    <CmdArgs>migrate</CmdArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,7 +42,7 @@
     <StartProgram>
     </StartProgram>
     <WorkingDirectory>$(SolutionDir)\Demo\NRails.Demo\</WorkingDirectory>
-    <CmdArgs>generate new</CmdArgs>
+    <CmdArgs>migrate</CmdArgs>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net">
